@@ -2,15 +2,22 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 
 // Data structure matching the mockup
 const owners = [
-  { name: "FMa-Javnes", team: "Buckeyes", image: "/placeholder-owner.svg" },
-  { name: "Bulldogs", team: "Bulldogs", image: "/placeholder-owner.svg" },
-  { name: "Pack Attack", team: "PackParks", image: "/placeholder-owner.svg" },
-  { name: "Unit 203", team: "Unit 203", image: "/placeholder-owner.svg" },
-  { name: "Snake Eyes", team: "Wilchories", image: "/placeholder-owner.svg" },
-  { name: "The Warriors", team: "Rurning Chudias", image: "/placeholder-owner.svg" },
+  { name: "Tyler Falcone", team: "Jone crib", image: "/placeholder-owner.svg" },
+  { name: "Blake Kozloski", team: "Wizards of Koz", image: "/placeholder-owner.svg" },
+  { name: "Eric Rios", team: "The Hullabaloos", image: "/placeholder-owner.svg" },
+  { name: "Ryan Jenks", team: "Brianna's Red Carpet", image: "/placeholder-owner.svg" },
+  { name: "Frankie Nardone", team: "Peter is Corrupt", image: "/placeholder-owner.svg" },
+  { name: "Matt Borba", team: "Not Popular Boys", image: "/placeholder-owner.svg" },
+  { name: "Jake Slagle", team: "POSTGRADAPARTMENTS.COM", image: "/placeholder-owner.svg" },
+  { name: "Bryan Yatsko", team: "Bryan Yatsko's Team", image: "/placeholder-owner.svg" },
+  { name: "Ryan Curran", team: "Loose Cannons", image: "/placeholder-owner.svg" },
+  { name: "Peter Klensch", team: "All Business Pete", image: "/placeholder-owner.svg" },
+  { name: "Anthony Bove", team: "Anthony's Nifty Team", image: "/placeholder-owner.svg" },
+  { name: "Ryan Kaplan", team: "Jew Crew", image: "/placeholder-owner.svg" },
 ];
 
 const championships = [
@@ -200,11 +207,12 @@ export default function Home() {
               {/* Champion Avatar Card */}
               <div className="bg-white rounded-xl p-8 shadow-md hover:shadow-lg transition-shadow">
                 <div className="text-center">
-                  <div className="w-32 h-32 mx-auto mb-4 rounded-full bg-gray-300 overflow-hidden flex items-center justify-center">
-                    <img
+                  <div className="w-32 h-32 mx-auto mb-4 rounded-full bg-gray-300 overflow-hidden relative">
+                    <Image
                       src={currentChampion.avatar}
                       alt={currentChampion.name}
-                      className="w-full h-full object-cover"
+                      fill
+                      className="object-cover"
                     />
                   </div>
                   <div className="font-bold text-gray-800 text-lg mb-1">
@@ -353,34 +361,6 @@ export default function Home() {
           </div>
         </section>
 
-        {/* The Owners Section */}
-        <section id="owners" className="mb-20 scroll-mt-8">
-          <h2
-            className="text-4xl md:text-5xl font-bold mb-10 uppercase text-center"
-            style={{ fontFamily: "var(--font-display)", color: "var(--foreground)" }}
-          >
-            THE OWNERS
-          </h2>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8 md:gap-10">
-            {owners.map((owner, index) => (
-              <div key={index} className="text-center group">
-                <div className="w-32 h-32 md:w-36 md:h-36 mx-auto mb-4 rounded-full bg-gray-300 overflow-hidden flex items-center justify-center shadow-md hover:shadow-lg transition-all hover:scale-105">
-                  <img
-                    src={owner.image}
-                    alt={owner.name}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <div className="text-sm font-bold text-gray-800 mb-1">
-                  {owner.name}
-                </div>
-                <div className="text-xs text-gray-600 uppercase tracking-wide">
-                  {owner.team}
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
 
         {/* Hall of Champions and League Records Section */}
         <div id="champions" className="flex justify-center mb-20 scroll-mt-20">
@@ -471,6 +451,36 @@ export default function Home() {
             </div>
           </section> */}
         </div>
+
+        {/* The Owners Section - 2025 Season */}
+        <section id="owners" className="mb-20 scroll-mt-8">
+          <h2
+            className="text-4xl md:text-5xl font-bold mb-10 uppercase text-center"
+            style={{ fontFamily: "var(--font-display)", color: "var(--foreground)" }}
+          >
+            THE OWNERS
+          </h2>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+            {owners.map((owner, index) => (
+              <div key={index} className="text-center group">
+                <div className="w-32 h-32 md:w-36 md:h-36 mx-auto mb-4 rounded-full bg-gray-300 overflow-hidden relative shadow-md hover:shadow-lg transition-all hover:scale-105">
+                  <Image
+                    src={owner.image}
+                    alt={owner.name}
+                    fill
+                    className="object-cover"
+                  />
+                </div>
+                <div className="text-sm font-bold text-gray-800 mb-1">
+                  {owner.name}
+                </div>
+                <div className="text-xs text-gray-600 uppercase tracking-wide">
+                  {owner.team}
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
 
         {/* Photo Gallery Section */}
         {/* <section>
