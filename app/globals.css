@@ -1,8 +1,11 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #f5f5f0;
+  --foreground: #1a1a1a;
+  --card-background: #ffffff;
+  --accent: #2D5A3D;
+  --ribbon-dark: #2d2d2d;
 }
 
 @theme inline {
@@ -10,17 +13,57 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --font-display: var(--font-bebas-neue);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+}
+
+/* Ribbon Banner Component */
+@layer components {
+  .ribbon-banner {
+    background: var(--ribbon-dark);
+    color: white;
+    position: relative;
+    padding: 0.75rem 3rem;
+    text-align: center;
+    font-weight: bold;
+    letter-spacing: 0.05em;
+    display: inline-block;
+    clip-path: polygon(
+      1rem 0%,
+      calc(100% - 1rem) 0%,
+      100% 50%,
+      calc(100% - 1rem) 100%,
+      1rem 100%,
+      0% 50%
+    );
+  }
+
+  /* Confetti decorative elements */
+  .confetti {
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    transform: rotate(45deg);
+  }
+
+  .confetti-yellow {
+    background: #fbbf24;
+  }
+
+  .confetti-red {
+    background: #ef4444;
+  }
+
+  .confetti-gray {
+    background: #9ca3af;
+  }
+
+  .confetti-circle {
+    border-radius: 50%;
+  }
 }
