@@ -10,8 +10,8 @@
   {
     "manager1": "Peter",
     "manager2": "Ryan",
-    "total_matchups": 24,
-    "manager1_wins": 17,
+    "total_matchups": 25,
+    "manager1_wins": 18,
     "manager2_wins": 7,
     "ties": 0
   },
@@ -24,6 +24,30 @@
     "ties": 0
   },
   {
+    "manager1": "Blake",
+    "manager2": "Frankie Nardone",
+    "total_matchups": 23,
+    "manager1_wins": 10,
+    "manager2_wins": 13,
+    "ties": 0
+  },
+  {
+    "manager1": "AB",
+    "manager2": "Peter",
+    "total_matchups": 23,
+    "manager1_wins": 9,
+    "manager2_wins": 14,
+    "ties": 0
+  },
+  {
+    "manager1": "Peter",
+    "manager2": "Ryan Curran",
+    "total_matchups": 22,
+    "manager1_wins": 13,
+    "manager2_wins": 9,
+    "ties": 0
+  },
+  {
     "manager1": "--hidden--",
     "manager2": "Peter",
     "total_matchups": 22,
@@ -32,19 +56,19 @@
     "ties": 0
   },
   {
+    "manager1": "Ryan",
+    "manager2": "Ryan Curran",
+    "total_matchups": 22,
+    "manager1_wins": 7,
+    "manager2_wins": 15,
+    "ties": 0
+  },
+  {
     "manager1": "--hidden--",
     "manager2": "Ryan",
     "total_matchups": 21,
     "manager1_wins": 9,
     "manager2_wins": 12,
-    "ties": 0
-  },
-  {
-    "manager1": "Blake",
-    "manager2": "Frankie Nardone",
-    "total_matchups": 21,
-    "manager1_wins": 8,
-    "manager2_wins": 13,
     "ties": 0
   },
   {
@@ -56,19 +80,11 @@
     "ties": 0
   },
   {
-    "manager1": "AB",
-    "manager2": "Peter",
+    "manager1": "Blake",
+    "manager2": "Ryan",
     "total_matchups": 21,
-    "manager1_wins": 8,
-    "manager2_wins": 13,
-    "ties": 0
-  },
-  {
-    "manager1": "Peter",
-    "manager2": "Ryan Curran",
-    "total_matchups": 20,
-    "manager1_wins": 13,
-    "manager2_wins": 7,
+    "manager1_wins": 10,
+    "manager2_wins": 11,
     "ties": 0
   },
   {
@@ -80,79 +96,119 @@
     "ties": 0
   },
   {
-    "manager1": "Blake",
-    "manager2": "Ryan",
+    "manager1": "Frankie Nardone",
+    "manager2": "jake",
     "total_matchups": 20,
-    "manager1_wins": 9,
-    "manager2_wins": 11,
-    "ties": 0
-  },
-  {
-    "manager1": "Ryan",
-    "manager2": "Ryan Curran",
-    "total_matchups": 19,
-    "manager1_wins": 7,
+    "manager1_wins": 8,
     "manager2_wins": 12,
     "ties": 0
   },
   {
-    "manager1": "Frankie Nardone",
-    "manager2": "jake",
+    "manager1": "Blake",
+    "manager2": "Peter",
     "total_matchups": 19,
-    "manager1_wins": 8,
-    "manager2_wins": 11,
+    "manager1_wins": 9,
+    "manager2_wins": 10,
     "ties": 0
   },
   {
     "manager1": "Ryan",
     "manager2": "matt",
-    "total_matchups": 18,
+    "total_matchups": 19,
     "manager1_wins": 14,
-    "manager2_wins": 4,
+    "manager2_wins": 5,
+    "ties": 0
+  },
+  {
+    "manager1": "Frankie Nardone",
+    "manager2": "matt",
+    "total_matchups": 19,
+    "manager1_wins": 12,
+    "manager2_wins": 7,
     "ties": 0
   },
   {
     "manager1": "AB",
     "manager2": "Blake",
-    "total_matchups": 18,
+    "total_matchups": 19,
     "manager1_wins": 11,
-    "manager2_wins": 7,
+    "manager2_wins": 8,
     "ties": 0
   },
   {
     "manager1": "Ryan Curran",
     "manager2": "jake",
-    "total_matchups": 18,
+    "total_matchups": 19,
     "manager1_wins": 13,
-    "manager2_wins": 5,
+    "manager2_wins": 6,
     "ties": 0
   },
   {
     "manager1": "Frankie Nardone",
     "manager2": "Peter",
-    "total_matchups": 17,
-    "manager1_wins": 5,
+    "total_matchups": 18,
+    "manager1_wins": 6,
     "manager2_wins": 12,
     "ties": 0
   },
   {
     "manager1": "Frankie Nardone",
     "manager2": "Ryan Curran",
-    "total_matchups": 17,
+    "total_matchups": 18,
     "manager1_wins": 8,
-    "manager2_wins": 9,
+    "manager2_wins": 10,
     "ties": 0
   },
   {
-    "manager1": "Blake",
-    "manager2": "Peter",
-    "total_matchups": 17,
-    "manager1_wins": 8,
+    "manager1": "Frankie Nardone",
+    "manager2": "Ryan",
+    "total_matchups": 18,
+    "manager1_wins": 9,
     "manager2_wins": 9,
     "ties": 0
   },
   {
     "manager1": "AB",
+    "manager2": "Ryan",
+    "total_matchups": 18,
+    "manager1_wins": 12,
+    "manager2_wins": 6,
+    "ties": 0
+  },
+  {
+    "manager1": "AB",
+    "manager2": "matt",
+    "total_matchups": 18,
+    "manager1_wins": 7,
+    "manager2_wins": 11,
+    "ties": 0
+  },
+  {
+    "manager1": "Blake",
+    "manager2": "jake",
+    "total_matchups": 18,
+    "manager1_wins": 10,
+    "manager2_wins": 8,
+    "ties": 0
+  },
+  {
+    "manager1": "AB",
+    "manager2": "Frankie Nardone",
+    "total_matchups": 18,
+    "manager1_wins": 9,
+    "manager2_wins": 9,
+    "ties": 0
+  },
+  {
+    "manager1": "AB",
+    "manager2": "Ryan Curran",
+    "total_matchups": 18,
+    "manager1_wins": 10,
+    "manager2_wins": 8,
+    "ties": 0
+  },
+  {
+    "manager1": "Blake",
     "manager2": "Ryan Curran",
     "total_matchups": 17,
     "manager1_wins": 9,
@@ -160,11 +216,19 @@
     "ties": 0
   },
   {
-    "manager1": "Frankie Nardone",
-    "manager2": "Ryan",
-    "total_matchups": 16,
-    "manager1_wins": 7,
-    "manager2_wins": 9,
+    "manager1": "Blake",
+    "manager2": "matt",
+    "total_matchups": 17,
+    "manager1_wins": 10,
+    "manager2_wins": 7,
+    "ties": 0
+  },
+  {
+    "manager1": "AB",
+    "manager2": "jake",
+    "total_matchups": 17,
+    "manager1_wins": 10,
+    "manager2_wins": 7,
     "ties": 0
   },
   {
@@ -176,27 +240,11 @@
     "ties": 0
   },
   {
-    "manager1": "Blake",
+    "manager1": "Ryan Curran",
     "manager2": "matt",
     "total_matchups": 16,
-    "manager1_wins": 10,
-    "manager2_wins": 6,
-    "ties": 0
-  },
-  {
-    "manager1": "Frankie Nardone",
-    "manager2": "matt",
-    "total_matchups": 16,
-    "manager1_wins": 9,
-    "manager2_wins": 7,
-    "ties": 0
-  },
-  {
-    "manager1": "AB",
-    "manager2": "Ryan",
-    "total_matchups": 16,
-    "manager1_wins": 11,
-    "manager2_wins": 5,
+    "manager1_wins": 14,
+    "manager2_wins": 2,
     "ties": 0
   },
   {
@@ -208,15 +256,7 @@
     "ties": 0
   },
   {
-    "manager1": "AB",
-    "manager2": "matt",
-    "total_matchups": 16,
-    "manager1_wins": 7,
-    "manager2_wins": 9,
-    "ties": 0
-  },
-  {
-    "manager1": "Blake",
+    "manager1": "Peter",
     "manager2": "jake",
     "total_matchups": 16,
     "manager1_wins": 9,
@@ -224,43 +264,51 @@
     "ties": 0
   },
   {
-    "manager1": "AB",
-    "manager2": "Frankie Nardone",
-    "total_matchups": 16,
-    "manager1_wins": 8,
-    "manager2_wins": 8,
-    "ties": 0
-  },
-  {
-    "manager1": "Blake",
-    "manager2": "Ryan Curran",
-    "total_matchups": 15,
-    "manager1_wins": 7,
-    "manager2_wins": 8,
-    "ties": 0
-  },
-  {
-    "manager1": "Ryan Curran",
-    "manager2": "matt",
-    "total_matchups": 15,
-    "manager1_wins": 13,
-    "manager2_wins": 2,
-    "ties": 0
-  },
-  {
-    "manager1": "AB",
+    "manager1": "Ryan",
     "manager2": "jake",
-    "total_matchups": 15,
-    "manager1_wins": 9,
-    "manager2_wins": 6,
+    "total_matchups": 16,
+    "manager1_wins": 4,
+    "manager2_wins": 12,
     "ties": 0
   },
   {
     "manager1": "Peter",
     "manager2": "matt",
-    "total_matchups": 14,
-    "manager1_wins": 9,
+    "total_matchups": 15,
+    "manager1_wins": 10,
     "manager2_wins": 5,
+    "ties": 0
+  },
+  {
+    "manager1": "Ryan Curran",
+    "manager2": "ryan",
+    "total_matchups": 15,
+    "manager1_wins": 5,
+    "manager2_wins": 10,
+    "ties": 0
+  },
+  {
+    "manager1": "matt",
+    "manager2": "ryan",
+    "total_matchups": 15,
+    "manager1_wins": 8,
+    "manager2_wins": 7,
+    "ties": 0
+  },
+  {
+    "manager1": "Bryan Yatsko",
+    "manager2": "Frankie Nardone",
+    "total_matchups": 15,
+    "manager1_wins": 8,
+    "manager2_wins": 7,
+    "ties": 0
+  },
+  {
+    "manager1": "AB",
+    "manager2": "Bryan Yatsko",
+    "total_matchups": 15,
+    "manager1_wins": 9,
+    "manager2_wins": 6,
     "ties": 0
   },
   {
@@ -272,51 +320,19 @@
     "ties": 0
   },
   {
-    "manager1": "Peter",
-    "manager2": "jake",
-    "total_matchups": 14,
-    "manager1_wins": 9,
-    "manager2_wins": 5,
-    "ties": 0
-  },
-  {
-    "manager1": "Ryan",
-    "manager2": "jake",
+    "manager1": "jake",
+    "manager2": "matt",
     "total_matchups": 14,
     "manager1_wins": 3,
     "manager2_wins": 11,
     "ties": 0
   },
   {
-    "manager1": "Ryan Curran",
+    "manager1": "Blake",
     "manager2": "ryan",
     "total_matchups": 14,
-    "manager1_wins": 5,
-    "manager2_wins": 9,
-    "ties": 0
-  },
-  {
-    "manager1": "matt",
-    "manager2": "ryan",
-    "total_matchups": 14,
-    "manager1_wins": 8,
-    "manager2_wins": 6,
-    "ties": 0
-  },
-  {
-    "manager1": "Bryan Yatsko",
-    "manager2": "Frankie Nardone",
-    "total_matchups": 14,
-    "manager1_wins": 8,
-    "manager2_wins": 6,
-    "ties": 0
-  },
-  {
-    "manager1": "AB",
-    "manager2": "Bryan Yatsko",
-    "total_matchups": 14,
-    "manager1_wins": 8,
-    "manager2_wins": 6,
+    "manager1_wins": 7,
+    "manager2_wins": 7,
     "ties": 0
   },
   {
@@ -336,27 +352,27 @@
     "ties": 0
   },
   {
-    "manager1": "jake",
-    "manager2": "matt",
-    "total_matchups": 13,
-    "manager1_wins": 3,
-    "manager2_wins": 10,
-    "ties": 0
-  },
-  {
-    "manager1": "Blake",
-    "manager2": "ryan",
-    "total_matchups": 12,
-    "manager1_wins": 6,
-    "manager2_wins": 6,
-    "ties": 0
-  },
-  {
     "manager1": "Frankie Nardone",
     "manager2": "ryan",
-    "total_matchups": 12,
-    "manager1_wins": 7,
+    "total_matchups": 13,
+    "manager1_wins": 8,
     "manager2_wins": 5,
+    "ties": 0
+  },
+  {
+    "manager1": "Peter",
+    "manager2": "ryan",
+    "total_matchups": 13,
+    "manager1_wins": 8,
+    "manager2_wins": 5,
+    "ties": 0
+  },
+  {
+    "manager1": "Bryan Yatsko",
+    "manager2": "jake",
+    "total_matchups": 13,
+    "manager1_wins": 6,
+    "manager2_wins": 7,
     "ties": 0
   },
   {
@@ -368,35 +384,51 @@
     "ties": 0
   },
   {
-    "manager1": "Peter",
-    "manager2": "ryan",
-    "total_matchups": 11,
-    "manager1_wins": 7,
-    "manager2_wins": 4,
-    "ties": 0
-  },
-  {
     "manager1": "Bryan Yatsko",
-    "manager2": "jake",
-    "total_matchups": 11,
-    "manager1_wins": 6,
-    "manager2_wins": 5,
+    "manager2": "Peter",
+    "total_matchups": 12,
+    "manager1_wins": 8,
+    "manager2_wins": 4,
     "ties": 0
   },
   {
     "manager1": "AB",
     "manager2": "ryan",
-    "total_matchups": 10,
-    "manager1_wins": 2,
+    "total_matchups": 11,
+    "manager1_wins": 3,
     "manager2_wins": 8,
     "ties": 0
   },
   {
     "manager1": "Ryan",
     "manager2": "ryan",
-    "total_matchups": 10,
+    "total_matchups": 11,
     "manager1_wins": 1,
-    "manager2_wins": 9,
+    "manager2_wins": 10,
+    "ties": 0
+  },
+  {
+    "manager1": "Blake",
+    "manager2": "Bryan Yatsko",
+    "total_matchups": 11,
+    "manager1_wins": 4,
+    "manager2_wins": 7,
+    "ties": 0
+  },
+  {
+    "manager1": "Bryan Yatsko",
+    "manager2": "Ryan Curran",
+    "total_matchups": 11,
+    "manager1_wins": 9,
+    "manager2_wins": 2,
+    "ties": 0
+  },
+  {
+    "manager1": "jake",
+    "manager2": "ryan",
+    "total_matchups": 10,
+    "manager1_wins": 6,
+    "manager2_wins": 4,
     "ties": 0
   },
   {
@@ -408,6 +440,22 @@
     "ties": 0
   },
   {
+    "manager1": "Bryan Yatsko",
+    "manager2": "Ryan",
+    "total_matchups": 10,
+    "manager1_wins": 9,
+    "manager2_wins": 1,
+    "ties": 0
+  },
+  {
+    "manager1": "Bryan Yatsko",
+    "manager2": "ryan",
+    "total_matchups": 10,
+    "manager1_wins": 4,
+    "manager2_wins": 6,
+    "ties": 0
+  },
+  {
     "manager1": "john",
     "manager2": "matt",
     "total_matchups": 10,
@@ -416,19 +464,11 @@
     "ties": 0
   },
   {
-    "manager1": "Blake",
-    "manager2": "Bryan Yatsko",
-    "total_matchups": 10,
-    "manager1_wins": 4,
-    "manager2_wins": 6,
-    "ties": 0
-  },
-  {
     "manager1": "Bryan Yatsko",
-    "manager2": "Peter",
+    "manager2": "matt",
     "total_matchups": 10,
-    "manager1_wins": 7,
-    "manager2_wins": 3,
+    "manager1_wins": 5,
+    "manager2_wins": 5,
     "ties": 0
   },
   {
@@ -472,27 +512,11 @@
     "ties": 0
   },
   {
-    "manager1": "jake",
-    "manager2": "ryan",
-    "total_matchups": 9,
-    "manager1_wins": 6,
-    "manager2_wins": 3,
-    "ties": 0
-  },
-  {
     "manager1": "Peter",
     "manager2": "john",
     "total_matchups": 9,
     "manager1_wins": 5,
     "manager2_wins": 4,
-    "ties": 0
-  },
-  {
-    "manager1": "Bryan Yatsko",
-    "manager2": "Ryan",
-    "total_matchups": 9,
-    "manager1_wins": 8,
-    "manager2_wins": 1,
     "ties": 0
   },
   {
@@ -504,19 +528,11 @@
     "ties": 0
   },
   {
-    "manager1": "Bryan Yatsko",
+    "manager1": "efuego93",
     "manager2": "ryan",
     "total_matchups": 9,
-    "manager1_wins": 3,
-    "manager2_wins": 6,
-    "ties": 0
-  },
-  {
-    "manager1": "Bryan Yatsko",
-    "manager2": "matt",
-    "total_matchups": 9,
-    "manager1_wins": 5,
-    "manager2_wins": 4,
+    "manager1_wins": 4,
+    "manager2_wins": 5,
     "ties": 0
   },
   {
@@ -549,14 +565,6 @@
     "total_matchups": 8,
     "manager1_wins": 4,
     "manager2_wins": 4,
-    "ties": 0
-  },
-  {
-    "manager1": "Bryan Yatsko",
-    "manager2": "Ryan Curran",
-    "total_matchups": 8,
-    "manager1_wins": 7,
-    "manager2_wins": 1,
     "ties": 0
   },
   {
@@ -589,6 +597,30 @@
     "total_matchups": 7,
     "manager1_wins": 5,
     "manager2_wins": 2,
+    "ties": 0
+  },
+  {
+    "manager1": "efuego93",
+    "manager2": "matt",
+    "total_matchups": 7,
+    "manager1_wins": 4,
+    "manager2_wins": 3,
+    "ties": 0
+  },
+  {
+    "manager1": "Bryan Yatsko",
+    "manager2": "efuego93",
+    "total_matchups": 7,
+    "manager1_wins": 3,
+    "manager2_wins": 4,
+    "ties": 0
+  },
+  {
+    "manager1": "Ryan",
+    "manager2": "efuego93",
+    "total_matchups": 7,
+    "manager1_wins": 2,
+    "manager2_wins": 5,
     "ties": 0
   },
   {
@@ -616,27 +648,11 @@
     "ties": 0
   },
   {
-    "manager1": "efuego93",
-    "manager2": "matt",
-    "total_matchups": 6,
-    "manager1_wins": 4,
-    "manager2_wins": 2,
-    "ties": 0
-  },
-  {
-    "manager1": "efuego93",
-    "manager2": "ryan",
-    "total_matchups": 6,
-    "manager1_wins": 3,
-    "manager2_wins": 3,
-    "ties": 0
-  },
-  {
-    "manager1": "Ryan",
+    "manager1": "Peter",
     "manager2": "efuego93",
     "total_matchups": 6,
-    "manager1_wins": 2,
-    "manager2_wins": 4,
+    "manager1_wins": 1,
+    "manager2_wins": 5,
     "ties": 0
   },
   {
@@ -688,19 +704,27 @@
     "ties": 0
   },
   {
-    "manager1": "Peter",
+    "manager1": "AB",
     "manager2": "efuego93",
     "total_matchups": 5,
-    "manager1_wins": 1,
-    "manager2_wins": 4,
+    "manager1_wins": 3,
+    "manager2_wins": 2,
     "ties": 0
   },
   {
-    "manager1": "Bryan Yatsko",
+    "manager1": "Blake",
     "manager2": "efuego93",
     "total_matchups": 5,
     "manager1_wins": 2,
     "manager2_wins": 3,
+    "ties": 0
+  },
+  {
+    "manager1": "Frankie Nardone",
+    "manager2": "efuego93",
+    "total_matchups": 5,
+    "manager1_wins": 1,
+    "manager2_wins": 4,
     "ties": 0
   },
   {
@@ -760,7 +784,7 @@
     "ties": 0
   },
   {
-    "manager1": "AB",
+    "manager1": "Ryan Curran",
     "manager2": "efuego93",
     "total_matchups": 4,
     "manager1_wins": 3,
@@ -768,19 +792,43 @@
     "ties": 0
   },
   {
-    "manager1": "Blake",
-    "manager2": "efuego93",
+    "manager1": "efuego93",
+    "manager2": "jake",
+    "total_matchups": 4,
+    "manager1_wins": 3,
+    "manager2_wins": 1,
+    "ties": 0
+  },
+  {
+    "manager1": "Ryan Curran",
+    "manager2": "tyler",
+    "total_matchups": 4,
+    "manager1_wins": 3,
+    "manager2_wins": 1,
+    "ties": 0
+  },
+  {
+    "manager1": "ryan",
+    "manager2": "tyler",
+    "total_matchups": 4,
+    "manager1_wins": 2,
+    "manager2_wins": 2,
+    "ties": 0
+  },
+  {
+    "manager1": "matt",
+    "manager2": "tyler",
     "total_matchups": 4,
     "manager1_wins": 1,
     "manager2_wins": 3,
     "ties": 0
   },
   {
-    "manager1": "Frankie Nardone",
-    "manager2": "efuego93",
+    "manager1": "efuego93",
+    "manager2": "tyler",
     "total_matchups": 4,
-    "manager1_wins": 1,
-    "manager2_wins": 3,
+    "manager1_wins": 2,
+    "manager2_wins": 2,
     "ties": 0
   },
   {
@@ -856,27 +904,27 @@
     "ties": 0
   },
   {
-    "manager1": "Ryan Curran",
-    "manager2": "efuego93",
-    "total_matchups": 3,
-    "manager1_wins": 3,
-    "manager2_wins": 0,
-    "ties": 0
-  },
-  {
-    "manager1": "efuego93",
-    "manager2": "jake",
-    "total_matchups": 3,
-    "manager1_wins": 2,
-    "manager2_wins": 1,
-    "ties": 0
-  },
-  {
-    "manager1": "Ryan Curran",
+    "manager1": "Ryan",
     "manager2": "tyler",
     "total_matchups": 3,
-    "manager1_wins": 3,
-    "manager2_wins": 0,
+    "manager1_wins": 1,
+    "manager2_wins": 2,
+    "ties": 0
+  },
+  {
+    "manager1": "AB",
+    "manager2": "tyler",
+    "total_matchups": 3,
+    "manager1_wins": 0,
+    "manager2_wins": 3,
+    "ties": 0
+  },
+  {
+    "manager1": "Blake",
+    "manager2": "tyler",
+    "total_matchups": 3,
+    "manager1_wins": 0,
+    "manager2_wins": 3,
     "ties": 0
   },
   {
@@ -952,15 +1000,15 @@
     "ties": 0
   },
   {
-    "manager1": "Ryan",
+    "manager1": "Frankie Nardone",
     "manager2": "tyler",
     "total_matchups": 2,
-    "manager1_wins": 1,
-    "manager2_wins": 1,
+    "manager1_wins": 2,
+    "manager2_wins": 0,
     "ties": 0
   },
   {
-    "manager1": "AB",
+    "manager1": "Bryan Yatsko",
     "manager2": "tyler",
     "total_matchups": 2,
     "manager1_wins": 0,
@@ -968,7 +1016,15 @@
     "ties": 0
   },
   {
-    "manager1": "ryan",
+    "manager1": "jake",
+    "manager2": "tyler",
+    "total_matchups": 2,
+    "manager1_wins": 1,
+    "manager2_wins": 1,
+    "ties": 0
+  },
+  {
+    "manager1": "Peter",
     "manager2": "tyler",
     "total_matchups": 2,
     "manager1_wins": 1,
@@ -1010,62 +1066,6 @@
   {
     "manager1": "Chris",
     "manager2": "matt",
-    "total_matchups": 1,
-    "manager1_wins": 0,
-    "manager2_wins": 1,
-    "ties": 0
-  },
-  {
-    "manager1": "Frankie Nardone",
-    "manager2": "tyler",
-    "total_matchups": 1,
-    "manager1_wins": 1,
-    "manager2_wins": 0,
-    "ties": 0
-  },
-  {
-    "manager1": "Bryan Yatsko",
-    "manager2": "tyler",
-    "total_matchups": 1,
-    "manager1_wins": 0,
-    "manager2_wins": 1,
-    "ties": 0
-  },
-  {
-    "manager1": "Blake",
-    "manager2": "tyler",
-    "total_matchups": 1,
-    "manager1_wins": 0,
-    "manager2_wins": 1,
-    "ties": 0
-  },
-  {
-    "manager1": "jake",
-    "manager2": "tyler",
-    "total_matchups": 1,
-    "manager1_wins": 1,
-    "manager2_wins": 0,
-    "ties": 0
-  },
-  {
-    "manager1": "Peter",
-    "manager2": "tyler",
-    "total_matchups": 1,
-    "manager1_wins": 1,
-    "manager2_wins": 0,
-    "ties": 0
-  },
-  {
-    "manager1": "matt",
-    "manager2": "tyler",
-    "total_matchups": 1,
-    "manager1_wins": 0,
-    "manager2_wins": 1,
-    "ties": 0
-  },
-  {
-    "manager1": "efuego93",
-    "manager2": "tyler",
     "total_matchups": 1,
     "manager1_wins": 0,
     "manager2_wins": 1,

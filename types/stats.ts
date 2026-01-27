@@ -92,3 +92,49 @@ export interface TopPerformance {
   opponentScore: number;
   matchupType: string;
 }
+
+// Blowout/Closest game data
+export interface MarginGame {
+  season: number;
+  week: number;
+  team1: string;
+  team1Manager: string;
+  team1Score: number;
+  team2: string;
+  team2Manager: string;
+  team2Score: number;
+  margin: number;
+  matchupType: string;
+  winner: string;
+}
+
+// Luck index data
+export interface LuckIndex {
+  manager: string;
+  luck: number;
+  actualWins: number;
+  expectedWins: number;
+  gamesPlayed: number;
+  pointsFor: number;
+}
+
+// Manager consistency data
+export interface ManagerConsistency {
+  manager: string;
+  avgScore: number;
+  stdDev: number;
+  gamesPlayed: number;
+}
+
+// Playoff performance data
+export interface PlayoffStats {
+  manager: string;
+  playoffWins: number;
+  playoffLosses: number;
+  playoffPPG: number;
+  regularWins: number;
+  regularLosses: number;
+  regularPPG: number;
+  clutchRating: number;
+  playoffGames: number;
+}

@@ -154,5 +154,17 @@
     "runner_up_manager": "efuego93",
     "third_place_team_name": "Peter is Corrupt",
     "third_place_manager": "Frankie Nardone"
+  },
+  {
+    "season_year": 2025,
+    "champion_team_name": "Jone crib",
+    "champion_manager": "tyler",
+    "champion_wins": 9,
+    "champion_losses": 5,
+    "champion_points_for": 1500.06,
+    "runner_up_team_name": "Wizards of Koz",
+    "runner_up_manager": "Blake",
+    "third_place_team_name": "The Hullabaloos",
+    "third_place_manager": "efuego93"
   }
 ]

@@ -12,6 +12,10 @@ import type {
   SeasonScoringTrend,
   WeeklyScoreDistribution,
   TopPerformance,
+  MarginGame,
+  LuckIndex,
+  ManagerConsistency,
+  PlayoffStats,
 } from "@/types/stats";
 
 // Type assertions for imported JSON
@@ -239,6 +243,240 @@ export function getChampionsChartData() {
     losses: c.champion_losses,
     record: `${c.champion_wins}-${c.champion_losses}`,
   }));
+}
+
+// Get blowout games (largest margins)
+export function getBlowouts(limit = 10): MarginGame[] {
+  return matchups
+    .filter(
+      (m) =>
+        m.team1_score > 0 &&
+        m.team2_score > 0 &&
+        isVisibleManager(m.team1_manager) &&
+        isVisibleManager(m.team2_manager)
+    )
+    .map((m) => ({
+      season: m.season_year,
+      week: m.week,
+      team1: m.team1_name,
+      team1Manager: m.team1_manager,
+      team1Score: m.team1_score,
+      team2: m.team2_name,
+      team2Manager: m.team2_manager,
+      team2Score: m.team2_score,
+      margin: Math.abs(m.team1_score - m.team2_score),
+      matchupType: m.matchup_type,
+      winner: m.winner,
+    }))
+    .sort((a, b) => b.margin - a.margin)
+    .slice(0, limit);
+}
+
+// Get closest games (smallest margins, excluding ties)
+export function getClosestGames(limit = 10): MarginGame[] {
+  return matchups
+    .filter(
+      (m) =>
+        m.team1_score > 0 &&
+        m.team2_score > 0 &&
+        !m.is_tied &&
+        isVisibleManager(m.team1_manager) &&
+        isVisibleManager(m.team2_manager)
+    )
+    .map((m) => ({
+      season: m.season_year,
+      week: m.week,
+      team1: m.team1_name,
+      team1Manager: m.team1_manager,
+      team1Score: m.team1_score,
+      team2: m.team2_name,
+      team2Manager: m.team2_manager,
+      team2Score: m.team2_score,
+      margin: Math.abs(m.team1_score - m.team2_score),
+      matchupType: m.matchup_type,
+      winner: m.winner,
+    }))
+    .sort((a, b) => a.margin - b.margin)
+    .slice(0, limit);
+}
+
+// Get luck index for all managers
+export function getLuckIndex(): LuckIndex[] {
+  const managerData = new Map<
+    string,
+    { wins: number; games: number; pointsFor: number }
+  >();
+
+  // Calculate league average points per game
+  let totalPoints = 0;
+  let totalGames = 0;
+
+  matchups.forEach((m) => {
+    if (
+      m.team1_score > 0 &&
+      m.matchup_type === "regular" &&
+      isVisibleManager(m.team1_manager)
+    ) {
+      const data = managerData.get(m.team1_manager) || {
+        wins: 0,
+        games: 0,
+        pointsFor: 0,
+      };
+      data.games += 1;
+      data.pointsFor += m.team1_score;
+      if (m.winner === m.team1_name) data.wins += 1;
+      managerData.set(m.team1_manager, data);
+      totalPoints += m.team1_score;
+      totalGames += 1;
+    }
+    if (
+      m.team2_score > 0 &&
+      m.matchup_type === "regular" &&
+      isVisibleManager(m.team2_manager)
+    ) {
+      const data = managerData.get(m.team2_manager) || {
+        wins: 0,
+        games: 0,
+        pointsFor: 0,
+      };
+      data.games += 1;
+      data.pointsFor += m.team2_score;
+      if (m.winner === m.team2_name) data.wins += 1;
+      managerData.set(m.team2_manager, data);
+      totalPoints += m.team2_score;
+      totalGames += 1;
+    }
+  });
+
+  const leagueAvgPPG = totalPoints / totalGames;
+
+  return Array.from(managerData.entries())
+    .filter(([, data]) => data.games >= 10) // Minimum 10 games
+    .map(([manager, data]) => {
+      const managerAvgPPG = data.pointsFor / data.games;
+      const expectedWinRate = managerAvgPPG / (2 * leagueAvgPPG);
+      const expectedWins = expectedWinRate * data.games;
+      return {
+        manager,
+        luck: data.wins - expectedWins,
+        actualWins: data.wins,
+        expectedWins: Math.round(expectedWins * 10) / 10,
+        gamesPlayed: data.games,
+        pointsFor: data.pointsFor,
+      };
+    })
+    .sort((a, b) => b.luck - a.luck);
+}
+
+// Get scoring consistency (standard deviation of scores)
+export function getManagerConsistency(): ManagerConsistency[] {
+  const managerScores = new Map<string, number[]>();
+
+  matchups.forEach((m) => {
+    if (m.team1_score > 0 && isVisibleManager(m.team1_manager)) {
+      const scores = managerScores.get(m.team1_manager) || [];
+      scores.push(m.team1_score);
+      managerScores.set(m.team1_manager, scores);
+    }
+    if (m.team2_score > 0 && isVisibleManager(m.team2_manager)) {
+      const scores = managerScores.get(m.team2_manager) || [];
+      scores.push(m.team2_score);
+      managerScores.set(m.team2_manager, scores);
+    }
+  });
+
+  return Array.from(managerScores.entries())
+    .filter(([, scores]) => scores.length >= 10) // Minimum 10 games
+    .map(([manager, scores]) => {
+      const avgScore = scores.reduce((a, b) => a + b, 0) / scores.length;
+      const variance =
+        scores.reduce((acc, s) => acc + Math.pow(s - avgScore, 2), 0) /
+        scores.length;
+      const stdDev = Math.sqrt(variance);
+      return {
+        manager,
+        avgScore,
+        stdDev,
+        gamesPlayed: scores.length,
+      };
+    })
+    .sort((a, b) => a.stdDev - b.stdDev); // Most consistent first
+}
+
+// Get playoff performance stats
+export function getPlayoffStats(): PlayoffStats[] {
+  const managerPlayoff = new Map<
+    string,
+    { wins: number; losses: number; points: number; games: number }
+  >();
+  const managerRegular = new Map<
+    string,
+    { wins: number; losses: number; points: number; games: number }
+  >();
+
+  matchups.forEach((m) => {
+    const isPlayoff = m.matchup_type === "playoff";
+
+    // Team 1
+    if (m.team1_score > 0 && isVisibleManager(m.team1_manager)) {
+      const map = isPlayoff ? managerPlayoff : managerRegular;
+      const data = map.get(m.team1_manager) || {
+        wins: 0,
+        losses: 0,
+        points: 0,
+        games: 0,
+      };
+      data.points += m.team1_score;
+      data.games += 1;
+      if (m.winner === m.team1_name) data.wins += 1;
+      else if (!m.is_tied) data.losses += 1;
+      map.set(m.team1_manager, data);
+    }
+
+    // Team 2
+    if (m.team2_score > 0 && isVisibleManager(m.team2_manager)) {
+      const map = isPlayoff ? managerPlayoff : managerRegular;
+      const data = map.get(m.team2_manager) || {
+        wins: 0,
+        losses: 0,
+        points: 0,
+        games: 0,
+      };
+      data.points += m.team2_score;
+      data.games += 1;
+      if (m.winner === m.team2_name) data.wins += 1;
+      else if (!m.is_tied) data.losses += 1;
+      map.set(m.team2_manager, data);
+    }
+  });
+
+  const results: PlayoffStats[] = [];
+
+  managerPlayoff.forEach((playoff, manager) => {
+    if (playoff.games < 2) return; // Minimum 2 playoff games
+    const regular = managerRegular.get(manager) || {
+      wins: 0,
+      losses: 0,
+      points: 0,
+      games: 0,
+    };
+    const playoffPPG = playoff.points / playoff.games;
+    const regularPPG = regular.games > 0 ? regular.points / regular.games : 0;
+
+    results.push({
+      manager,
+      playoffWins: playoff.wins,
+      playoffLosses: playoff.losses,
+      playoffPPG,
+      regularWins: regular.wins,
+      regularLosses: regular.losses,
+      regularPPG,
+      clutchRating: playoffPPG - regularPPG,
+      playoffGames: playoff.games,
+    });
+  });
+
+  return results.sort((a, b) => b.clutchRating - a.clutchRating);
 }
 
 // Chart theme colors matching the site design

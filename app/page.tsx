@@ -14,6 +14,7 @@ const owners = [
 ];
 
 const championships = [
+  { year: 2024, team: "Jone crib - Tyler Falcone" },
   { year: 2024, team: "Brianna's Red Carpet - Ryan Jenks" },
   { year: 2023, team: "Anthony's Nifty Team - Anthony Bove" },
   { year: 2022, team: "Brianna's Red Carpet - Ryan Jenks" },
@@ -33,7 +34,7 @@ const championships = [
 const leagueStats = {
   championships: 6,
   teams: 12,
-  seasons: 12,
+  seasons: 13,
 };
 
 const leagueRecords = {
@@ -43,12 +44,12 @@ const leagueRecords = {
 };
 
 const currentChampion = {
-  year: 2024,
-  name: "Ryan Jenks",
-  team: "Brianna's Red Carpet",
+  year: 2025,
+  name:  "Tyler Falcone",
+  team: "Jone crib",
   avatar: "/placeholder-owner.svg",
-  record: "10-5",
-  avgPoints: "124.7",
+  record: "9-5",
+  avgPoints: "107.1",
 };
 
 export default function Home() {
@@ -236,7 +237,7 @@ export default function Home() {
                 <div className="bg-white rounded-xl p-6 shadow-md hover:shadow-lg transition-shadow">
                   <div className="text-center">
                     <div className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2">
-                      Avg Points
+                      Regular Season Avg Points
                     </div>
                     <div
                       className="text-4xl font-bold"
@@ -382,7 +383,7 @@ export default function Home() {
         </section>
 
         {/* Hall of Champions and League Records Section */}
-        <div id="champions" className="grid md:grid-cols-2 gap-12 md:gap-16 mb-20 scroll-mt-20">
+        <div id="champions" className="flex justify-center mb-20 scroll-mt-20">
           {/* Hall of Champions */}
           <section className="bg-white rounded-xl p-8 shadow-md">
             <h2

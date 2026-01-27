@@ -5,8 +5,6 @@ import { useState } from "react";
 import {
   BarChart,
   Bar,
-  LineChart,
-  Line,
   AreaChart,
   Area,
   XAxis,
@@ -18,8 +16,6 @@ import {
   Legend,
 } from "recharts";
 import {
-  champions,
-  standings,
   getSeasons,
   getSeasonStandings,
   getManagerStats,
@@ -29,6 +25,11 @@ import {
   getLowestPerformances,
   getVisibleH2HRecords,
   getChampionsChartData,
+  getBlowouts,
+  getClosestGames,
+  getLuckIndex,
+  getManagerConsistency,
+  getPlayoffStats,
   chartColors,
 } from "@/lib/stats-data";
 
@@ -121,6 +122,11 @@ export default function StatsPage() {
   const lowestPerformances = getLowestPerformances(10);
   const h2hRecords = getVisibleH2HRecords();
   const seasonStandings = getSeasonStandings(selectedSeason);
+  const blowouts = getBlowouts(10);
+  const closestGames = getClosestGames(10);
+  const luckIndex = getLuckIndex();
+  const consistency = getManagerConsistency();
+  const playoffStats = getPlayoffStats();
 
   // Summary stats
   const totalGames = scoringTrends.reduce((acc, s) => acc + s.totalGames, 0);
@@ -262,6 +268,342 @@ export default function StatsPage() {
                 </tbody>
               </table>
             </div>
+          </ChartCard>
+        </section>
+
+        {/* Blowouts & Closest Games */}
+        <div className="grid md:grid-cols-2 gap-8 mb-12">
+          {/* Blowouts */}
+          <ChartCard title="BIGGEST BLOWOUTS" subtitle="Largest victory margins">
+            <div className="space-y-3">
+              {blowouts.map((game, index) => (
+                <div
+                  key={index}
+                  className="flex items-center gap-3 pb-3 border-b border-gray-100 last:border-0"
+                >
+                  <div
+                    className="text-2xl font-bold w-8"
+                    style={{
+                      fontFamily: "var(--font-display)",
+                      color: index < 3 ? chartColors.primary : chartColors.tertiary,
+                    }}
+                  >
+                    {index + 1}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="font-semibold text-gray-800 truncate text-sm">
+                      {game.team1Score > game.team2Score ? game.team1 : game.team2}
+                    </div>
+                    <div className="text-xs text-gray-500">
+                      vs {game.team1Score > game.team2Score ? game.team2 : game.team1}
+                    </div>
+                    <div className="text-xs text-gray-400">
+                      {game.season} Wk {game.week}
+                      {game.matchupType === "playoff" && (
+                        <span className="ml-1 text-yellow-600">(non-regular season)</span>
+                      )}
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div
+                      className="text-lg font-bold"
+                      style={{ fontFamily: "var(--font-display)", color: chartColors.primary }}
+                    >
+                      +{game.margin.toFixed(1)}
+                    </div>
+                    <div className="text-xs text-gray-500">
+                      {Math.max(game.team1Score, game.team2Score).toFixed(1)}-
+                      {Math.min(game.team1Score, game.team2Score).toFixed(1)}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </ChartCard>
+
+          {/* Closest Games */}
+          <ChartCard title="NAIL BITERS" subtitle="Closest finishes">
+            <div className="space-y-3">
+              {closestGames.map((game, index) => (
+                <div
+                  key={index}
+                  className="flex items-center gap-3 pb-3 border-b border-gray-100 last:border-0"
+                >
+                  <div
+                    className="text-2xl font-bold w-8"
+                    style={{
+                      fontFamily: "var(--font-display)",
+                      color: index < 3 ? "#dc2626" : chartColors.tertiary,
+                    }}
+                  >
+                    {index + 1}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="font-semibold text-gray-800 truncate text-sm">
+                      {game.winner}
+                    </div>
+                    <div className="text-xs text-gray-500">
+                      vs {game.winner === game.team1 ? game.team2 : game.team1}
+                    </div>
+                    <div className="text-xs text-gray-400">
+                      {game.season} Wk {game.week}
+                      {game.matchupType === "playoff" && (
+                        <span className="ml-1 text-yellow-600">(non-regular season)</span>
+                      )}
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div
+                      className="text-lg font-bold"
+                      style={{ fontFamily: "var(--font-display)", color: "#dc2626" }}
+                    >
+                      +{game.margin.toFixed(2)}
+                    </div>
+                    <div className="text-xs text-gray-500">
+                      {Math.max(game.team1Score, game.team2Score).toFixed(1)}-
+                      {Math.min(game.team1Score, game.team2Score).toFixed(1)}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </ChartCard>
+        </div>
+
+        {/* Luck Index */}
+        <section className="mb-12">
+          <ChartCard
+            title="LUCK INDEX"
+            subtitle="Actual wins vs expected wins based on scoring"
+          >
+            <div className="h-80 md:h-96">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart
+                  data={luckIndex.map((l) => ({
+                    ...l,
+                    fill: l.luck >= 0 ? "#22c55e" : "#dc2626",
+                  }))}
+                  layout="vertical"
+                  margin={{ top: 10, right: 30, left: 80, bottom: 10 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" stroke={chartColors.grid} vertical />
+                  <XAxis
+                    type="number"
+                    domain={["dataMin - 1", "dataMax + 1"]}
+                    tick={{ fontSize: 11 }}
+                    tickFormatter={(v) => (v > 0 ? `+${v}` : v.toString())}
+                  />
+                  <YAxis
+                    type="category"
+                    dataKey="manager"
+                    tick={{ fontSize: 12 }}
+                    width={75}
+                    axisLine={false}
+                    tickLine={false}
+                  />
+                  <Tooltip
+                    content={({ active, payload }) => {
+                      if (!active || !payload || !payload[0]) return null;
+                      const data = payload[0].payload;
+                      return (
+                        <div className="bg-white p-3 rounded-lg shadow-lg border border-gray-200">
+                          <p className="font-bold text-gray-800">{data.manager}</p>
+                          <p className="text-sm text-gray-600">
+                            Actual Wins: {data.actualWins}
+                          </p>
+                          <p className="text-sm text-gray-600">
+                            Expected Wins: {data.expectedWins}
+                          </p>
+                          <p
+                            className="text-sm font-semibold"
+                            style={{ color: data.luck >= 0 ? "#22c55e" : "#dc2626" }}
+                          >
+                            Luck: {data.luck >= 0 ? "+" : ""}
+                            {data.luck.toFixed(1)} wins
+                          </p>
+                          <p className="text-xs text-gray-400 mt-1">
+                            {data.gamesPlayed} games played
+                          </p>
+                        </div>
+                      );
+                    }}
+                  />
+                  <Bar dataKey="luck" radius={[0, 4, 4, 0]}>
+                    {luckIndex.map((entry, index) => (
+                      <Cell
+                        key={`cell-${index}`}
+                        fill={entry.luck >= 0 ? "#22c55e" : "#dc2626"}
+                      />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+            <p className="text-xs text-gray-500 mt-4 text-center">
+              Positive = won more than expected based on scoring | Negative = unlucky with matchups
+            </p>
+          </ChartCard>
+        </section>
+
+        {/* Scoring Consistency */}
+        <section className="mb-12">
+          <ChartCard
+            title="SCORING CONSISTENCY"
+            subtitle="Standard deviation of weekly scores (lower = more consistent)"
+          >
+            <div className="h-80 md:h-96">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart
+                  data={consistency}
+                  layout="vertical"
+                  margin={{ top: 10, right: 30, left: 80, bottom: 10 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" stroke={chartColors.grid} vertical />
+                  <XAxis
+                    type="number"
+                    tick={{ fontSize: 11 }}
+                    domain={[0, "dataMax + 2"]}
+                  />
+                  <YAxis
+                    type="category"
+                    dataKey="manager"
+                    tick={{ fontSize: 12 }}
+                    width={75}
+                    axisLine={false}
+                    tickLine={false}
+                  />
+                  <Tooltip
+                    content={({ active, payload }) => {
+                      if (!active || !payload || !payload[0]) return null;
+                      const data = payload[0].payload;
+                      return (
+                        <div className="bg-white p-3 rounded-lg shadow-lg border border-gray-200">
+                          <p className="font-bold text-gray-800">{data.manager}</p>
+                          <p className="text-sm text-gray-600">
+                            Avg Score: {data.avgScore.toFixed(1)}
+                          </p>
+                          <p className="text-sm" style={{ color: chartColors.primary }}>
+                            Std Dev: ±{data.stdDev.toFixed(1)} pts
+                          </p>
+                          <p className="text-xs text-gray-400 mt-1">
+                            {data.gamesPlayed} games played
+                          </p>
+                        </div>
+                      );
+                    }}
+                  />
+                  <Bar dataKey="stdDev" name="Std Dev" radius={[0, 4, 4, 0]}>
+                    {consistency.map((entry, index) => (
+                      <Cell
+                        key={`cell-${index}`}
+                        fill={index < 3 ? chartColors.primary : chartColors.secondary}
+                      />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+            <div className="flex justify-center gap-8 mt-4 text-xs">
+              <div className="flex items-center gap-2">
+                <div
+                  className="w-3 h-3 rounded"
+                  style={{ background: chartColors.primary }}
+                />
+                <span className="text-gray-600">Most Consistent (Top 3)</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div
+                  className="w-3 h-3 rounded"
+                  style={{ background: chartColors.secondary }}
+                />
+                <span className="text-gray-600">Boom or Bust</span>
+              </div>
+            </div>
+          </ChartCard>
+        </section>
+
+        {/* Playoff Performance */}
+        <section className="mb-12">
+          <ChartCard
+            title="PLAYOFF PERFORMANCE"
+            subtitle="Regular season vs playoff stats comparison"
+          >
+            <div className="overflow-x-auto -mx-6 md:-mx-8 px-6 md:px-8">
+              <table className="w-full min-w-[600px]">
+                <thead>
+                  <tr className="border-b-2 border-gray-200">
+                    <th className="text-left py-3 px-2 text-xs font-semibold text-gray-600 uppercase">
+                      Manager
+                    </th>
+                    <th className="text-center py-3 px-2 text-xs font-semibold text-gray-600 uppercase">
+                      Playoff W-L
+                    </th>
+                    <th className="text-center py-3 px-2 text-xs font-semibold text-gray-600 uppercase">
+                      Playoff PPG
+                    </th>
+                    <th className="text-center py-3 px-2 text-xs font-semibold text-gray-600 uppercase">
+                      Reg PPG
+                    </th>
+                    <th className="text-center py-3 px-2 text-xs font-semibold text-gray-600 uppercase">
+                      Clutch +/-
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {playoffStats.map((stats, index) => (
+                    <tr
+                      key={stats.manager}
+                      className="border-b border-gray-100 hover:bg-gray-50 transition-colors"
+                    >
+                      <td className="py-3 px-2">
+                        <div className="flex items-center gap-2">
+                          <span
+                            className="font-bold w-6"
+                            style={{
+                              fontFamily: "var(--font-display)",
+                              color: index < 3 ? chartColors.primary : chartColors.tertiary,
+                            }}
+                          >
+                            {index + 1}
+                          </span>
+                          <span className="font-medium text-gray-800">
+                            {stats.manager}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="text-center py-3 px-2 font-semibold text-gray-800">
+                        {stats.playoffWins}-{stats.playoffLosses}
+                      </td>
+                      <td className="text-center py-3 px-2 text-gray-800">
+                        {stats.playoffPPG.toFixed(1)}
+                      </td>
+                      <td className="text-center py-3 px-2 text-gray-600">
+                        {stats.regularPPG.toFixed(1)}
+                      </td>
+                      <td className="text-center py-3 px-2">
+                        <span
+                          className="font-semibold"
+                          style={{
+                            color:
+                              stats.clutchRating > 0
+                                ? "#22c55e"
+                                : stats.clutchRating < 0
+                                ? "#dc2626"
+                                : chartColors.tertiary,
+                          }}
+                        >
+                          {stats.clutchRating > 0 ? "+" : ""}
+                          {stats.clutchRating.toFixed(1)}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <p className="text-xs text-gray-500 mt-4 text-center">
+              Clutch Rating = Playoff PPG - Regular Season PPG | Positive = performs better in playoffs
+            </p>
           </ChartCard>
         </section>
 
