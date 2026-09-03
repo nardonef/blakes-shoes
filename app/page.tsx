@@ -329,22 +329,22 @@ export default function Home() {
                 <div className="flex flex-col items-center">
                   <div className="w-20 h-20 bg-gray-100 rounded-xl flex flex-col items-center justify-center shadow-sm">
                     <div className="text-xs font-bold text-gray-600 uppercase mb-1">
-                      JUNE
+                      SEPT
                     </div>
                     <div
                       className="text-3xl font-bold"
                       style={{ fontFamily: "var(--font-display)", color: "var(--foreground)" }}
                     >
-                      1
+                      5
                     </div>
                   </div>
                 </div>
                 <div className="flex-1">
                   <div className="font-bold text-gray-800 mb-2 text-lg">
-                    Owners Meeting
+                    Draft Day
                   </div>
                   <div className="text-sm text-gray-600 mb-1">
-                    <span className="font-semibold">TIME:</span> TBD
+                    <span className="font-semibold">TIME:</span> 3:00 PM
                   </div>
                   <div className="text-sm text-gray-600">
                     <span className="font-semibold">LOCATION:</span> TBD
