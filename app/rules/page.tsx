@@ -23,6 +23,21 @@ const officialRules = [
   "All draft pick trades must include keepers.",
 ];
 
+const draftLotteryOrder = [
+  { pick: 1, owner: "Anthony Bove", team: "Anthony's Nifty Team" },
+  { pick: 2, owner: "Bryan Yatsko", team: "Bryan Yatsko's Team" },
+  { pick: 3, owner: "Jake Slagle", team: "POSTGRADAPARTMENTS.COM" },
+  { pick: 4, owner: "Peter Klensch", team: "All Business Pete" },
+  { pick: 5, owner: "Matt Borba", team: "Not Popular Boys" },
+  { pick: 6, owner: "Tyler Falcone", team: "Jone Crib" },
+  { pick: 7, owner: "Ryan Kaplan", team: "Jew Crew" },
+  { pick: 8, owner: "Ryan Curran", team: "Loose Cannons" },
+  { pick: 9, owner: "Ryan Jenks", team: "Brianna's Red Carpet" },
+  { pick: 10, owner: "Frankie Nardone", team: "Peter is Corrupt" },
+  { pick: 11, owner: "Blake Kozloski", team: "Wizards of Koz" },
+  { pick: 12, owner: "Eric Rios", team: "The Hullabaloos" },
+];
+
 function formatDate(dateString: string) {
   return new Date(`${dateString}T00:00:00`).toLocaleDateString("en-US", {
     month: "long",
@@ -136,6 +151,117 @@ export default function RulesPage() {
           </div>
         </section>
 
+        {/* Town Hall Meeting Notes */}
+        <section className="mb-16">
+          <h2 className="text-2xl md:text-3xl font-bold text-gray-800 mb-2 uppercase">
+            Town Hall Meeting Notes
+          </h2>
+          <p className="text-xs text-gray-500 mb-6">
+            Posted by Commissioner Peter Klensch, Esq. in the league group chat.
+          </p>
+          <div className="bg-white rounded-xl shadow-md p-6 md:p-8">
+            <h3
+              className="text-xl md:text-2xl font-bold mb-1"
+              style={{ fontFamily: "var(--font-display)", color: "var(--foreground)" }}
+            >
+              June 1, 2026 — First Annual Bicentennial Memorial J1 Town Hall
+            </h3>
+            <p className="text-xs text-gray-500 mb-6">
+              League changes and decisions announced after the meeting.
+            </p>
+
+            <div className="space-y-8">
+              <div>
+                <h4 className="text-sm font-bold uppercase tracking-wide text-gray-500 mb-3">
+                  Part 1 — Rule Changes
+                </h4>
+                <RuleList
+                  items={[
+                    "Trade deadline moved from November 28 to November 14.",
+                    "Interceptions changed from -1 to -2.",
+                    "All missed kicks (including extra points) changed from 0 to -1.",
+                    "Total bench spots changed from 7 to 6 (still 1 IR spot).",
+                  ]}
+                />
+              </div>
+
+              <div>
+                <h4 className="text-sm font-bold uppercase tracking-wide text-gray-500 mb-3">
+                  Part 2 — Weekly Loser Parlay
+                </h4>
+                <p className="text-sm text-gray-700 leading-relaxed">
+                  Starting this season, the lowest-scoring player each regular season week owes $10 toward an
+                  NFL parlay. Any player may submit one optional leg to AB, the Weekly Loser Parlay Czar —
+                  submissions are due by noon each Sunday, and AB places the parlay. If it hits, the league
+                  decides what to do with the winnings then; a smaller payout goes toward a future destination
+                  draft or league dinner, a larger one gets split up.
+                </p>
+              </div>
+
+              <div>
+                <h4 className="text-sm font-bold uppercase tracking-wide text-gray-500 mb-3">
+                  Part 3 — Sacko Punishment
+                </h4>
+                <p className="text-sm text-gray-700 leading-relaxed">
+                  Starting this season, the Sacko chooses between two options: plan the entire draft day
+                  (food, drink, location, draft board, printed single-sided ranking sheets, etc. — costs
+                  covered by the league except printing), or take a &quot;legit&quot; punishment instead.
+                </p>
+              </div>
+
+              <div>
+                <h4 className="text-sm font-bold uppercase tracking-wide text-gray-500 mb-3">
+                  Part 4 — Other Announcements
+                </h4>
+                <RuleList
+                  items={[
+                    "A season-ending League Dinner is under consideration — details TBD.",
+                    "Lil Ant named the league's 1st Commissioner's Apprentice, starting with \"leather working.\"",
+                    "The league was officially renewed and mock draft season is underway.",
+                  ]}
+                />
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Draft Order */}
+        <section className="mb-16">
+          <h2 className="text-2xl md:text-3xl font-bold text-gray-800 mb-2 uppercase">
+            Draft Order
+          </h2>
+          <p className="text-xs text-gray-500 mb-6">
+            Result of the draft-position lottery.
+          </p>
+          <div className="bg-white rounded-xl shadow-md overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-gray-200 bg-gray-50">
+                    <th className="text-left font-semibold text-gray-600 uppercase text-xs tracking-wide px-4 py-3">Pick</th>
+                    <th className="text-left font-semibold text-gray-600 uppercase text-xs tracking-wide px-4 py-3">Owner</th>
+                    <th className="text-left font-semibold text-gray-600 uppercase text-xs tracking-wide px-4 py-3">Team</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {draftLotteryOrder.map((slot) => (
+                    <tr key={slot.pick} className="border-b border-gray-100 last:border-0 hover:bg-gray-50">
+                      <td
+                        className="px-4 py-3 font-bold"
+                        style={{ fontFamily: "var(--font-display)", color: "var(--accent)" }}
+                      >
+                        {slot.pick}
+                      </td>
+                      <td className="px-4 py-3 text-gray-800 font-medium">{slot.owner}</td>
+                      <td className="px-4 py-3 text-gray-600">{slot.team}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
         {/* Verified League Settings */}
         <section className="mb-16">
           <h2 className="text-2xl md:text-3xl font-bold text-gray-800 mb-2 uppercase">
@@ -221,14 +347,29 @@ export default function RulesPage() {
             League Bylaws
           </h2>
           <p className="text-xs text-gray-500 mb-6">
-            Not recorded in the league data — add the real details below.
+            Dashed boxes are still unconfirmed — add the real details where you see one.
           </p>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <RuleCard title="Roster Requirements">
-              <TbdBlock>Starting lineup, bench size, and IR slots — add roster positions here.</TbdBlock>
+              <RuleList
+                items={[
+                  "Starters: QB, 2 RB, 2 WR, TE, FLEX, K, DEF.",
+                  "Bench spots: 6.",
+                  "IR spots: 1.",
+                ]}
+              />
             </RuleCard>
             <RuleCard title="Scoring Settings">
-              <TbdBlock>Points per reception, passing/rushing/receiving multipliers, etc. — add scoring rules here.</TbdBlock>
+              <RuleList
+                items={[
+                  "Half-PPR (0.5 points per reception).",
+                  "Interceptions: -2.",
+                  "Missed kicks, including extra points: -1.",
+                ]}
+              />
+              <div className="mt-4">
+                <TbdBlock>Full scoring breakdown (TD/yardage points, bonuses, etc.) not yet recorded — add here.</TbdBlock>
+              </div>
             </RuleCard>
             <RuleCard title="Dues & Payouts">
               <RuleList
@@ -257,11 +398,18 @@ export default function RulesPage() {
                   "The league runs a Loser's Bracket (consolation bracket) each season.",
                   "The \"Sacko\" (last place) is the team with the worst regular season record — not necessarily the Loser's Bracket's ultimate loser.",
                   "Winning the Loser's Bracket earns the best odds in next year's draft-position lottery.",
+                  "Sacko Punishment: the Sacko chooses between planning the entire draft day (food, drink, location, draft board, printed single-sided ranking sheets, etc. — costs covered by the league except printing) or taking a \"legit\" punishment instead.",
                 ]}
               />
-              <div className="mt-4">
-                <TbdBlock>The actual Sacko punishment isn&apos;t recorded yet — add it here.</TbdBlock>
-              </div>
+            </RuleCard>
+            <RuleCard title="Weekly Loser Parlay">
+              <RuleList
+                items={[
+                  "The lowest scorer each regular season week owes $10 toward an NFL parlay.",
+                  "Any player may submit one optional leg to the Weekly Loser Parlay Czar (AB) by noon each Sunday.",
+                  "If the parlay hits, the league decides how to use or split the winnings.",
+                ]}
+              />
             </RuleCard>
             <RuleCard title="Trades & Collusion">
               <TbdBlock>Trade review/veto process and collusion policy — add here.</TbdBlock>
