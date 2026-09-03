@@ -68,6 +68,16 @@ function TbdBlock({ children }: { children: React.ReactNode }) {
   );
 }
 
+function RuleList({ items }: { items: string[] }) {
+  return (
+    <ul className="list-disc list-inside space-y-2 text-sm text-gray-700 leading-relaxed">
+      {items.map((item, index) => (
+        <li key={index}>{item}</li>
+      ))}
+    </ul>
+  );
+}
+
 export default function RulesPage() {
   return (
     <div className="min-h-screen" style={{ background: "var(--background)" }}>
@@ -221,10 +231,37 @@ export default function RulesPage() {
               <TbdBlock>Points per reception, passing/rushing/receiving multipliers, etc. — add scoring rules here.</TbdBlock>
             </RuleCard>
             <RuleCard title="Dues & Payouts">
-              <TbdBlock>Buy-in amount and prize split for 1st/2nd/3rd and any side pots — add here.</TbdBlock>
+              <RuleList
+                items={[
+                  "League dues: $200 per team.",
+                  "Weekly high roller earns a bonus payout.",
+                  "Regular season champion gets their buy-in back.",
+                  "3rd place gets their buy-in back.",
+                  "2nd place gets double their buy-in back.",
+                  "1st place takes the remainder of the pot.",
+                ]}
+              />
             </RuleCard>
-            <RuleCard title="Last Place Punishment">
-              <TbdBlock>The annual punishment for the last-place finisher — add here.</TbdBlock>
+            <RuleCard title="Keeper Rules">
+              <RuleList
+                items={[
+                  "First-time keeper: cost is round-sensitive, based on where the player was drafted or picked up off waivers.",
+                  "A player kept before (already a keeper): cost is set by consensus ADP (Average Draft Position).",
+                  "Any draft-pick trade must include a keeper (Official Rule 1, above).",
+                ]}
+              />
+            </RuleCard>
+            <RuleCard title="Sacko & Loser's Bracket">
+              <RuleList
+                items={[
+                  "The league runs a Loser's Bracket (consolation bracket) each season.",
+                  "The \"Sacko\" (last place) is the team with the worst regular season record — not necessarily the Loser's Bracket's ultimate loser.",
+                  "Winning the Loser's Bracket earns the best odds in next year's draft-position lottery.",
+                ]}
+              />
+              <div className="mt-4">
+                <TbdBlock>The actual Sacko punishment isn&apos;t recorded yet — add it here.</TbdBlock>
+              </div>
             </RuleCard>
             <RuleCard title="Trades & Collusion">
               <TbdBlock>Trade review/veto process and collusion policy — add here.</TbdBlock>
