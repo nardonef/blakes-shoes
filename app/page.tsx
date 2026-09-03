@@ -118,7 +118,13 @@ export default function Home() {
             </Link>
 
             {/* Nav Links */}
-            <div className="flex items-center gap-6">
+            <div className="flex items-center gap-3">
+              <Link
+                href="/rules"
+                className="text-sm font-semibold px-4 py-2 rounded-lg transition-colors text-gray-700 hover:text-gray-900"
+              >
+                Rules
+              </Link>
               <Link
                 href="/stats"
                 className="text-sm font-semibold px-4 py-2 rounded-lg transition-colors text-white"
