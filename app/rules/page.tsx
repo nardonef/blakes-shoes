@@ -19,6 +19,10 @@ type LeagueSeason = {
 const seasons = leagueInfo as LeagueSeason[];
 const current = seasons[seasons.length - 1];
 
+const officialRules = [
+  "All draft pick trades must include keepers.",
+];
+
 function formatDate(dateString: string) {
   return new Date(`${dateString}T00:00:00`).toLocaleDateString("en-US", {
     month: "long",
@@ -99,6 +103,28 @@ export default function RulesPage() {
         <p className="text-xs md:text-sm font-semibold tracking-[0.2em] text-gray-500 uppercase text-center mb-12">
           Blake&apos;s Shoes &middot; {current.season_year} Season
         </p>
+
+        {/* Official Numbered Rules */}
+        <section className="mb-16">
+          <h2 className="text-2xl md:text-3xl font-bold text-gray-800 mb-6 uppercase">
+            Official Rules
+          </h2>
+          <div className="bg-white rounded-xl shadow-md p-6 md:p-8">
+            <ol className="space-y-4">
+              {officialRules.map((rule, index) => (
+                <li key={index} className="flex gap-4">
+                  <span
+                    className="font-bold text-lg shrink-0"
+                    style={{ fontFamily: "var(--font-display)", color: "var(--accent)" }}
+                  >
+                    {index + 1}.
+                  </span>
+                  <span className="text-gray-800 text-sm md:text-base pt-0.5">{rule}</span>
+                </li>
+              ))}
+            </ol>
+          </div>
+        </section>
 
         {/* Verified League Settings */}
         <section className="mb-16">
