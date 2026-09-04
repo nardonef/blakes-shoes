@@ -54,7 +54,7 @@ const currentChampion = {
   year: 2025,
   name:  "Tyler Falcone",
   team: "Jone crib",
-  avatar: "/placeholder-owner.svg",
+  avatar: "/owners/falcone.jpg",
   record: "9-5",
   avgPoints: "107.1",
 };
