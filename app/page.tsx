@@ -6,18 +6,18 @@ import Image from "next/image";
 
 // Data structure matching the mockup
 const owners = [
-  { name: "Tyler Falcone", team: "Jone crib", image: "/placeholder-owner.svg" },
-  { name: "Blake Kozloski", team: "Wizards of Koz", image: "/placeholder-owner.svg" },
-  { name: "Eric Rios", team: "The Hullabaloos", image: "/placeholder-owner.svg" },
-  { name: "Ryan Jenks", team: "Brianna's Red Carpet", image: "/placeholder-owner.svg" },
-  { name: "Frankie Nardone", team: "Peter is Corrupt", image: "/placeholder-owner.svg" },
-  { name: "Matt Borba", team: "Not Popular Boys", image: "/placeholder-owner.svg" },
-  { name: "Jake Slagle", team: "POSTGRADAPARTMENTS.COM", image: "/placeholder-owner.svg" },
-  { name: "Bryan Yatsko", team: "Bryan Yatsko's Team", image: "/placeholder-owner.svg" },
-  { name: "Ryan Curran", team: "Loose Cannons", image: "/placeholder-owner.svg" },
-  { name: "Peter Klensch", team: "All Business Pete", image: "/placeholder-owner.svg" },
-  { name: "Anthony Bove", team: "Anthony's Nifty Team", image: "/placeholder-owner.svg" },
-  { name: "Ryan Kaplan", team: "Jew Crew", image: "/placeholder-owner.svg" },
+  { name: "Tyler Falcone", team: "Jone crib", image: "/owners/falcone.jpg" },
+  { name: "Blake Kozloski", team: "Wizards of Koz", image: "/owners/blake.jpg" },
+  { name: "Eric Rios", team: "The Hullabaloos", image: "/owners/rios.jpg" },
+  { name: "Ryan Jenks", team: "Brianna's Red Carpet", image: "/owners/jenks.jpg" },
+  { name: "Frankie Nardone", team: "Peter is Corrupt", image: "/owners/frankie.jpg" },
+  { name: "Matt Borba", team: "Not Popular Boys", image: "/owners/borba.jpg" },
+  { name: "Jake Slagle", team: "POSTGRADAPARTMENTS.COM", image: "/owners/jake.jpg" },
+  { name: "Bryan Yatsko", team: "Bryan Yatsko's Team", image: "/owners/yatsko.jpg" },
+  { name: "Ryan Curran", team: "Loose Cannons", image: "/owners/curran.jpg" },
+  { name: "Peter Klensch", team: "All Business Pete", image: "/owners/peter.jpg" },
+  { name: "Anthony Bove", team: "Anthony's Nifty Team", image: "/owners/anthony.jpg" },
+  { name: "Ryan Kaplan", team: "Jew Crew", image: "/owners/kaplan.jpg" },
 ];
 
 const championships = [
