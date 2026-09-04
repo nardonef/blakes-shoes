@@ -24,18 +24,18 @@ const officialRules = [
 ];
 
 const draftLotteryOrder = [
-  { pick: 1, owner: "Anthony Bove", team: "Anthony's Nifty Team" },
-  { pick: 2, owner: "Bryan Yatsko", team: "Bryan Yatsko's Team" },
-  { pick: 3, owner: "Jake Slagle", team: "POSTGRADAPARTMENTS.COM" },
-  { pick: 4, owner: "Peter Klensch", team: "All Business Pete" },
-  { pick: 5, owner: "Matt Borba", team: "Not Popular Boys" },
-  { pick: 6, owner: "Tyler Falcone", team: "Jone Crib" },
-  { pick: 7, owner: "Ryan Kaplan", team: "Jew Crew" },
-  { pick: 8, owner: "Ryan Curran", team: "Loose Cannons" },
-  { pick: 9, owner: "Ryan Jenks", team: "Brianna's Red Carpet" },
-  { pick: 10, owner: "Frankie Nardone", team: "Peter is Corrupt" },
-  { pick: 11, owner: "Blake Kozloski", team: "Wizards of Koz" },
-  { pick: 12, owner: "Eric Rios", team: "The Hullabaloos" },
+  { pick: 1, owner: "Anthony Bove", team: "Anthony's Nifty Team", keeper: "JSN", keeperCost: 3 },
+  { pick: 2, owner: "Bryan Yatsko", team: "Bryan Yatsko's Team", keeper: "Gibbs", keeperCost: 1 },
+  { pick: 3, owner: "Jake Slagle", team: "POSTGRADAPARTMENTS.COM", keeper: "Cook", keeperCost: 2 },
+  { pick: 4, owner: "Peter Klensch", team: "All Business Pete", keeper: "Maye", keeperCost: 10 },
+  { pick: 5, owner: "Matt Borba", team: "Not Popular Boys", keeper: "Puka", keeperCost: 1 },
+  { pick: 6, owner: "Tyler Falcone", team: "Jone Crib", keeper: "Chase", keeperCost: 1 },
+  { pick: 7, owner: "Ryan Kaplan", team: "Jew Crew", keeper: "Walker", keeperCost: 3 },
+  { pick: 8, owner: "Ryan Curran", team: "Loose Cannons", keeper: "Rice", keeperCost: 7 },
+  { pick: 9, owner: "Ryan Jenks", team: "Brianna's Red Carpet", keeper: "Javonte", keeperCost: 8 },
+  { pick: 10, owner: "Frankie Nardone", team: "Peter is Corrupt", keeper: "Skatt", keeperCost: 9 },
+  { pick: 11, owner: "Blake Kozloski", team: "Wizards of Koz", keeper: "Bijan", keeperCost: 1 },
+  { pick: 12, owner: "Eric Rios", team: "The Hullabaloos", keeper: "Henry", keeperCost: 2 },
 ];
 
 function formatDate(dateString: string) {
@@ -241,6 +241,8 @@ export default function RulesPage() {
                     <th className="text-left font-semibold text-gray-600 uppercase text-xs tracking-wide px-4 py-3">Pick</th>
                     <th className="text-left font-semibold text-gray-600 uppercase text-xs tracking-wide px-4 py-3">Owner</th>
                     <th className="text-left font-semibold text-gray-600 uppercase text-xs tracking-wide px-4 py-3">Team</th>
+                    <th className="text-left font-semibold text-gray-600 uppercase text-xs tracking-wide px-4 py-3">Keeper</th>
+                    <th className="text-left font-semibold text-gray-600 uppercase text-xs tracking-wide px-4 py-3">Cost</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -254,6 +256,8 @@ export default function RulesPage() {
                       </td>
                       <td className="px-4 py-3 text-gray-800 font-medium">{slot.owner}</td>
                       <td className="px-4 py-3 text-gray-600">{slot.team}</td>
+                      <td className="px-4 py-3 text-gray-800">{slot.keeper}</td>
+                      <td className="px-4 py-3 text-gray-600">{`Round ${slot.keeperCost}`}</td>
                     </tr>
                   ))}
                 </tbody>
