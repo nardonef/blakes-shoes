@@ -126,6 +126,12 @@ export default function Home() {
                 Rules
               </Link>
               <Link
+                href="/legacy"
+                className="text-sm font-semibold px-4 py-2 rounded-lg transition-colors text-gray-700 hover:text-gray-900"
+              >
+                Legacy
+              </Link>
+              <Link
                 href="/stats"
                 className="text-sm font-semibold px-4 py-2 rounded-lg transition-colors text-white"
                 style={{ background: "var(--accent)" }}
