@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Link from "next/link";
 import Image from "next/image";
 
 // Data structure matching the mockup
@@ -104,39 +103,6 @@ export default function Home() {
 
   return (
     <div className="min-h-screen" style={{ background: "var(--background)" }}>
-      {/* Navigation Bar */}
-      <nav className="sticky top-0 z-50 bg-white/90 backdrop-blur-sm border-b border-gray-200">
-        <div className="max-w-6xl mx-auto px-4 md:px-16">
-          <div className="flex items-center justify-between h-14">
-            {/* Logo */}
-            <Link
-              href="/"
-              className="text-xl font-bold tracking-tight"
-              style={{ fontFamily: "var(--font-display)", color: "var(--foreground)" }}
-            >
-              BLAKE'S SHOES
-            </Link>
-
-            {/* Nav Links */}
-            <div className="flex items-center gap-3">
-              <Link
-                href="/rules"
-                className="text-sm font-semibold px-4 py-2 rounded-lg transition-colors text-gray-700 hover:text-gray-900"
-              >
-                Rules
-              </Link>
-              <Link
-                href="/stats"
-                className="text-sm font-semibold px-4 py-2 rounded-lg transition-colors text-white"
-                style={{ background: "var(--accent)" }}
-              >
-                Stats
-              </Link>
-            </div>
-          </div>
-        </div>
-      </nav>
-
       <main className="max-w-6xl mx-auto px-8 md:px-16 py-12 md:py-16">
         {/* Header Section */}
         <section className="text-center mb-16">
