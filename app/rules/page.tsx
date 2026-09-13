@@ -1,4 +1,3 @@
-import Link from "next/link";
 import leagueInfo from "@/data/league_info.json";
 
 type LeagueSeason = {
@@ -97,27 +96,6 @@ export default function RulesPage() {
   return (
     <div className="min-h-screen" style={{ background: "var(--background)" }}>
       <main className="max-w-6xl mx-auto px-4 md:px-16 py-8 md:py-16">
-        {/* Back Link */}
-        <Link
-          href="/"
-          className="inline-flex items-center text-sm text-gray-600 hover:text-gray-900 mb-8 transition-colors"
-        >
-          <svg
-            className="w-4 h-4 mr-2"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M15 19l-7-7 7-7"
-            />
-          </svg>
-          Back to Home
-        </Link>
-
         {/* Page Title */}
         <h1
           className="text-5xl md:text-7xl font-bold mb-2 text-center"
