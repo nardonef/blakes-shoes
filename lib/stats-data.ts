@@ -2,6 +2,7 @@ import championsData from "@/data/champions.json";
 import standingsData from "@/data/standings.json";
 import h2hData from "@/data/h2h_records.json";
 import matchupsData from "@/data/matchups.json";
+import { CURRENT_OWNERS } from "@/lib/legacy-data";
 
 import type {
   Champion,
@@ -27,6 +28,16 @@ export const matchups = matchupsData as Matchup[];
 // Filter out hidden managers
 const isVisibleManager = (name: string) => name !== "--hidden--";
 
+// The Yahoo export keys managers by raw username, and the same person can
+// have used several different usernames over the years (e.g. "eric" and
+// "efuego93" are both Eric Rios). Resolve every raw name through the current
+// owners' alias table before aggregating so a manager isn't split across
+// multiple rows.
+export function resolveManagerName(name: string): string {
+  const owner = CURRENT_OWNERS.find((o) => o.aliases.includes(name));
+  return owner ? owner.name : name;
+}
+
 // Get unique seasons from data
 export function getSeasons(): number[] {
   const seasons = new Set<number>();
@@ -49,15 +60,16 @@ export function getManagerStats(): ManagerStats[] {
   standings
     .filter((s) => isVisibleManager(s.manager_name))
     .forEach((s) => {
-      const existing = managerMap.get(s.manager_name);
+      const manager = resolveManagerName(s.manager_name);
+      const existing = managerMap.get(manager);
       if (existing) {
         existing.totalWins += s.wins;
         existing.totalLosses += s.losses;
         existing.totalPointsFor += s.points_for;
         existing.seasonsPlayed += 1;
       } else {
-        managerMap.set(s.manager_name, {
-          manager: s.manager_name,
+        managerMap.set(manager, {
+          manager,
           totalWins: s.wins,
           totalLosses: s.losses,
           winPercentage: 0,
@@ -73,7 +85,7 @@ export function getManagerStats(): ManagerStats[] {
   champions
     .filter((c) => isVisibleManager(c.champion_manager))
     .forEach((c) => {
-      const manager = managerMap.get(c.champion_manager);
+      const manager = managerMap.get(resolveManagerName(c.champion_manager));
       if (manager) {
         manager.championships += 1;
       }
@@ -232,6 +244,18 @@ export function getVisibleH2HRecords(): H2HRecord[] {
   );
 }
 
+// Get one row per championship, newest season first, with the champion
+// manager's raw alias resolved to their current display name.
+export function getHallOfChampions(): { year: number; manager: string; team: string }[] {
+  return [...champions]
+    .sort((a, b) => b.season_year - a.season_year)
+    .map((c) => ({
+      year: c.season_year,
+      manager: resolveManagerName(c.champion_manager),
+      team: c.champion_team_name,
+    }));
+}
+
 // Get champion data for chart
 export function getChampionsChartData() {
   return champions.map((c) => ({
@@ -317,7 +341,8 @@ export function getLuckIndex(): LuckIndex[] {
       m.matchup_type === "regular" &&
       isVisibleManager(m.team1_manager)
     ) {
-      const data = managerData.get(m.team1_manager) || {
+      const manager = resolveManagerName(m.team1_manager);
+      const data = managerData.get(manager) || {
         wins: 0,
         games: 0,
         pointsFor: 0,
@@ -325,7 +350,7 @@ export function getLuckIndex(): LuckIndex[] {
       data.games += 1;
       data.pointsFor += m.team1_score;
       if (m.winner === m.team1_name) data.wins += 1;
-      managerData.set(m.team1_manager, data);
+      managerData.set(manager, data);
       totalPoints += m.team1_score;
       totalGames += 1;
     }
@@ -334,7 +359,8 @@ export function getLuckIndex(): LuckIndex[] {
       m.matchup_type === "regular" &&
       isVisibleManager(m.team2_manager)
     ) {
-      const data = managerData.get(m.team2_manager) || {
+      const manager = resolveManagerName(m.team2_manager);
+      const data = managerData.get(manager) || {
         wins: 0,
         games: 0,
         pointsFor: 0,
@@ -342,7 +368,7 @@ export function getLuckIndex(): LuckIndex[] {
       data.games += 1;
       data.pointsFor += m.team2_score;
       if (m.winner === m.team2_name) data.wins += 1;
-      managerData.set(m.team2_manager, data);
+      managerData.set(manager, data);
       totalPoints += m.team2_score;
       totalGames += 1;
     }
@@ -374,14 +400,16 @@ export function getManagerConsistency(): ManagerConsistency[] {
 
   matchups.forEach((m) => {
     if (m.team1_score > 0 && isVisibleManager(m.team1_manager)) {
-      const scores = managerScores.get(m.team1_manager) || [];
+      const manager = resolveManagerName(m.team1_manager);
+      const scores = managerScores.get(manager) || [];
       scores.push(m.team1_score);
-      managerScores.set(m.team1_manager, scores);
+      managerScores.set(manager, scores);
     }
     if (m.team2_score > 0 && isVisibleManager(m.team2_manager)) {
-      const scores = managerScores.get(m.team2_manager) || [];
+      const manager = resolveManagerName(m.team2_manager);
+      const scores = managerScores.get(manager) || [];
       scores.push(m.team2_score);
-      managerScores.set(m.team2_manager, scores);
+      managerScores.set(manager, scores);
     }
   });
 
@@ -419,8 +447,9 @@ export function getPlayoffStats(): PlayoffStats[] {
 
     // Team 1
     if (m.team1_score > 0 && isVisibleManager(m.team1_manager)) {
+      const manager = resolveManagerName(m.team1_manager);
       const map = isPlayoff ? managerPlayoff : managerRegular;
-      const data = map.get(m.team1_manager) || {
+      const data = map.get(manager) || {
         wins: 0,
         losses: 0,
         points: 0,
@@ -430,13 +459,14 @@ export function getPlayoffStats(): PlayoffStats[] {
       data.games += 1;
       if (m.winner === m.team1_name) data.wins += 1;
       else if (!m.is_tied) data.losses += 1;
-      map.set(m.team1_manager, data);
+      map.set(manager, data);
     }
 
     // Team 2
     if (m.team2_score > 0 && isVisibleManager(m.team2_manager)) {
+      const manager = resolveManagerName(m.team2_manager);
       const map = isPlayoff ? managerPlayoff : managerRegular;
-      const data = map.get(m.team2_manager) || {
+      const data = map.get(manager) || {
         wins: 0,
         losses: 0,
         points: 0,
@@ -446,7 +476,7 @@ export function getPlayoffStats(): PlayoffStats[] {
       data.games += 1;
       if (m.winner === m.team2_name) data.wins += 1;
       else if (!m.is_tied) data.losses += 1;
-      map.set(m.team2_manager, data);
+      map.set(manager, data);
     }
   });
 
