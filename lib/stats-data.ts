@@ -511,10 +511,10 @@ export function getPlayoffStats(): PlayoffStats[] {
 
 // Chart theme colors matching the site design
 export const chartColors = {
-  primary: "#2D5A3D", // slate accent
-  secondary: "#1a1a1a", // foreground
-  tertiary: "#9ca3af", // gray
-  background: "#f5f5f0", // warm beige
+  primary: "#2D5A3D", // accent
+  secondary: "#151515", // foreground
+  tertiary: "#b0b0aa", // muted line on dark
+  background: "#f5f5f0",
   card: "#ffffff",
-  grid: "#e5e7eb",
+  grid: "#e6e6e0", // hairline
 };
