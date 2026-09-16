@@ -19,7 +19,7 @@ export default function NavBar() {
         <Link
           href="/"
           className="py-3.5 text-[19px] md:text-[24px] tracking-[.02em] text-white"
-          style={{ fontFamily: "var(--font-display)" }}
+          style={{ fontFamily: "var(--font-bebas-neue)" }}
         >
           BLAKE&apos;S SHOES
           <span className="text-[var(--accent-light)]">.</span>
@@ -37,7 +37,7 @@ export default function NavBar() {
                     ? "bg-[var(--accent)] text-white"
                     : "text-[#a3a3a0] hover:text-white"
                 }`}
-                style={{ fontFamily: "var(--font-mono)" }}
+                style={{ fontFamily: "var(--font-geist-mono)" }}
               >
                 {link.label}
               </Link>

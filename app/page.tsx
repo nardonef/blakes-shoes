@@ -73,7 +73,7 @@ export default function Home() {
           <span className="w-4 md:w-8 h-0.5 bg-[var(--accent-light)]" />
           <span
             className="text-[9.5px] md:text-[11px] font-semibold tracking-[.26em] text-[var(--accent-light)]"
-            style={{ fontFamily: "var(--font-mono)" }}
+            style={{ fontFamily: "var(--font-geist-mono)" }}
           >
             FANTASY FOOTBALL LEAGUE
           </span>
@@ -81,13 +81,13 @@ export default function Home() {
         </div>
         <h1
           className="text-[58px] md:text-[124px] leading-[.86] tracking-[-.01em] mb-5"
-          style={{ fontFamily: "var(--font-display)" }}
+          style={{ fontFamily: "var(--font-bebas-neue)" }}
         >
           BLAKE&apos;S SHOES
         </h1>
         <div
           className="flex justify-center flex-wrap text-[10px] md:text-[12px] tracking-[.1em] text-[#d4d4d0]"
-          style={{ fontFamily: "var(--font-mono)" }}
+          style={{ fontFamily: "var(--font-geist-mono)" }}
         >
           <span className="px-3 md:px-[22px] py-1 border-r border-[#3a3a38]">
             <b className="text-white">12</b> TEAMS
@@ -116,13 +116,13 @@ export default function Home() {
             <div className="text-center">
               <div
                 className="text-[26px] md:text-[32px] leading-[1.05]"
-                style={{ fontFamily: "var(--font-display)" }}
+                style={{ fontFamily: "var(--font-bebas-neue)" }}
               >
                 {currentChampion.name.toUpperCase()}
               </div>
               <div
                 className="text-[11px] tracking-[.16em] text-[var(--accent-pale)]"
-                style={{ fontFamily: "var(--font-mono)" }}
+                style={{ fontFamily: "var(--font-geist-mono)" }}
               >
                 {currentChampion.team.toUpperCase()}
               </div>
@@ -132,13 +132,13 @@ export default function Home() {
             <div>
               <div
                 className="text-[9.5px] md:text-[11px] font-semibold tracking-[.3em] text-[var(--accent-pale)] mb-1.5"
-                style={{ fontFamily: "var(--font-mono)" }}
+                style={{ fontFamily: "var(--font-geist-mono)" }}
               >
                 {currentChampion.year} SEASON
               </div>
               <div
                 className="text-[50px] md:text-[78px] leading-[.88]"
-                style={{ fontFamily: "var(--font-display)" }}
+                style={{ fontFamily: "var(--font-bebas-neue)" }}
               >
                 LEAGUE CHAMPION
               </div>
@@ -147,33 +147,33 @@ export default function Home() {
               <div className="pt-[18px]">
                 <div
                   className="text-[10px] tracking-[.16em] text-[var(--accent-pale)] mb-1"
-                  style={{ fontFamily: "var(--font-mono)" }}
+                  style={{ fontFamily: "var(--font-geist-mono)" }}
                 >
                   RECORD
                 </div>
-                <div className="text-[32px] md:text-[44px] leading-none" style={{ fontFamily: "var(--font-display)" }}>
+                <div className="text-[32px] md:text-[44px] leading-none" style={{ fontFamily: "var(--font-bebas-neue)" }}>
                   {currentChampion.record}
                 </div>
               </div>
               <div className="pt-[18px] border-l border-white/[.22] pl-3 md:pl-6">
                 <div
                   className="text-[10px] tracking-[.16em] text-[var(--accent-pale)] mb-1"
-                  style={{ fontFamily: "var(--font-mono)" }}
+                  style={{ fontFamily: "var(--font-geist-mono)" }}
                 >
                   AVG POINTS
                 </div>
-                <div className="text-[32px] md:text-[44px] leading-none" style={{ fontFamily: "var(--font-display)" }}>
+                <div className="text-[32px] md:text-[44px] leading-none" style={{ fontFamily: "var(--font-bebas-neue)" }}>
                   {currentChampion.avgPoints}
                 </div>
               </div>
               <div className="pt-[18px] border-l border-white/[.22] pl-3 md:pl-6">
                 <div
                   className="text-[10px] tracking-[.16em] text-[var(--accent-pale)] mb-1"
-                  style={{ fontFamily: "var(--font-mono)" }}
+                  style={{ fontFamily: "var(--font-geist-mono)" }}
                 >
                   TITLE NO.
                 </div>
-                <div className="text-[32px] md:text-[44px] leading-none" style={{ fontFamily: "var(--font-display)" }}>
+                <div className="text-[32px] md:text-[44px] leading-none" style={{ fontFamily: "var(--font-bebas-neue)" }}>
                   {currentChampion.titleNo}
                 </div>
               </div>
@@ -185,12 +185,12 @@ export default function Home() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-[26px]">
           <section className="bg-[#151515] text-[#f5f5f0] p-[22px] md:p-[30px]">
             <div className="flex items-baseline justify-between gap-3 mb-5 flex-wrap">
-              <h3 className="text-[26px] md:text-[36px]" style={{ fontFamily: "var(--font-display)" }}>
+              <h3 className="text-[26px] md:text-[36px]" style={{ fontFamily: "var(--font-bebas-neue)" }}>
                 TRADE DEADLINE
               </h3>
               <span
                 className="text-[11px] tracking-[.14em] text-[var(--muted-dark)]"
-                style={{ fontFamily: "var(--font-mono)" }}
+                style={{ fontFamily: "var(--font-geist-mono)" }}
               >
                 NOV 22, 2026
               </span>
@@ -205,13 +205,13 @@ export default function Home() {
                 <div key={item.label} className="bg-[var(--panel)] text-center py-2.5 md:py-[15px]">
                   <div
                     className="text-[32px] md:text-[52px] leading-none text-[var(--accent-light)]"
-                    style={{ fontFamily: "var(--font-display)" }}
+                    style={{ fontFamily: "var(--font-bebas-neue)" }}
                   >
                     {String(item.value).padStart(2, "0")}
                   </div>
                   <div
                     className="text-[9.5px] tracking-[.18em] text-[var(--muted-dark)] mt-1"
-                    style={{ fontFamily: "var(--font-mono)" }}
+                    style={{ fontFamily: "var(--font-geist-mono)" }}
                   >
                     {item.label}
                   </div>
@@ -222,32 +222,32 @@ export default function Home() {
 
           <section className="bg-white p-[22px] md:p-[30px] border-l-[3px] border-[var(--accent)]">
             <div className="flex items-baseline justify-between gap-3 mb-5 flex-wrap">
-              <h3 className="text-[26px] md:text-[36px] text-[#151515]" style={{ fontFamily: "var(--font-display)" }}>
+              <h3 className="text-[26px] md:text-[36px] text-[#151515]" style={{ fontFamily: "var(--font-bebas-neue)" }}>
                 NEXT UP
               </h3>
               <span
                 className="text-[11px] tracking-[.14em] text-[var(--muted-light)]"
-                style={{ fontFamily: "var(--font-mono)" }}
+                style={{ fontFamily: "var(--font-geist-mono)" }}
               >
                 2026 CALENDAR
               </span>
             </div>
             <div className="flex items-center gap-4 md:gap-[22px]">
               <div className="w-[78px] h-[78px] bg-[#151515] text-white flex flex-col items-center justify-center shrink-0">
-                <span className="text-[10px] tracking-[.16em] text-[var(--accent-light)]" style={{ fontFamily: "var(--font-mono)" }}>
+                <span className="text-[10px] tracking-[.16em] text-[var(--accent-light)]" style={{ fontFamily: "var(--font-geist-mono)" }}>
                   SEPT
                 </span>
-                <span className="text-[38px] leading-[.9]" style={{ fontFamily: "var(--font-display)" }}>
+                <span className="text-[38px] leading-[.9]" style={{ fontFamily: "var(--font-bebas-neue)" }}>
                   5
                 </span>
               </div>
               <div>
-                <div className="text-[24px] md:text-[30px] text-[#151515] leading-none" style={{ fontFamily: "var(--font-display)" }}>
+                <div className="text-[24px] md:text-[30px] text-[#151515] leading-none" style={{ fontFamily: "var(--font-bebas-neue)" }}>
                   DRAFT DAY
                 </div>
                 <div
                   className="text-[11px] tracking-[.1em] text-[#5a5a56] mt-2"
-                  style={{ fontFamily: "var(--font-mono)" }}
+                  style={{ fontFamily: "var(--font-geist-mono)" }}
                 >
                   3:00 PM &middot; LOCATION TBD
                 </div>
@@ -259,7 +259,7 @@ export default function Home() {
         {/* Hall of Champions */}
         <section>
           <div className="flex items-center gap-4 mb-5">
-            <h2 className="text-[32px] md:text-[46px] text-[#151515]" style={{ fontFamily: "var(--font-display)" }}>
+            <h2 className="text-[32px] md:text-[46px] text-[#151515]" style={{ fontFamily: "var(--font-bebas-neue)" }}>
               HALL OF CHAMPIONS
             </h2>
             <span className="flex-1 h-0.5 bg-[#151515]" />
@@ -272,14 +272,14 @@ export default function Home() {
               >
                 <span
                   className="text-[24px] md:text-[29px] text-[var(--accent)] w-[58px] shrink-0"
-                  style={{ fontFamily: "var(--font-display)" }}
+                  style={{ fontFamily: "var(--font-bebas-neue)" }}
                 >
                   {c.year}
                 </span>
                 <span className="text-sm font-semibold text-[#151515]">{c.manager}</span>
                 <span
                   className="text-[10.5px] text-[var(--muted-light)] ml-auto text-right"
-                  style={{ fontFamily: "var(--font-mono)" }}
+                  style={{ fontFamily: "var(--font-geist-mono)" }}
                 >
                   {c.team}
                 </span>
@@ -291,13 +291,13 @@ export default function Home() {
         {/* The Owners */}
         <section>
           <div className="flex items-center gap-4 mb-6 flex-wrap">
-            <h2 className="text-[32px] md:text-[46px] text-[#151515]" style={{ fontFamily: "var(--font-display)" }}>
+            <h2 className="text-[32px] md:text-[46px] text-[#151515]" style={{ fontFamily: "var(--font-bebas-neue)" }}>
               THE OWNERS
             </h2>
             <span className="flex-1 min-w-[20px] h-0.5 bg-[#151515]" />
             <span
               className="text-[11px] tracking-[.14em] text-[var(--muted-light)]"
-              style={{ fontFamily: "var(--font-mono)" }}
+              style={{ fontFamily: "var(--font-geist-mono)" }}
             >
               2025 SEASON
             </span>
@@ -315,7 +315,7 @@ export default function Home() {
                   <div className="text-[13.5px] font-bold text-[#151515]">{owner.name}</div>
                   <div
                     className="text-[10px] tracking-[.06em] text-[var(--muted-light)] truncate"
-                    style={{ fontFamily: "var(--font-mono)" }}
+                    style={{ fontFamily: "var(--font-geist-mono)" }}
                   >
                     {owner.team.toUpperCase()}
                   </div>
