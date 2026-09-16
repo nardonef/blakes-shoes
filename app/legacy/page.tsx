@@ -1,6 +1,5 @@
 import Image from "next/image";
 import { getManagerLegacies, type ManagerLegacy } from "@/lib/legacy-data";
-import { chartColors } from "@/lib/stats-data";
 
 function ordinal(n: number): string {
   const s = ["th", "st", "nd", "rd"];
@@ -163,150 +162,241 @@ export default function LegacyPage() {
 
   return (
     <div className="min-h-screen" style={{ background: "var(--background)" }}>
-      <main className="max-w-6xl mx-auto px-4 md:px-16 py-8 md:py-16">
-        {/* Page Title */}
-        <h1
-          className="text-5xl md:text-7xl font-bold mb-3 text-center"
-          style={{ fontFamily: "var(--font-display)" }}
-        >
-          LEAGUE LEGACY
-        </h1>
-        <p className="text-sm text-gray-500 text-center mb-12 max-w-2xl mx-auto">
-          A scouting report on every manager currently in Blake&apos;s Shoes, built from every
-          game the league has played since 2012.
-        </p>
+      <header className="bg-[#151515] text-[#f5f5f0] px-4 md:px-10 py-8 md:py-[52px]">
+        <div className="max-w-[1160px] mx-auto">
+          <div
+            className="text-[11px] font-semibold tracking-[.26em] text-[var(--accent-light)] mb-2.5"
+            style={{ fontFamily: "var(--font-geist-mono)" }}
+          >
+            SCOUTING REPORTS
+          </div>
+          <h1
+            className="text-[48px] md:text-[88px] leading-[.86] mb-4"
+            style={{ fontFamily: "var(--font-bebas-neue)" }}
+          >
+            LEAGUE LEGACY
+          </h1>
+          <p className="text-base text-[#b0b0aa] leading-[1.6] max-w-[62ch]">
+            Every manager currently in Blake&apos;s Shoes, graded on every game the league has
+            played since 2012. Ranked by all-time win percentage.
+          </p>
+        </div>
+      </header>
 
-        <div className="space-y-8">
-          {legacies.map((legacy) => {
-            const { strengths, weaknesses } = buildScoutingReport(legacy, legacies);
-            return (
-              <section
-                key={legacy.owner.name}
-                className="bg-white rounded-xl p-6 md:p-8 shadow-md"
-              >
-                {/* Header */}
-                <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-6 pb-6 border-b border-gray-100">
-                  <div className="w-20 h-20 md:w-24 md:h-24 rounded-full bg-gray-300 overflow-hidden relative shadow-sm flex-shrink-0">
-                    <Image
-                      src={legacy.owner.image}
-                      alt={legacy.owner.name}
-                      fill
-                      className="object-cover"
-                    />
+      <main className="max-w-[1160px] mx-auto px-4 md:px-10 py-7 md:py-11 pb-14 md:pb-[88px] flex flex-col gap-0.5 bg-[var(--rule)]">
+        {legacies.map((legacy, index) => {
+          const { strengths, weaknesses } = buildScoutingReport(legacy, legacies);
+          const finishLabel =
+            legacy.runnerUps > 0 || legacy.thirds > 0
+              ? [
+                  legacy.runnerUps > 0 ? `${legacy.runnerUps}× RUNNER-UP` : null,
+                  legacy.thirds > 0 ? `${legacy.thirds}× THIRD` : null,
+                ]
+                  .filter(Boolean)
+                  .join(" · ")
+              : null;
+          const showOwns = Boolean(legacy.bestRival && legacy.bestRival.winPct >= 0.55);
+          const showStruggles = Boolean(
+            legacy.worstRival &&
+              legacy.worstRival.winPct <= 0.45 &&
+              legacy.worstRival.opponentName !== legacy.bestRival?.opponentName
+          );
+
+          return (
+            <section key={legacy.owner.name} className="bg-white">
+              {/* Card header */}
+              <div className="flex flex-wrap items-center gap-3.5 md:gap-5 p-[18px] md:p-6 bg-[#151515] text-[#f5f5f0]">
+                <div
+                  className="text-[26px] md:text-[34px] leading-none text-[var(--accent-light)] w-[42px] shrink-0"
+                  style={{ fontFamily: "var(--font-bebas-neue)" }}
+                >
+                  {String(index + 1).padStart(2, "0")}
+                </div>
+                <div className="w-[60px] h-[60px] md:w-[76px] md:h-[76px] rounded-full overflow-hidden bg-[#3a3a38] shrink-0 relative">
+                  <Image
+                    src={legacy.owner.image}
+                    alt={legacy.owner.name}
+                    fill
+                    className="object-cover"
+                  />
+                </div>
+                <div className="flex-1 basis-[200px] min-w-0">
+                  <h2
+                    className="text-[26px] md:text-[34px] leading-[1.02]"
+                    style={{ fontFamily: "var(--font-bebas-neue)" }}
+                  >
+                    {legacy.owner.name}
+                  </h2>
+                  <div
+                    className="text-[10px] tracking-[.14em] text-[var(--muted-dark)]"
+                    style={{ fontFamily: "var(--font-geist-mono)" }}
+                  >
+                    {legacy.owner.team.toUpperCase()} · {legacy.firstSeason}–{legacy.lastSeason}
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <h2
-                      className="text-2xl md:text-3xl font-bold"
-                      style={{ fontFamily: "var(--font-display)", color: "var(--foreground)" }}
+                </div>
+                <div className="flex gap-3.5 md:gap-[26px] flex-wrap items-end">
+                  <div>
+                    <div
+                      className="text-[9px] tracking-[.14em] text-[var(--muted-dark)]"
+                      style={{ fontFamily: "var(--font-geist-mono)" }}
                     >
-                      {legacy.owner.name}
-                    </h2>
-                    <p className="text-xs text-gray-500 uppercase tracking-wide mb-2">
-                      {legacy.owner.team} · {legacy.firstSeason}–{legacy.lastSeason}
-                    </p>
-                    <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-gray-700">
-                      <span>
-                        <span className="font-semibold">{legacy.wins}-{legacy.losses}
-                          {legacy.ties ? `-${legacy.ties}` : ""}</span> ({(legacy.winPct * 100).toFixed(1)}%)
-                      </span>
-                      <span>
-                        <span className="font-semibold">{legacy.avgPointsPerGame.toFixed(1)}</span> PPG
-                      </span>
-                      {legacy.championships > 0 && (
-                        <span className="inline-flex items-center gap-1 font-semibold" style={{ color: chartColors.primary }}>
-                          🏆 {legacy.championships}× Champion
-                        </span>
-                      )}
-                      {legacy.runnerUps > 0 && (
-                        <span className="text-gray-500">{legacy.runnerUps}× Runner-up</span>
-                      )}
-                      {legacy.thirds > 0 && (
-                        <span className="text-gray-500">{legacy.thirds}× 3rd Place</span>
-                      )}
+                      ALL-TIME
+                    </div>
+                    <div className="text-[22px] md:text-[28px] leading-none" style={{ fontFamily: "var(--font-bebas-neue)" }}>
+                      {legacy.wins}-{legacy.losses}
+                      {legacy.ties ? `-${legacy.ties}` : ""}
                     </div>
                   </div>
-                </div>
-
-                {/* Body */}
-                <div className="grid md:grid-cols-2 gap-6">
                   <div>
-                    <h3 className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2">
-                      Does Well
-                    </h3>
-                    <ul className="space-y-1.5 mb-4">
-                      {strengths.map((s, i) => (
-                        <li key={i} className="text-sm text-gray-700 flex gap-2">
-                          <span style={{ color: chartColors.primary }}>+</span>
-                          <span>{s}</span>
-                        </li>
-                      ))}
-                    </ul>
-
-                    <h3 className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2">
-                      Doesn&apos;t Do Well
-                    </h3>
-                    <ul className="space-y-1.5">
-                      {weaknesses.map((w, i) => (
-                        <li key={i} className="text-sm text-gray-700 flex gap-2">
-                          <span className="text-gray-400">−</span>
-                          <span>{w}</span>
-                        </li>
-                      ))}
-                    </ul>
+                    <div
+                      className="text-[9px] tracking-[.14em] text-[var(--muted-dark)]"
+                      style={{ fontFamily: "var(--font-geist-mono)" }}
+                    >
+                      WIN %
+                    </div>
+                    <div
+                      className="text-[22px] md:text-[28px] leading-none text-[var(--accent-light)]"
+                      style={{ fontFamily: "var(--font-bebas-neue)" }}
+                    >
+                      {(legacy.winPct * 100).toFixed(1)}%
+                    </div>
                   </div>
-
                   <div>
-                    <h3 className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2">
-                      Luck
-                    </h3>
-                    <p className="text-sm text-gray-700 mb-4">{luckBlurb(legacy)}</p>
-
-                    <h3 className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2">
-                      Best Moment
-                    </h3>
-                    <p className="text-sm text-gray-700 mb-4">{bestMomentBlurb(legacy)}</p>
-
-                    <h3 className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2">
-                      Worst Moment
-                    </h3>
-                    <p className="text-sm text-gray-700">{worstMomentBlurb(legacy)}</p>
+                    <div
+                      className="text-[9px] tracking-[.14em] text-[var(--muted-dark)]"
+                      style={{ fontFamily: "var(--font-geist-mono)" }}
+                    >
+                      PPG
+                    </div>
+                    <div className="text-[22px] md:text-[28px] leading-none" style={{ fontFamily: "var(--font-bebas-neue)" }}>
+                      {legacy.avgPointsPerGame.toFixed(1)}
+                    </div>
                   </div>
-                </div>
-
-                {/* Rivalries — only called out when genuinely lopsided */}
-                {((legacy.bestRival && legacy.bestRival.winPct >= 0.55) ||
-                  (legacy.worstRival && legacy.worstRival.winPct <= 0.45)) && (
-                  <div className="mt-6 pt-6 border-t border-gray-100 flex flex-wrap gap-6 text-sm">
-                    {legacy.bestRival && legacy.bestRival.winPct >= 0.55 && (
-                      <div>
-                        <span className="text-xs font-semibold text-gray-600 uppercase tracking-wide mr-2">
-                          Owns
-                        </span>
-                        <span className="text-gray-700">
-                          {legacy.bestRival.opponentName} ({legacy.bestRival.wins}-{legacy.bestRival.losses}
-                          {legacy.bestRival.ties ? `-${legacy.bestRival.ties}` : ""})
-                        </span>
+                  {legacy.championships > 0 && (
+                    <div className="bg-[var(--accent)] px-2.5 py-1.5">
+                      <div
+                        className="text-[9px] tracking-[.14em] text-[var(--accent-pale)]"
+                        style={{ fontFamily: "var(--font-geist-mono)" }}
+                      >
+                        TITLES
                       </div>
-                    )}
-                    {legacy.worstRival &&
-                      legacy.worstRival.winPct <= 0.45 &&
-                      legacy.worstRival.opponentName !== legacy.bestRival?.opponentName && (
-                        <div>
-                          <span className="text-xs font-semibold text-gray-600 uppercase tracking-wide mr-2">
-                            Struggles vs.
-                          </span>
-                          <span className="text-gray-700">
-                            {legacy.worstRival.opponentName} ({legacy.worstRival.wins}-{legacy.worstRival.losses}
-                            {legacy.worstRival.ties ? `-${legacy.worstRival.ties}` : ""})
-                          </span>
-                        </div>
-                      )}
+                      <div className="text-[20px] md:text-[26px] leading-none" style={{ fontFamily: "var(--font-bebas-neue)" }}>
+                        ×{legacy.championships}
+                      </div>
+                    </div>
+                  )}
+                  {finishLabel && (
+                    <div
+                      className="text-[10px] tracking-[.1em] text-[#b0b0aa] pb-[3px]"
+                      style={{ fontFamily: "var(--font-geist-mono)" }}
+                    >
+                      {finishLabel}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Card body */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-9 p-[22px] md:p-8">
+                <div>
+                  <div
+                    className="text-[10px] font-semibold tracking-[.2em] text-[var(--accent)] border-b-2 border-[var(--accent)] pb-2 mb-3.5"
+                    style={{ fontFamily: "var(--font-geist-mono)" }}
+                  >
+                    DOES WELL
                   </div>
-                )}
-              </section>
-            );
-          })}
-        </div>
+                  <div className="flex flex-col gap-2.5 mb-[22px]">
+                    {strengths.map((s, i) => (
+                      <div key={i} className="flex gap-2.5 text-sm text-[var(--body-text)] leading-[1.5]">
+                        <span className="text-[var(--accent)] font-bold">+</span>
+                        <span>{s}</span>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div
+                    className="text-[10px] font-semibold tracking-[.2em] text-[var(--muted-dark)] border-b-2 border-[var(--rule)] pb-2 mb-3.5"
+                    style={{ fontFamily: "var(--font-geist-mono)" }}
+                  >
+                    DOESN&apos;T DO WELL
+                  </div>
+                  <div className="flex flex-col gap-2.5">
+                    {weaknesses.map((w, i) => (
+                      <div key={i} className="flex gap-2.5 text-sm text-[var(--body-text)] leading-[1.5]">
+                        <span className="text-[var(--muted-dark)] font-bold">−</span>
+                        <span>{w}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-[18px]">
+                  <div>
+                    <div
+                      className="text-[9.5px] font-semibold tracking-[.18em] text-[var(--muted-dark)] mb-1.5"
+                      style={{ fontFamily: "var(--font-geist-mono)" }}
+                    >
+                      LUCK
+                    </div>
+                    <p className="text-sm text-[var(--body-text)] leading-[1.55]">{luckBlurb(legacy)}</p>
+                  </div>
+                  <div>
+                    <div
+                      className="text-[9.5px] font-semibold tracking-[.18em] text-[var(--muted-dark)] mb-1.5"
+                      style={{ fontFamily: "var(--font-geist-mono)" }}
+                    >
+                      BEST MOMENT
+                    </div>
+                    <p className="text-sm text-[var(--body-text)] leading-[1.55]">{bestMomentBlurb(legacy)}</p>
+                  </div>
+                  <div>
+                    <div
+                      className="text-[9.5px] font-semibold tracking-[.18em] text-[var(--muted-dark)] mb-1.5"
+                      style={{ fontFamily: "var(--font-geist-mono)" }}
+                    >
+                      WORST MOMENT
+                    </div>
+                    <p className="text-sm text-[var(--body-text)] leading-[1.55]">{worstMomentBlurb(legacy)}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Rivalries — only called out when genuinely lopsided */}
+              {(showOwns || showStruggles) && (
+                <div className="flex flex-wrap gap-0.5 bg-[var(--rule)] border-t border-[var(--rule)]">
+                  {showOwns && (
+                    <div className="flex-1 basis-60 bg-[var(--background)] py-3.5 px-5 md:px-8">
+                      <span
+                        className="text-[9.5px] font-semibold tracking-[.18em] text-[var(--accent)] mr-2.5"
+                        style={{ fontFamily: "var(--font-geist-mono)" }}
+                      >
+                        OWNS
+                      </span>
+                      <span className="text-sm font-semibold text-[#151515]">
+                        {legacy.bestRival!.opponentName} ({legacy.bestRival!.wins}-{legacy.bestRival!.losses}
+                        {legacy.bestRival!.ties ? `-${legacy.bestRival!.ties}` : ""})
+                      </span>
+                    </div>
+                  )}
+                  {showStruggles && (
+                    <div className="flex-1 basis-60 bg-[var(--background)] py-3.5 px-5 md:px-8">
+                      <span
+                        className="text-[9.5px] font-semibold tracking-[.18em] text-[var(--muted-dark)] mr-2.5"
+                        style={{ fontFamily: "var(--font-geist-mono)" }}
+                      >
+                        STRUGGLES VS
+                      </span>
+                      <span className="text-sm font-semibold text-[#151515]">
+                        {legacy.worstRival!.opponentName} ({legacy.worstRival!.wins}-{legacy.worstRival!.losses}
+                        {legacy.worstRival!.ties ? `-${legacy.worstRival!.ties}` : ""})
+                      </span>
+                    </div>
+                  )}
+                </div>
+              )}
+            </section>
+          );
+        })}
       </main>
     </div>
   );
