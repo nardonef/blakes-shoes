@@ -2,7 +2,9 @@
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { getSeasons, getHallOfChampions } from "@/lib/stats-data";
+import { slug } from "@/lib/legacy-data";
 
 // Data structure matching the mockup
 const owners = [
@@ -64,6 +66,8 @@ export default function Home() {
 
   const seasonCount = getSeasons().length;
   const champions = getHallOfChampions();
+  const titleCounts = new Map<string, number>();
+  champions.forEach((c) => titleCounts.set(c.manager, (titleCounts.get(c.manager) ?? 0) + 1));
 
   return (
     <div className="min-h-screen" style={{ background: "var(--background)" }}>
@@ -277,6 +281,14 @@ export default function Home() {
                   {c.year}
                 </span>
                 <span className="text-sm font-semibold text-[#151515]">{c.manager}</span>
+                {(titleCounts.get(c.manager) ?? 0) > 1 && (
+                  <span
+                    className="text-[9.5px] font-semibold tracking-[.08em] text-[var(--accent)]"
+                    style={{ fontFamily: "var(--font-geist-mono)" }}
+                  >
+                    ×{titleCounts.get(c.manager)}
+                  </span>
+                )}
                 <span
                   className="text-[10.5px] text-[var(--muted-light)] ml-auto text-right"
                   style={{ fontFamily: "var(--font-geist-mono)" }}
@@ -299,14 +311,15 @@ export default function Home() {
               className="text-[11px] tracking-[.14em] text-[var(--muted-light)]"
               style={{ fontFamily: "var(--font-geist-mono)" }}
             >
-              2025 SEASON
+              TAP FOR SCOUTING REPORT
             </span>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-0.5 bg-[var(--rule)]">
             {owners.map((owner) => (
-              <div
+              <Link
                 key={owner.name}
-                className="bg-[var(--background)] p-4 md:p-5 flex items-center gap-3.5"
+                href={`/legacy#${slug(owner.name)}`}
+                className="bg-[var(--background)] hover:bg-white transition-colors duration-150 p-4 md:p-5 min-h-12 flex items-center gap-3.5"
               >
                 <div className="w-[58px] h-[58px] rounded-full overflow-hidden shrink-0 bg-[var(--rule)] relative">
                   <Image src={owner.image} alt={owner.name} fill className="object-cover" />
@@ -320,7 +333,13 @@ export default function Home() {
                     {owner.team.toUpperCase()}
                   </div>
                 </div>
-              </div>
+                <span
+                  className="text-[13px] text-[var(--accent)] ml-auto shrink-0"
+                  style={{ fontFamily: "var(--font-geist-mono)" }}
+                >
+                  ›
+                </span>
+              </Link>
             ))}
           </div>
         </section>

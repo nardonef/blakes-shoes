@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { getManagerLegacies, type ManagerLegacy } from "@/lib/legacy-data";
+import { getManagerLegacies, slug, type ManagerLegacy } from "@/lib/legacy-data";
 
 function ordinal(n: number): string {
   const s = ["th", "st", "nd", "rd"];
@@ -203,7 +203,11 @@ export default function LegacyPage() {
           );
 
           return (
-            <section key={legacy.owner.name} className="bg-white">
+            <section
+              key={legacy.owner.name}
+              id={slug(legacy.owner.name)}
+              className="bg-white scroll-mt-[70px]"
+            >
               {/* Card header */}
               <div className="flex flex-wrap items-center gap-3.5 md:gap-5 p-[18px] md:p-6 bg-[#151515] text-[#f5f5f0]">
                 <div
