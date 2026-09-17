@@ -25,7 +25,7 @@ export default function NavBar() {
           <span className="text-[var(--accent-light)]">.</span>
         </Link>
 
-        <div className="flex items-stretch flex-1 justify-end">
+        <div className="flex items-stretch flex-1 justify-end max-[480px]:justify-center">
           {links.map((link) => {
             const isActive = pathname === link.href;
             return (

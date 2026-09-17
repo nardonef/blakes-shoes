@@ -375,25 +375,25 @@ function StatsContent() {
                 MANAGER LEADERBOARD
               </SectionHeading>
               <div
-                className="grid grid-cols-[36px_minmax(0,1fr)_46px_46px_62px_62px_40px] bg-[#151515] text-[#f5f5f0] text-[9.5px] font-semibold tracking-[.1em]"
+                className="grid grid-cols-[22px_minmax(0,1fr)_28px_28px_42px_42px_26px] md:grid-cols-[36px_minmax(0,1fr)_46px_46px_62px_62px_40px] bg-[#151515] text-[#f5f5f0] text-[8px] md:text-[9.5px] font-semibold tracking-[.06em] md:tracking-[.1em]"
                 style={{ fontFamily: "var(--font-geist-mono)" }}
               >
-                <div className="py-[11px] pl-3">#</div>
-                <div className="py-[11px] px-2">MANAGER</div>
-                <div className="py-[11px] px-1 text-right">W</div>
-                <div className="py-[11px] px-1 text-right">L</div>
-                <div className="py-[11px] px-1 text-right">WIN%</div>
-                <div className="py-[11px] px-1 text-right">PPG</div>
-                <div className="py-[11px] pr-3 pl-1 text-right">TTL</div>
+                <div className="py-[11px] pl-1.5 md:pl-3">#</div>
+                <div className="py-[11px] px-1 md:px-2">MANAGER</div>
+                <div className="py-[11px] px-0.5 md:px-1 text-right">W</div>
+                <div className="py-[11px] px-0.5 md:px-1 text-right">L</div>
+                <div className="py-[11px] px-0.5 md:px-1 text-right">WIN%</div>
+                <div className="py-[11px] px-0.5 md:px-1 text-right">PPG</div>
+                <div className="py-[11px] pr-1.5 pl-0.5 md:pr-3 md:pl-1 text-right">TTL</div>
               </div>
               <div className="bg-white">
                 {leaderboard.map((manager, index) => (
                   <div
                     key={manager.manager}
-                    className="grid grid-cols-[36px_minmax(0,1fr)_46px_46px_62px_62px_40px] border-b border-[var(--hairline)] items-center text-[13.5px]"
+                    className="grid grid-cols-[22px_minmax(0,1fr)_28px_28px_42px_42px_26px] md:grid-cols-[36px_minmax(0,1fr)_46px_46px_62px_62px_40px] border-b border-[var(--hairline)] items-center text-[11px] md:text-[13.5px]"
                   >
                     <div
-                      className="py-[11px] pl-3 text-[20px] leading-none"
+                      className="py-[11px] pl-1.5 md:pl-3 text-[15px] md:text-[20px] leading-none"
                       style={{
                         fontFamily: "var(--font-bebas-neue)",
                         color: index < 3 ? "var(--accent)" : "var(--dim)",
@@ -401,15 +401,15 @@ function StatsContent() {
                     >
                       {index + 1}
                     </div>
-                    <div className="py-[11px] px-2 font-semibold text-[#151515] truncate">{manager.manager}</div>
-                    <div className="py-[11px] px-1 text-right font-semibold text-[#151515]">{manager.totalWins}</div>
-                    <div className="py-[11px] px-1 text-right text-[var(--muted-light)]">{manager.totalLosses}</div>
-                    <div className="py-[11px] px-1 text-right font-semibold text-[var(--accent)]">
+                    <div className="py-[11px] px-1 md:px-2 font-semibold text-[#151515] truncate">{manager.manager}</div>
+                    <div className="py-[11px] px-0.5 md:px-1 text-right font-semibold text-[#151515]">{manager.totalWins}</div>
+                    <div className="py-[11px] px-0.5 md:px-1 text-right text-[var(--muted-light)]">{manager.totalLosses}</div>
+                    <div className="py-[11px] px-0.5 md:px-1 text-right font-semibold text-[var(--accent)]">
                       {(manager.winPercentage * 100).toFixed(1)}%
                     </div>
-                    <div className="py-[11px] px-1 text-right text-[var(--body-text)]">{manager.avgPointsPerGame.toFixed(1)}</div>
+                    <div className="py-[11px] px-0.5 md:px-1 text-right text-[var(--body-text)]">{manager.avgPointsPerGame.toFixed(1)}</div>
                     <div
-                      className="py-[11px] pr-3 pl-1 text-right text-[19px] leading-none"
+                      className="py-[11px] pr-1.5 pl-0.5 md:pr-3 md:pl-1 text-right text-[13px] md:text-[19px] leading-none"
                       style={{
                         fontFamily: "var(--font-bebas-neue)",
                         color: manager.championships > 0 ? "var(--accent)" : "var(--dim)",
@@ -547,24 +547,24 @@ function StatsContent() {
                 PLAYOFF PERFORMANCE
               </SectionHeading>
               <div
-                className="grid grid-cols-[36px_minmax(0,1fr)_56px_56px_56px_56px] bg-[#151515] text-[#f5f5f0] text-[9.5px] font-semibold tracking-[.1em]"
+                className="grid grid-cols-[20px_minmax(0,1fr)_36px_36px_36px_36px] md:grid-cols-[36px_minmax(0,1fr)_56px_56px_56px_56px] bg-[#151515] text-[#f5f5f0] text-[8px] md:text-[9.5px] font-semibold tracking-[.06em] md:tracking-[.1em]"
                 style={{ fontFamily: "var(--font-geist-mono)" }}
               >
-                <div className="py-[11px] pl-3">#</div>
-                <div className="py-[11px] px-2">MANAGER</div>
-                <div className="py-[11px] px-1 text-right">PO W-L</div>
-                <div className="py-[11px] px-1 text-right">PO PPG</div>
-                <div className="py-[11px] px-1 text-right">REG PPG</div>
-                <div className="py-[11px] pr-3 pl-1 text-right">CLUTCH</div>
+                <div className="py-[11px] pl-1.5 md:pl-3">#</div>
+                <div className="py-[11px] px-1 md:px-2">MANAGER</div>
+                <div className="py-[11px] px-0.5 md:px-1 text-right">PO W-L</div>
+                <div className="py-[11px] px-0.5 md:px-1 text-right">PO PPG</div>
+                <div className="py-[11px] px-0.5 md:px-1 text-right">REG PPG</div>
+                <div className="py-[11px] pr-1.5 pl-0.5 md:pr-3 md:pl-1 text-right">CLUTCH</div>
               </div>
               <div className="bg-white">
                 {playoffStats.map((stats, index) => (
                   <div
                     key={stats.manager}
-                    className="grid grid-cols-[36px_minmax(0,1fr)_56px_56px_56px_56px] border-b border-[var(--hairline)] items-center text-[13px]"
+                    className="grid grid-cols-[20px_minmax(0,1fr)_36px_36px_36px_36px] md:grid-cols-[36px_minmax(0,1fr)_56px_56px_56px_56px] border-b border-[var(--hairline)] items-center text-[10.5px] md:text-[13px]"
                   >
                     <div
-                      className="py-[11px] pl-3 text-[20px] leading-none"
+                      className="py-[11px] pl-1.5 md:pl-3 text-[14px] md:text-[20px] leading-none"
                       style={{
                         fontFamily: "var(--font-bebas-neue)",
                         color: index < 3 ? "var(--accent)" : "var(--dim)",
@@ -572,14 +572,14 @@ function StatsContent() {
                     >
                       {index + 1}
                     </div>
-                    <div className="py-[11px] px-2 font-semibold text-[#151515] truncate">{stats.manager}</div>
-                    <div className="py-[11px] px-1 text-right font-semibold text-[#151515]">
+                    <div className="py-[11px] px-1 md:px-2 font-semibold text-[#151515] truncate">{stats.manager}</div>
+                    <div className="py-[11px] px-0.5 md:px-1 text-right font-semibold text-[#151515]">
                       {stats.playoffWins}-{stats.playoffLosses}
                     </div>
-                    <div className="py-[11px] px-1 text-right text-[#151515]">{stats.playoffPPG.toFixed(1)}</div>
-                    <div className="py-[11px] px-1 text-right text-[var(--muted-light)]">{stats.regularPPG.toFixed(1)}</div>
+                    <div className="py-[11px] px-0.5 md:px-1 text-right text-[#151515]">{stats.playoffPPG.toFixed(1)}</div>
+                    <div className="py-[11px] px-0.5 md:px-1 text-right text-[var(--muted-light)]">{stats.regularPPG.toFixed(1)}</div>
                     <div
-                      className="py-[11px] pr-3 pl-1 text-right text-[20px] leading-none"
+                      className="py-[11px] pr-1.5 pl-0.5 md:pr-3 md:pl-1 text-right text-[13px] md:text-[20px] leading-none"
                       style={{
                         fontFamily: "var(--font-bebas-neue)",
                         color:
