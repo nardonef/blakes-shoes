@@ -45,6 +45,30 @@ function formatDate(dateString: string) {
   });
 }
 
+function SectionHeading({ children, subtitle }: { children: React.ReactNode; subtitle?: string }) {
+  return (
+    <div className="mb-2">
+      <div className="flex items-center gap-4 flex-wrap">
+        <h2
+          className="text-[30px] md:text-[42px] text-[#151515]"
+          style={{ fontFamily: "var(--font-bebas-neue)" }}
+        >
+          {children}
+        </h2>
+        <span className="flex-1 min-w-[20px] h-0.5 bg-[#151515]" />
+      </div>
+      {subtitle && (
+        <p
+          className="text-[10.5px] tracking-[.08em] text-[var(--muted-light)] uppercase mt-2"
+          style={{ fontFamily: "var(--font-geist-mono)" }}
+        >
+          {subtitle}
+        </p>
+      )}
+    </div>
+  );
+}
+
 function RuleCard({
   title,
   children,
@@ -53,10 +77,10 @@ function RuleCard({
   children: React.ReactNode;
 }) {
   return (
-    <div className="bg-white rounded-xl p-6 md:p-8 shadow-md hover:shadow-lg transition-shadow">
+    <div className="bg-white p-[22px] md:p-7">
       <h3
-        className="text-xl md:text-2xl font-bold mb-4"
-        style={{ fontFamily: "var(--font-display)", color: "var(--foreground)" }}
+        className="text-[22px] md:text-[27px] mb-4 text-[#151515]"
+        style={{ fontFamily: "var(--font-bebas-neue)" }}
       >
         {title}
       </h3>
@@ -67,93 +91,128 @@ function RuleCard({
 
 function Fact({ label, value }: { label: string; value: string | number }) {
   return (
-    <div className="flex items-baseline justify-between py-2 border-b border-gray-100 last:border-0">
-      <span className="text-sm text-gray-600">{label}</span>
-      <span className="text-sm font-semibold text-gray-800 text-right">{value}</span>
+    <div className="flex items-baseline justify-between gap-3 py-2.5 border-t border-[var(--hairline)] first:border-t-0">
+      <span
+        className="text-[10px] tracking-[.1em] text-[var(--muted-light)]"
+        style={{ fontFamily: "var(--font-geist-mono)" }}
+      >
+        {label.toUpperCase()}
+      </span>
+      <span className="text-sm font-semibold text-[#151515] text-right">{value}</span>
     </div>
   );
 }
 
 function TbdBlock({ children }: { children: React.ReactNode }) {
   return (
-    <div className="border border-dashed border-gray-300 rounded-lg p-4 text-sm text-gray-500 italic">
-      {children}
+    <div className="border-2 border-[var(--hairline)] p-3.5">
+      <div
+        className="text-[9px] font-semibold tracking-[.18em] text-[var(--dim)] mb-1.5"
+        style={{ fontFamily: "var(--font-geist-mono)" }}
+      >
+        UNCONFIRMED
+      </div>
+      <div className="text-[13.5px] text-[var(--muted-light)] leading-[1.5]">{children}</div>
     </div>
   );
 }
 
-function RuleList({ items }: { items: string[] }) {
+function MarkerList({ items }: { items: string[] }) {
   return (
-    <ul className="list-disc list-inside space-y-2 text-sm text-gray-700 leading-relaxed">
+    <div className="flex flex-col gap-2.5">
       {items.map((item, index) => (
-        <li key={index}>{item}</li>
+        <div key={index} className="flex gap-2.5 text-[14px] text-[var(--body-text)] leading-[1.5]">
+          <span className="text-[var(--accent)] font-bold">/</span>
+          <span>{item}</span>
+        </div>
       ))}
-    </ul>
+    </div>
   );
 }
 
 export default function RulesPage() {
   return (
     <div className="min-h-screen" style={{ background: "var(--background)" }}>
-      <main className="max-w-6xl mx-auto px-4 md:px-16 py-8 md:py-16">
-        {/* Page Title */}
-        <h1
-          className="text-5xl md:text-7xl font-bold mb-2 text-center"
-          style={{ fontFamily: "var(--font-display)" }}
-        >
-          LEAGUE RULES
-        </h1>
-        <p className="text-xs md:text-sm font-semibold tracking-[0.2em] text-gray-500 uppercase text-center mb-12">
-          Blake&apos;s Shoes &middot; {current.season_year} Season
-        </p>
+      <header className="bg-[#151515] text-[#f5f5f0] px-4 md:px-10 py-8 md:py-[52px]">
+        <div className="max-w-[1160px] mx-auto flex items-end justify-between gap-5 flex-wrap">
+          <div>
+            <div
+              className="text-[11px] font-semibold tracking-[.26em] text-[var(--accent-light)] mb-2.5"
+              style={{ fontFamily: "var(--font-geist-mono)" }}
+            >
+              THE RULE BOOK
+            </div>
+            <h1
+              className="text-[48px] md:text-[88px] leading-[.86]"
+              style={{ fontFamily: "var(--font-bebas-neue)" }}
+            >
+              LEAGUE RULES
+            </h1>
+          </div>
+          <div
+            className="text-[11px] tracking-[.14em] text-[var(--muted-dark)] pb-2"
+            style={{ fontFamily: "var(--font-geist-mono)" }}
+          >
+            {current.season_year} SEASON
+          </div>
+        </div>
+      </header>
 
-        {/* Official Numbered Rules */}
-        <section className="mb-16">
-          <h2 className="text-2xl md:text-3xl font-bold text-gray-800 mb-6 uppercase">
-            Official Rules
-          </h2>
-          <div className="bg-white rounded-xl shadow-md p-6 md:p-8">
-            <ol className="space-y-4">
-              {officialRules.map((rule, index) => (
-                <li key={index} className="flex gap-4">
-                  <span
-                    className="font-bold text-lg shrink-0"
-                    style={{ fontFamily: "var(--font-display)", color: "var(--accent)" }}
-                  >
-                    {index + 1}.
-                  </span>
-                  <span className="text-gray-800 text-sm md:text-base pt-0.5">{rule}</span>
-                </li>
-              ))}
-            </ol>
+      <main className="max-w-[1160px] mx-auto px-4 md:px-10 py-7 md:py-11 pb-14 md:pb-[88px] flex flex-col gap-9 md:gap-14">
+        {/* Official Rules */}
+        <section className="bg-[var(--accent)] text-[#f5f5f0] p-6 md:p-9">
+          <div
+            className="text-[11px] font-semibold tracking-[.26em] text-[var(--accent-pale)] mb-[18px]"
+            style={{ fontFamily: "var(--font-geist-mono)" }}
+          >
+            OFFICIAL RULES
+          </div>
+          <div className="flex flex-col gap-0">
+            {officialRules.map((rule, index) => (
+              <div
+                key={index}
+                className="flex gap-3.5 md:gap-[22px] items-baseline border-t border-white/[.22] pt-[18px]"
+              >
+                <span
+                  className="text-[34px] md:text-[44px] leading-none shrink-0 text-[#f5f5f0]"
+                  style={{ fontFamily: "var(--font-bebas-neue)" }}
+                >
+                  {String(index + 1).padStart(2, "0")}
+                </span>
+                <span className="text-base md:text-xl font-medium leading-[1.45]">{rule}</span>
+              </div>
+            ))}
           </div>
         </section>
 
         {/* Town Hall Meeting Notes */}
-        <section className="mb-16">
-          <h2 className="text-2xl md:text-3xl font-bold text-gray-800 mb-2 uppercase">
-            Town Hall Meeting Notes
-          </h2>
-          <p className="text-xs text-gray-500 mb-6">
-            Posted by Commissioner Peter Klensch, Esq. in the league group chat.
-          </p>
-          <div className="bg-white rounded-xl shadow-md p-6 md:p-8">
+        <section>
+          <SectionHeading subtitle="Posted by Commissioner Peter Klensch, Esq. in the league group chat">
+            TOWN HALL NOTES
+          </SectionHeading>
+          <div className="bg-white border-l-[3px] border-[var(--accent)] p-6 md:p-9 mt-5">
             <h3
-              className="text-xl md:text-2xl font-bold mb-1"
-              style={{ fontFamily: "var(--font-display)", color: "var(--foreground)" }}
+              className="text-[22px] md:text-[30px] mb-1 text-[#151515]"
+              style={{ fontFamily: "var(--font-bebas-neue)" }}
             >
-              June 1, 2026 — First Annual Bicentennial Memorial J1 Town Hall
+              JUNE 1, 2026 — FIRST ANNUAL BICENTENNIAL MEMORIAL J1 TOWN HALL
             </h3>
-            <p className="text-xs text-gray-500 mb-6">
-              League changes and decisions announced after the meeting.
+            <p
+              className="text-[10.5px] tracking-[.08em] text-[var(--muted-light)] uppercase mb-7"
+              style={{ fontFamily: "var(--font-geist-mono)" }}
+            >
+              League changes and decisions announced after the meeting
             </p>
 
-            <div className="space-y-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-9">
               <div>
-                <h4 className="text-sm font-bold uppercase tracking-wide text-gray-500 mb-3">
-                  Part 1 — Rule Changes
+                <h4
+                  className="text-[10px] font-semibold tracking-[.2em] text-[var(--accent)] border-b-2 border-[var(--accent)] pb-2 mb-3.5"
+                  style={{ fontFamily: "var(--font-geist-mono)" }}
+                >
+                  PART 1 — RULE CHANGES
                 </h4>
-                <RuleList
+                <MarkerList
                   items={[
                     "Trade deadline moved from November 28 to November 14.",
                     "Interceptions changed from -1 to -2.",
@@ -164,10 +223,13 @@ export default function RulesPage() {
               </div>
 
               <div>
-                <h4 className="text-sm font-bold uppercase tracking-wide text-gray-500 mb-3">
-                  Part 2 — Weekly Loser Parlay
+                <h4
+                  className="text-[10px] font-semibold tracking-[.2em] text-[var(--accent)] border-b-2 border-[var(--accent)] pb-2 mb-3.5"
+                  style={{ fontFamily: "var(--font-geist-mono)" }}
+                >
+                  PART 2 — WEEKLY LOSER PARLAY
                 </h4>
-                <p className="text-sm text-gray-700 leading-relaxed">
+                <p className="text-[14.5px] text-[var(--body-text)] leading-[1.6]">
                   Starting this season, the lowest-scoring player each regular season week owes $10 toward an
                   NFL parlay. Any player may submit one optional leg to AB, the Weekly Loser Parlay Czar —
                   submissions are due by noon each Sunday, and AB places the parlay. If it hits, the league
@@ -177,10 +239,13 @@ export default function RulesPage() {
               </div>
 
               <div>
-                <h4 className="text-sm font-bold uppercase tracking-wide text-gray-500 mb-3">
-                  Part 3 — Sacko Punishment
+                <h4
+                  className="text-[10px] font-semibold tracking-[.2em] text-[var(--accent)] border-b-2 border-[var(--accent)] pb-2 mb-3.5"
+                  style={{ fontFamily: "var(--font-geist-mono)" }}
+                >
+                  PART 3 — SACKO PUNISHMENT
                 </h4>
-                <p className="text-sm text-gray-700 leading-relaxed">
+                <p className="text-[14.5px] text-[var(--body-text)] leading-[1.6]">
                   Starting this season, the Sacko chooses between two options: plan the entire draft day
                   (food, drink, location, draft board, printed single-sided ranking sheets, etc. — costs
                   covered by the league except printing), or take a &quot;legit&quot; punishment instead.
@@ -188,10 +253,13 @@ export default function RulesPage() {
               </div>
 
               <div>
-                <h4 className="text-sm font-bold uppercase tracking-wide text-gray-500 mb-3">
-                  Part 4 — Other Announcements
+                <h4
+                  className="text-[10px] font-semibold tracking-[.2em] text-[var(--accent)] border-b-2 border-[var(--accent)] pb-2 mb-3.5"
+                  style={{ fontFamily: "var(--font-geist-mono)" }}
+                >
+                  PART 4 — OTHER ANNOUNCEMENTS
                 </h4>
-                <RuleList
+                <MarkerList
                   items={[
                     "A season-ending League Dinner is under consideration — details TBD.",
                     "Lil Ant named the league's 1st Commissioner's Apprentice, starting with \"leather working.\"",
@@ -204,55 +272,57 @@ export default function RulesPage() {
         </section>
 
         {/* Draft Order */}
-        <section className="mb-16">
-          <h2 className="text-2xl md:text-3xl font-bold text-gray-800 mb-2 uppercase">
-            Draft Order
-          </h2>
-          <p className="text-xs text-gray-500 mb-6">
-            Result of the draft-position lottery.
-          </p>
-          <div className="bg-white rounded-xl shadow-md overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-gray-200 bg-gray-50">
-                    <th className="text-left font-semibold text-gray-600 uppercase text-xs tracking-wide px-4 py-3">Pick</th>
-                    <th className="text-left font-semibold text-gray-600 uppercase text-xs tracking-wide px-4 py-3">Owner</th>
-                    <th className="text-left font-semibold text-gray-600 uppercase text-xs tracking-wide px-4 py-3">Team</th>
-                    <th className="text-left font-semibold text-gray-600 uppercase text-xs tracking-wide px-4 py-3">Keeper</th>
-                    <th className="text-left font-semibold text-gray-600 uppercase text-xs tracking-wide px-4 py-3">Cost</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {draftLotteryOrder.map((slot) => (
-                    <tr key={slot.pick} className="border-b border-gray-100 last:border-0 hover:bg-gray-50">
-                      <td
-                        className="px-4 py-3 font-bold"
-                        style={{ fontFamily: "var(--font-display)", color: "var(--accent)" }}
-                      >
-                        {slot.pick}
-                      </td>
-                      <td className="px-4 py-3 text-gray-800 font-medium">{slot.owner}</td>
-                      <td className="px-4 py-3 text-gray-600">{slot.team}</td>
-                      <td className="px-4 py-3 text-gray-800">{slot.keeper}</td>
-                      <td className="px-4 py-3 text-gray-600">{`Round ${slot.keeperCost}`}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+        <section>
+          <SectionHeading subtitle="Result of the draft-position lottery">DRAFT ORDER</SectionHeading>
+          <div className="mt-5">
+            <div
+              className="grid grid-cols-[52px_1fr_auto] bg-[#151515] text-[#f5f5f0] text-[9.5px] font-semibold tracking-[.16em]"
+              style={{ fontFamily: "var(--font-geist-mono)" }}
+            >
+              <div className="py-3 px-3.5">PICK</div>
+              <div className="py-3 px-3.5">OWNER / TEAM</div>
+              <div className="py-3 px-3.5 text-right">KEEPER &middot; COST</div>
+            </div>
+            <div className="bg-white">
+              {draftLotteryOrder.map((slot) => (
+                <div
+                  key={slot.pick}
+                  className="grid grid-cols-[52px_1fr_auto] border-b border-[var(--hairline)] items-center"
+                >
+                  <div
+                    className="py-3 px-3.5 text-[24px] text-[var(--accent)] leading-none"
+                    style={{ fontFamily: "var(--font-bebas-neue)" }}
+                  >
+                    {slot.pick}
+                  </div>
+                  <div className="py-3 px-3.5 min-w-0">
+                    <div className="text-sm font-semibold text-[#151515]">{slot.owner}</div>
+                    <div
+                      className="text-[10px] tracking-[.06em] text-[var(--muted-light)] truncate"
+                      style={{ fontFamily: "var(--font-geist-mono)" }}
+                    >
+                      {slot.team.toUpperCase()}
+                    </div>
+                  </div>
+                  <div className="py-3 px-3.5 text-right">
+                    <div className="text-sm font-semibold text-[#151515]">{slot.keeper}</div>
+                    <div
+                      className="text-[10px] tracking-[.06em] text-[var(--muted-light)]"
+                      style={{ fontFamily: "var(--font-geist-mono)" }}
+                    >
+                      {`ROUND ${slot.keeperCost}`}
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         </section>
 
-        {/* Verified League Settings */}
-        <section className="mb-16">
-          <h2 className="text-2xl md:text-3xl font-bold text-gray-800 mb-2 uppercase">
-            League Format
-          </h2>
-          <p className="text-xs text-gray-500 mb-6">
-            Pulled from this season&apos;s recorded league settings.
-          </p>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {/* League Format */}
+        <section>
+          <SectionHeading subtitle="Pulled from this season's recorded league settings">LEAGUE FORMAT</SectionHeading>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-0.5 bg-[var(--rule)] mt-5">
             <RuleCard title="Teams & Scoring">
               <Fact label="Number of teams" value={current.num_teams} />
               <Fact
@@ -280,60 +350,97 @@ export default function RulesPage() {
               <Fact label="Waiver processing" value={current.waiver_rule} />
             </RuleCard>
           </div>
-          <p className="text-xs text-gray-400 mt-3">
+          <p
+            className="text-[10px] tracking-[.04em] text-[var(--muted-dark)] mt-3 leading-[1.6]"
+            style={{ fontFamily: "var(--font-geist-mono)" }}
+          >
             Waiver type/processing codes (e.g. &quot;FR&quot;, &quot;gametime&quot;) are shown as recorded
             in the league&apos;s settings export — confirm exact mechanics with the commissioner if unsure.
           </p>
         </section>
 
-        {/* Season-by-Season History */}
-        <section className="mb-16">
-          <h2 className="text-2xl md:text-3xl font-bold text-gray-800 mb-6 uppercase">
-            Format History
-          </h2>
-          <div className="bg-white rounded-xl shadow-md overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-gray-200 bg-gray-50">
-                    <th className="text-left font-semibold text-gray-600 uppercase text-xs tracking-wide px-4 py-3">Season</th>
-                    <th className="text-left font-semibold text-gray-600 uppercase text-xs tracking-wide px-4 py-3">Teams</th>
-                    <th className="text-left font-semibold text-gray-600 uppercase text-xs tracking-wide px-4 py-3">Draft</th>
-                    <th className="text-left font-semibold text-gray-600 uppercase text-xs tracking-wide px-4 py-3">Playoff Teams</th>
-                    <th className="text-left font-semibold text-gray-600 uppercase text-xs tracking-wide px-4 py-3">Playoffs Start</th>
-                    <th className="text-left font-semibold text-gray-600 uppercase text-xs tracking-wide px-4 py-3">Trade Deadline</th>
-                    <th className="text-left font-semibold text-gray-600 uppercase text-xs tracking-wide px-4 py-3">Waivers</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {[...seasons].reverse().map((s) => (
-                    <tr key={s.season_year} className="border-b border-gray-100 last:border-0 hover:bg-gray-50">
-                      <td className="px-4 py-3 font-semibold text-gray-800">{s.season_year}</td>
-                      <td className="px-4 py-3 text-gray-600">{s.num_teams}</td>
-                      <td className="px-4 py-3 text-gray-600 capitalize">{s.draft_type}</td>
-                      <td className="px-4 py-3 text-gray-600">{s.num_playoff_teams}</td>
-                      <td className="px-4 py-3 text-gray-600">Week {s.playoff_start_week}</td>
-                      <td className="px-4 py-3 text-gray-600">{formatDate(s.trade_end_date)}</td>
-                      <td className="px-4 py-3 text-gray-600">{s.waiver_type} &middot; {s.waiver_rule}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+        {/* Format History */}
+        <section>
+          <SectionHeading>FORMAT HISTORY</SectionHeading>
+          <div className="bg-white mt-5">
+            {[...seasons].reverse().map((s) => (
+              <div
+                key={s.season_year}
+                className="grid grid-cols-[64px_1fr] border-b border-[var(--hairline)] items-start"
+              >
+                <div
+                  className="p-3.5 text-[26px] text-[var(--accent)] leading-none"
+                  style={{ fontFamily: "var(--font-bebas-neue)" }}
+                >
+                  {s.season_year}
+                </div>
+                <div className="py-3.5 pr-3.5 grid grid-cols-2 sm:grid-cols-3 gap-2.5 md:gap-4">
+                  <div>
+                    <div
+                      className="text-[9px] tracking-[.14em] text-[var(--muted-dark)]"
+                      style={{ fontFamily: "var(--font-geist-mono)" }}
+                    >
+                      TEAMS
+                    </div>
+                    <div className="text-[13.5px] font-semibold text-[#151515]">{s.num_teams}</div>
+                  </div>
+                  <div>
+                    <div
+                      className="text-[9px] tracking-[.14em] text-[var(--muted-dark)]"
+                      style={{ fontFamily: "var(--font-geist-mono)" }}
+                    >
+                      DRAFT
+                    </div>
+                    <div className="text-[13.5px] font-semibold text-[#151515] capitalize">{s.draft_type}</div>
+                  </div>
+                  <div>
+                    <div
+                      className="text-[9px] tracking-[.14em] text-[var(--muted-dark)]"
+                      style={{ fontFamily: "var(--font-geist-mono)" }}
+                    >
+                      PLAYOFF TEAMS
+                    </div>
+                    <div className="text-[13.5px] font-semibold text-[#151515]">{s.num_playoff_teams}</div>
+                  </div>
+                  <div>
+                    <div
+                      className="text-[9px] tracking-[.14em] text-[var(--muted-dark)]"
+                      style={{ fontFamily: "var(--font-geist-mono)" }}
+                    >
+                      PLAYOFFS START
+                    </div>
+                    <div className="text-[13.5px] font-semibold text-[#151515]">{`Week ${s.playoff_start_week}`}</div>
+                  </div>
+                  <div>
+                    <div
+                      className="text-[9px] tracking-[.14em] text-[var(--muted-dark)]"
+                      style={{ fontFamily: "var(--font-geist-mono)" }}
+                    >
+                      TRADE DEADLINE
+                    </div>
+                    <div className="text-[13.5px] font-semibold text-[#151515]">{formatDate(s.trade_end_date)}</div>
+                  </div>
+                  <div>
+                    <div
+                      className="text-[9px] tracking-[.14em] text-[var(--muted-dark)]"
+                      style={{ fontFamily: "var(--font-geist-mono)" }}
+                    >
+                      WAIVERS
+                    </div>
+                    <div className="text-[13.5px] font-semibold text-[#151515]">{`${s.waiver_type} · ${s.waiver_rule}`}</div>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         </section>
 
-        {/* Bylaws - not present anywhere in the repo, left as editable placeholders */}
-        <section className="mb-16">
-          <h2 className="text-2xl md:text-3xl font-bold text-gray-800 mb-2 uppercase">
-            League Bylaws
-          </h2>
-          <p className="text-xs text-gray-500 mb-6">
-            Dashed boxes are still unconfirmed — add the real details where you see one.
-          </p>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* League Bylaws */}
+        <section>
+          <SectionHeading subtitle="Outlined boxes are still unconfirmed">LEAGUE BYLAWS</SectionHeading>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-0.5 bg-[var(--rule)] mt-5">
             <RuleCard title="Roster Requirements">
-              <RuleList
+              <MarkerList
                 items={[
                   "Starters: QB, 2 RB, 2 WR, TE, FLEX, K, DEF.",
                   "Bench spots: 6.",
@@ -342,7 +449,7 @@ export default function RulesPage() {
               />
             </RuleCard>
             <RuleCard title="Scoring Settings">
-              <RuleList
+              <MarkerList
                 items={[
                   "Half-PPR (0.5 points per reception).",
                   "Interceptions: -2.",
@@ -354,7 +461,7 @@ export default function RulesPage() {
               </div>
             </RuleCard>
             <RuleCard title="Dues & Payouts">
-              <RuleList
+              <MarkerList
                 items={[
                   "League dues: $200 per team.",
                   "Weekly high roller earns a bonus payout.",
@@ -366,7 +473,7 @@ export default function RulesPage() {
               />
             </RuleCard>
             <RuleCard title="Keeper Rules">
-              <RuleList
+              <MarkerList
                 items={[
                   "First-time keeper: cost is round-sensitive, based on where the player was drafted or picked up off waivers.",
                   "A player kept before (already a keeper): cost is set by consensus ADP (Average Draft Position).",
@@ -375,7 +482,7 @@ export default function RulesPage() {
               />
             </RuleCard>
             <RuleCard title="Sacko & Loser's Bracket">
-              <RuleList
+              <MarkerList
                 items={[
                   "The league runs a Loser's Bracket (consolation bracket) each season.",
                   "The \"Sacko\" (last place) is the team with the worst regular season record — not necessarily the Loser's Bracket's ultimate loser.",
@@ -385,7 +492,7 @@ export default function RulesPage() {
               />
             </RuleCard>
             <RuleCard title="Weekly Loser Parlay">
-              <RuleList
+              <MarkerList
                 items={[
                   "The lowest scorer each regular season week owes $10 toward an NFL parlay.",
                   "Any player may submit one optional leg to the Weekly Loser Parlay Czar (AB) by noon each Sunday.",

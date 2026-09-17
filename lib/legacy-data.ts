@@ -38,6 +38,11 @@ function ownerForAlias(alias: string): Owner | undefined {
   return CURRENT_OWNERS.find((o) => o.aliases.includes(alias));
 }
 
+// URL-safe anchor slug for a manager's display name, e.g. "Jake Slagle" -> "mgr-jake-slagle".
+export function slug(name: string): string {
+  return "mgr-" + name.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+}
+
 export interface SeasonLine {
   year: number;
   team: string;
