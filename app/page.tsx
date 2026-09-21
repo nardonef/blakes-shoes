@@ -314,7 +314,7 @@ export default function Home() {
               TAP FOR SCOUTING REPORT
             </span>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-0.5 bg-[var(--rule)]">
+          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-0.5 bg-[var(--rule)]">
             {owners.map((owner) => (
               <Link
                 key={owner.name}
