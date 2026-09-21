@@ -233,27 +233,27 @@ export default function Home() {
                 className="text-[11px] tracking-[.14em] text-[var(--muted-light)]"
                 style={{ fontFamily: "var(--font-geist-mono)" }}
               >
-                2026 CALENDAR
+                2027 CALENDAR
               </span>
             </div>
             <div className="flex items-center gap-4 md:gap-[22px]">
               <div className="w-[78px] h-[78px] bg-[#151515] text-white flex flex-col items-center justify-center shrink-0">
                 <span className="text-[10px] tracking-[.16em] text-[var(--accent-light)]" style={{ fontFamily: "var(--font-geist-mono)" }}>
-                  SEPT
+                  JUNE
                 </span>
                 <span className="text-[38px] leading-[.9]" style={{ fontFamily: "var(--font-bebas-neue)" }}>
-                  5
+                  1
                 </span>
               </div>
               <div>
                 <div className="text-[24px] md:text-[30px] text-[#151515] leading-none" style={{ fontFamily: "var(--font-bebas-neue)" }}>
-                  DRAFT DAY
+                  J1 MEETING
                 </div>
                 <div
                   className="text-[11px] tracking-[.1em] text-[#5a5a56] mt-2"
                   style={{ fontFamily: "var(--font-geist-mono)" }}
                 >
-                  3:00 PM &middot; LOCATION TBD
+                  TIME TBD &middot; LOCATION TBD
                 </div>
               </div>
             </div>
@@ -314,7 +314,7 @@ export default function Home() {
               TAP FOR SCOUTING REPORT
             </span>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-0.5 bg-[var(--rule)]">
+          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-0.5 bg-[var(--rule)]">
             {owners.map((owner) => (
               <Link
                 key={owner.name}
