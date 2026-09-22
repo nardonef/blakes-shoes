@@ -138,3 +138,73 @@ describe("getLeagueTopLineStats", () => {
     expect(getLeagueTopLineStats().titlesByTopScorer).toBe(2);
   });
 });
+
+describe("getManagerLegacies — streaks, margins, and weekly extremes", () => {
+  const legacies = getManagerLegacies();
+  const byName = (name: string) => legacies.find((l) => l.owner.name === name)!;
+
+  it("finds Peter Klensch's 11-game win streak spanning 2016-2017", () => {
+    const streak = byName("Peter Klensch").longestWinStreak;
+    expect(streak?.length).toBe(11);
+    expect(streak?.startYear).toBe(2016);
+    expect(streak?.startWeek).toBe(16);
+    expect(streak?.endYear).toBe(2017);
+    expect(streak?.endWeek).toBe(10);
+  });
+
+  it("finds Eric Rios's 13-game losing streak in 2018, the longest in the league", () => {
+    const streak = byName("Eric Rios").longestLossStreak;
+    expect(streak?.length).toBe(13);
+    expect(streak?.startYear).toBe(2018);
+    expect(streak?.endYear).toBe(2018);
+    for (const legacy of legacies) {
+      expect(legacy.longestLossStreak?.length ?? 0).toBeLessThanOrEqual(13);
+    }
+  });
+
+  it("counts close (<=3pt) and blowout (>=25pt) games that sum to no more than total games played", () => {
+    for (const legacy of legacies) {
+      const totalGames = legacy.wins + legacy.losses + legacy.ties;
+      expect(legacy.closeGames.wins + legacy.closeGames.losses).toBeLessThanOrEqual(totalGames);
+      expect(legacy.blowoutGames.wins + legacy.blowoutGames.losses).toBeLessThanOrEqual(totalGames);
+    }
+  });
+
+  it("gives Peter Klensch the league's best career point differential", () => {
+    const best = [...legacies].sort((a, b) => b.pointDifferential - a.pointDifferential)[0];
+    expect(best.owner.name).toBe("Peter Klensch");
+  });
+
+  it("counts weeks as the week's top/bottom scorer, cross-checked independently for one manager", () => {
+    const alias = "Ryan Curran";
+    const byWeek = new Map<string, number[]>();
+    matchups.forEach((m) => {
+      if (m.matchup_type !== "regular") return;
+      const key = `${m.season_year}-${m.week}`;
+      const scores = byWeek.get(key) ?? [];
+      if (m.team1_score > 0) scores.push(m.team1_score);
+      if (m.team2_score > 0) scores.push(m.team2_score);
+      byWeek.set(key, scores);
+    });
+    let top = 0;
+    matchups.forEach((m) => {
+      if (m.matchup_type !== "regular") return;
+      const key = `${m.season_year}-${m.week}`;
+      const scores = byWeek.get(key)!;
+      const maxScore = Math.max(...scores);
+      if (m.team1_manager === alias && m.team1_score === maxScore) top += 1;
+      if (m.team2_manager === alias && m.team2_score === maxScore) top += 1;
+    });
+    expect(byName("Ryan Curran").weeksAsTopScorer).toBe(top);
+  });
+
+  it("flags each last-place season as the manager's actual final rank matching that season's team count", () => {
+    expect(byName("Ryan Kaplan").lastPlaceSeasons).toEqual([2025]);
+    expect(byName("Peter Klensch").lastPlaceSeasons).toEqual([]);
+  });
+
+  it("flags missed-playoff seasons only for managers who have ever missed one", () => {
+    expect(byName("Ryan Curran").missedPlayoffSeasons.length).toBe(1);
+    expect(byName("Peter Klensch").missedPlayoffSeasons).toEqual([]);
+  });
+});

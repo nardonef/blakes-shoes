@@ -123,6 +123,28 @@ export interface ManagerLegacy {
   allPlayLosses: number;
   allPlayTies: number;
   allPlayWinPct: number;
+  longestWinStreak: StreakInfo | null;
+  longestLossStreak: StreakInfo | null;
+  closeGames: MarginRecord;
+  blowoutGames: MarginRecord;
+  weeksAsTopScorer: number;
+  weeksAsBottomScorer: number;
+  pointDifferential: number;
+  lastPlaceSeasons: number[];
+  missedPlayoffSeasons: number[];
+}
+
+export interface StreakInfo {
+  length: number;
+  startYear: number;
+  startWeek: number;
+  endYear: number;
+  endWeek: number;
+}
+
+export interface MarginRecord {
+  wins: number;
+  losses: number;
 }
 
 interface AllPlayTally {
@@ -132,12 +154,18 @@ interface AllPlayTally {
   games: number;
 }
 
-// True all-play record: for every regular-season week, compare each manager's
-// score against every other manager who played that week (not just their
-// actual opponent). Keyed by raw manager alias, same as the rest of the
-// matchup data, so callers merge across an owner's aliases themselves.
-function computeAllPlayTallies(): Map<string, AllPlayTally> {
-  const byWeek = new Map<string, { manager: string; score: number }[]>();
+interface WeeklyExtremeTally {
+  top: number;
+  bottom: number;
+}
+
+type WeeklyScoreEntry = { manager: string; score: number };
+
+// Every regular-season (season, week) mapped to every manager's raw alias and
+// score that week — the shared basis for both the all-play record and the
+// top/bottom-scorer-of-the-week counts below.
+function buildWeeklyScores(): Map<string, WeeklyScoreEntry[]> {
+  const byWeek = new Map<string, WeeklyScoreEntry[]>();
   matchups.forEach((m: Matchup) => {
     if (m.matchup_type !== "regular") return;
     const key = `${m.season_year}-${m.week}`;
@@ -146,7 +174,14 @@ function computeAllPlayTallies(): Map<string, AllPlayTally> {
     if (m.team2_score > 0) entries.push({ manager: m.team2_manager, score: m.team2_score });
     byWeek.set(key, entries);
   });
+  return byWeek;
+}
 
+// True all-play record: for every regular-season week, compare each manager's
+// score against every other manager who played that week (not just their
+// actual opponent). Keyed by raw manager alias, same as the rest of the
+// matchup data, so callers merge across an owner's aliases themselves.
+function computeAllPlayTallies(byWeek: Map<string, WeeklyScoreEntry[]>): Map<string, AllPlayTally> {
   const tallies = new Map<string, AllPlayTally>();
   byWeek.forEach((entries) => {
     entries.forEach((entry, i) => {
@@ -170,8 +205,73 @@ function computeAllPlayTallies(): Map<string, AllPlayTally> {
   return tallies;
 }
 
+// How often each manager posted the single highest (or lowest) score of a
+// given regular-season week, league-wide.
+function computeWeeklyExtremes(byWeek: Map<string, WeeklyScoreEntry[]>): Map<string, WeeklyExtremeTally> {
+  const tallies = new Map<string, WeeklyExtremeTally>();
+  byWeek.forEach((entries) => {
+    if (entries.length < 2) return;
+    const maxScore = Math.max(...entries.map((e) => e.score));
+    const minScore = Math.min(...entries.map((e) => e.score));
+    entries.forEach((e) => {
+      const existing = tallies.get(e.manager) ?? { top: 0, bottom: 0 };
+      if (e.score === maxScore) existing.top += 1;
+      if (e.score === minScore) existing.bottom += 1;
+      tallies.set(e.manager, existing);
+    });
+  });
+  return tallies;
+}
+
+// Longest winning and losing streaks across a manager's full chronological
+// game log (regular season + playoffs).
+function computeStreaks(gamesChronological: GameResult[]): {
+  win: StreakInfo | null;
+  loss: StreakInfo | null;
+} {
+  let bestWin: StreakInfo | null = null;
+  let bestLoss: StreakInfo | null = null;
+  let curWinLen = 0;
+  let curLossLen = 0;
+  let curWinStart: GameResult | null = null;
+  let curLossStart: GameResult | null = null;
+
+  for (const g of gamesChronological) {
+    if (g.won) {
+      if (curWinLen === 0) curWinStart = g;
+      curWinLen += 1;
+      curLossLen = 0;
+      if (!bestWin || curWinLen > bestWin.length) {
+        bestWin = {
+          length: curWinLen,
+          startYear: curWinStart!.season,
+          startWeek: curWinStart!.week,
+          endYear: g.season,
+          endWeek: g.week,
+        };
+      }
+    } else {
+      if (curLossLen === 0) curLossStart = g;
+      curLossLen += 1;
+      curWinLen = 0;
+      if (!bestLoss || curLossLen > bestLoss.length) {
+        bestLoss = {
+          length: curLossLen,
+          startYear: curLossStart!.season,
+          startWeek: curLossStart!.week,
+          endYear: g.season,
+          endWeek: g.week,
+        };
+      }
+    }
+  }
+  return { win: bestWin, loss: bestLoss };
+}
+
 export function getManagerLegacies(): ManagerLegacy[] {
-  const allPlayTallies = computeAllPlayTallies();
+  const byWeek = buildWeeklyScores();
+  const allPlayTallies = computeAllPlayTallies(byWeek);
+  const weeklyExtremes = computeWeeklyExtremes(byWeek);
 
   return CURRENT_OWNERS.map((owner) => {
     const isOwner = (name: string) => owner.aliases.includes(name);
@@ -285,6 +385,60 @@ export function getManagerLegacies(): ManagerLegacy[] {
         : 0;
     const clutchRating = playoffGamesList.length > 0 ? playoffPPG - regularPPG : 0;
 
+    // Streaks, close/blowout record — all games, chronological order.
+    const chronoGames = [...games_].sort((a, b) => a.season - b.season || a.week - b.week);
+    const streaks = computeStreaks(chronoGames);
+    const closeGames = games_.reduce<MarginRecord>(
+      (acc, g) => {
+        if (Math.abs(g.margin) <= 3) {
+          if (g.won) acc.wins++;
+          else acc.losses++;
+        }
+        return acc;
+      },
+      { wins: 0, losses: 0 }
+    );
+    const blowoutGames = games_.reduce<MarginRecord>(
+      (acc, g) => {
+        if (Math.abs(g.margin) >= 25) {
+          if (g.won) acc.wins++;
+          else acc.losses++;
+        }
+        return acc;
+      },
+      { wins: 0, losses: 0 }
+    );
+
+    // Weeks as the league's single highest/lowest scorer that week.
+    const weeklyExtremeTotals = owner.aliases.reduce(
+      (acc, alias) => {
+        const t = weeklyExtremes.get(alias);
+        if (t) {
+          acc.top += t.top;
+          acc.bottom += t.bottom;
+        }
+        return acc;
+      },
+      { top: 0, bottom: 0 }
+    );
+
+    // Career point differential (points for minus points against).
+    const pointsAgainst = standings
+      .filter((s: Standing) => isOwner(s.manager_name))
+      .reduce((a, s) => a + s.points_against, 0);
+
+    // Seasons finished dead last, and seasons played but missed the playoffs.
+    const lastPlaceSeasons = seasons
+      .filter((s) => {
+        const info = leagueInfo.find((l) => l.season_year === s.year);
+        return info ? s.finalRank === info.num_teams : false;
+      })
+      .map((s) => s.year);
+    const playoffSeasonsSet = new Set(playoffGamesList.map((g) => g.season));
+    const missedPlayoffSeasons = seasons
+      .filter((s) => !playoffSeasonsSet.has(s.year))
+      .map((s) => s.year);
+
     // All-play record: this manager's score each regular-season week vs.
     // every other manager who played that week, summed across their aliases.
     const allPlay = owner.aliases.reduce<AllPlayTally>(
@@ -396,6 +550,15 @@ export function getManagerLegacies(): ManagerLegacy[] {
       allPlayLosses: allPlay.losses,
       allPlayTies: allPlay.ties,
       allPlayWinPct,
+      longestWinStreak: streaks.win,
+      longestLossStreak: streaks.loss,
+      closeGames,
+      blowoutGames,
+      weeksAsTopScorer: weeklyExtremeTotals.top,
+      weeksAsBottomScorer: weeklyExtremeTotals.bottom,
+      pointDifferential: pointsFor - pointsAgainst,
+      lastPlaceSeasons,
+      missedPlayoffSeasons,
     };
   });
 }
