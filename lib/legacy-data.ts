@@ -2,13 +2,15 @@ import championsData from "@/data/champions.json";
 import standingsData from "@/data/standings.json";
 import h2hData from "@/data/h2h_records.json";
 import matchupsData from "@/data/matchups.json";
+import leagueInfoData from "@/data/league_info.json";
 
-import type { Champion, Standing, H2HRecord, Matchup } from "@/types/stats";
+import type { Champion, Standing, H2HRecord, Matchup, LeagueInfo } from "@/types/stats";
 
 const champions = championsData as Champion[];
 const standings = standingsData as Standing[];
 const h2hRecords = h2hData as H2HRecord[];
 const matchups = matchupsData as Matchup[];
+const leagueInfo = leagueInfoData as LeagueInfo[];
 
 // Current league members and every manager-name alias they have used in the
 // underlying Yahoo data since 2012 (usernames changed over the years).
@@ -36,6 +38,12 @@ export const CURRENT_OWNERS: Owner[] = [
 
 function ownerForAlias(alias: string): Owner | undefined {
   return CURRENT_OWNERS.find((o) => o.aliases.includes(alias));
+}
+
+// Resolve a raw manager alias to their current display name, or pass through
+// unchanged for a manager who has since left the league.
+function resolveName(alias: string): string {
+  return ownerForAlias(alias)?.name ?? alias;
 }
 
 // URL-safe anchor slug for a manager's display name, e.g. "Jake Slagle" -> "mgr-jake-slagle".
@@ -110,25 +118,59 @@ export interface ManagerLegacy {
   consistency: number;
   bestRival: RivalRecord | null;
   worstRival: RivalRecord | null;
+  allPlayWins: number;
+  allPlayLosses: number;
+  allPlayTies: number;
+  allPlayWinPct: number;
+}
+
+interface AllPlayTally {
+  wins: number;
+  losses: number;
+  ties: number;
+  games: number;
+}
+
+// True all-play record: for every regular-season week, compare each manager's
+// score against every other manager who played that week (not just their
+// actual opponent). Keyed by raw manager alias, same as the rest of the
+// matchup data, so callers merge across an owner's aliases themselves.
+function computeAllPlayTallies(): Map<string, AllPlayTally> {
+  const byWeek = new Map<string, { manager: string; score: number }[]>();
+  matchups.forEach((m: Matchup) => {
+    if (m.matchup_type !== "regular") return;
+    const key = `${m.season_year}-${m.week}`;
+    const entries = byWeek.get(key) ?? [];
+    if (m.team1_score > 0) entries.push({ manager: m.team1_manager, score: m.team1_score });
+    if (m.team2_score > 0) entries.push({ manager: m.team2_manager, score: m.team2_score });
+    byWeek.set(key, entries);
+  });
+
+  const tallies = new Map<string, AllPlayTally>();
+  byWeek.forEach((entries) => {
+    entries.forEach((entry, i) => {
+      let wins = 0;
+      let losses = 0;
+      let ties = 0;
+      entries.forEach((other, j) => {
+        if (i === j) return;
+        if (entry.score > other.score) wins += 1;
+        else if (entry.score < other.score) losses += 1;
+        else ties += 1;
+      });
+      const existing = tallies.get(entry.manager) ?? { wins: 0, losses: 0, ties: 0, games: 0 };
+      existing.wins += wins;
+      existing.losses += losses;
+      existing.ties += ties;
+      existing.games += wins + losses + ties;
+      tallies.set(entry.manager, existing);
+    });
+  });
+  return tallies;
 }
 
 export function getManagerLegacies(): ManagerLegacy[] {
-  // League-wide average points per regular-season game, used as the
-  // baseline for the luck index (same method as the site-wide stats page).
-  let leagueTotalPoints = 0;
-  let leagueTotalGames = 0;
-  matchups.forEach((m) => {
-    if (m.matchup_type !== "regular") return;
-    if (m.team1_score > 0) {
-      leagueTotalPoints += m.team1_score;
-      leagueTotalGames += 1;
-    }
-    if (m.team2_score > 0) {
-      leagueTotalPoints += m.team2_score;
-      leagueTotalGames += 1;
-    }
-  });
-  const leagueAvgPPG = leagueTotalPoints / leagueTotalGames;
+  const allPlayTallies = computeAllPlayTallies();
 
   return CURRENT_OWNERS.map((owner) => {
     const isOwner = (name: string) => owner.aliases.includes(name);
@@ -241,9 +283,25 @@ export function getManagerLegacies(): ManagerLegacy[] {
         : 0;
     const clutchRating = playoffGamesList.length > 0 ? playoffPPG - regularPPG : 0;
 
-    // Luck index: actual regular-season wins vs. expected wins given scoring
-    const expectedWinRate = regularPPG / (2 * leagueAvgPPG);
-    const expectedWins = regularGames.length > 0 ? expectedWinRate * regularGames.length : 0;
+    // All-play record: this manager's score each regular-season week vs.
+    // every other manager who played that week, summed across their aliases.
+    const allPlay = owner.aliases.reduce<AllPlayTally>(
+      (acc, alias) => {
+        const t = allPlayTallies.get(alias);
+        if (t) {
+          acc.wins += t.wins;
+          acc.losses += t.losses;
+          acc.ties += t.ties;
+          acc.games += t.games;
+        }
+        return acc;
+      },
+      { wins: 0, losses: 0, ties: 0, games: 0 }
+    );
+    const allPlayWinPct = allPlay.games > 0 ? (allPlay.wins + allPlay.ties * 0.5) / allPlay.games : 0;
+
+    // Luck index: actual regular-season wins vs. the wins the all-play rate predicts
+    const expectedWins = regularGames.length > 0 ? allPlayWinPct * regularGames.length : 0;
     const luck = regularGames.length > 0 ? regularWins - expectedWins : 0;
 
     // Consistency: standard deviation of weekly scores
@@ -332,6 +390,120 @@ export function getManagerLegacies(): ManagerLegacy[] {
       consistency,
       bestRival,
       worstRival,
+      allPlayWins: allPlay.wins,
+      allPlayLosses: allPlay.losses,
+      allPlayTies: allPlay.ties,
+      allPlayWinPct,
     };
   });
+}
+
+export interface Banner {
+  year: number;
+  numTeams: number | null;
+  numPlayoffTeams: number | null;
+  champion: { name: string; team: string; wins: number; losses: number };
+  runnerUp: { name: string; team: string };
+  thirdPlace: { name: string; team: string };
+  topScorer: { name: string; team: string; points: number } | null;
+}
+
+// One row per season: champion, runner-up, third place and the season's
+// highest regular-season scorer, newest season first.
+export function getBanners(): Banner[] {
+  return [...champions]
+    .sort((a, b) => b.season_year - a.season_year)
+    .map((c) => {
+      const info = leagueInfo.find((l) => l.season_year === c.season_year);
+      const seasonStandings = standings.filter((s) => s.season_year === c.season_year);
+      const topScorerRow =
+        seasonStandings.length > 0
+          ? seasonStandings.reduce((a, b) => (b.points_for > a.points_for ? b : a))
+          : null;
+
+      return {
+        year: c.season_year,
+        numTeams: info?.num_teams ?? null,
+        numPlayoffTeams: info ? parseInt(info.num_playoff_teams, 10) : null,
+        champion: {
+          name: resolveName(c.champion_manager),
+          team: c.champion_team_name,
+          wins: c.champion_wins,
+          losses: c.champion_losses,
+        },
+        runnerUp: { name: resolveName(c.runner_up_manager), team: c.runner_up_team_name },
+        thirdPlace: { name: resolveName(c.third_place_manager), team: c.third_place_team_name },
+        topScorer: topScorerRow
+          ? {
+              name: resolveName(topScorerRow.manager_name),
+              team: topScorerRow.team_name,
+              points: topScorerRow.points_for,
+            }
+          : null,
+      };
+    });
+}
+
+export interface HeadToHeadCell {
+  wins: number;
+  losses: number;
+  ties: number;
+  games: number;
+}
+
+// Full current-owner x current-owner grid of career head-to-head records.
+// matrix[i][j] reads as owners[i]'s record against owners[j]; the diagonal is null.
+export function getHeadToHeadMatrix(): { owners: Owner[]; matrix: (HeadToHeadCell | null)[][] } {
+  const owners = CURRENT_OWNERS;
+  const cellFor = (a: Owner, b: Owner): HeadToHeadCell | null => {
+    if (a.name === b.name) return null;
+    const cell: HeadToHeadCell = { wins: 0, losses: 0, ties: 0, games: 0 };
+    h2hRecords.forEach((r: H2HRecord) => {
+      const m1IsA = a.aliases.includes(r.manager1);
+      const m2IsA = a.aliases.includes(r.manager2);
+      const m1IsB = b.aliases.includes(r.manager1);
+      const m2IsB = b.aliases.includes(r.manager2);
+      if (m1IsA && m2IsB) {
+        cell.wins += r.manager1_wins;
+        cell.losses += r.manager2_wins;
+        cell.ties += r.ties;
+        cell.games += r.total_matchups;
+      } else if (m2IsA && m1IsB) {
+        cell.wins += r.manager2_wins;
+        cell.losses += r.manager1_wins;
+        cell.ties += r.ties;
+        cell.games += r.total_matchups;
+      }
+    });
+    return cell.games > 0 ? cell : { wins: 0, losses: 0, ties: 0, games: 0 };
+  };
+
+  const matrix = owners.map((a) => owners.map((b) => cellFor(a, b)));
+  return { owners, matrix };
+}
+
+export interface LeagueTopLineStats {
+  seasonsRun: number;
+  differentChampions: number;
+  titlesByTopScorer: number;
+  totalChampionships: number;
+}
+
+export function getLeagueTopLineStats(): LeagueTopLineStats {
+  const seasonsRun = new Set(standings.map((s) => s.season_year)).size;
+  const differentChampions = new Set(champions.map((c) => resolveName(c.champion_manager))).size;
+
+  const titlesByTopScorer = champions.filter((c) => {
+    const seasonStandings = standings.filter((s) => s.season_year === c.season_year);
+    if (seasonStandings.length === 0) return false;
+    const topScorerRow = seasonStandings.reduce((a, b) => (b.points_for > a.points_for ? b : a));
+    return topScorerRow.manager_name === c.champion_manager;
+  }).length;
+
+  return {
+    seasonsRun,
+    differentChampions,
+    titlesByTopScorer,
+    totalChampionships: champions.length,
+  };
 }
