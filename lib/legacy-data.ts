@@ -59,6 +59,7 @@ export interface SeasonLine {
   ties: number;
   finalRank: number;
   pointsFor: number;
+  playoffSeed: string;
 }
 
 export interface GameResult {
@@ -186,6 +187,7 @@ export function getManagerLegacies(): ManagerLegacy[] {
         ties: s.ties,
         finalRank: s.final_rank,
         pointsFor: s.points_for,
+        playoffSeed: s.playoff_seed,
       }))
       .sort((a, b) => a.year - b.year);
 

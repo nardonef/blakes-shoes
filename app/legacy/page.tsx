@@ -24,7 +24,6 @@ function buildScoutingReport(legacy: ManagerLegacy, all: ManagerLegacy[]) {
   const n = all.length;
   const winPctRank = rankOf(all.map((l) => l.winPct), legacy.winPct, true);
   const ppgRank = rankOf(all.map((l) => l.avgPointsPerGame), legacy.avgPointsPerGame, true);
-  const champRank = rankOf(all.map((l) => l.championships), legacy.championships, true);
   const consistencyRankLowIsBest = rankOf(all.map((l) => l.consistency), legacy.consistency, false);
   const clutchRank = rankOf(all.map((l) => l.clutchRating), legacy.clutchRating, true);
 
@@ -51,9 +50,20 @@ function buildScoutingReport(legacy: ManagerLegacy, all: ManagerLegacy[]) {
     );
   }
 
-  if (legacy.championships > 0 && champRank <= 3) {
+  // A single title is the league-typical outcome here (9 of 12 current owners
+  // have exactly one), so it isn't a distinguishing "strength" on its own —
+  // only call it out when a manager leads or ties for the most titles.
+  const maxChampionships = Math.max(...all.map((l) => l.championships));
+  if (legacy.championships >= 2 && legacy.championships === maxChampionships) {
+    const tiedWith = all.filter(
+      (l) => l.championships === maxChampionships && l.owner.name !== legacy.owner.name
+    );
     strengths.push(
-      `${legacy.championships}-time champion (${legacy.championshipYears.join(", ")}) — knows how to close a season out.`
+      `${legacy.championships}-time champion (${legacy.championshipYears.join(", ")})${
+        tiedWith.length > 0
+          ? ` — tied with ${tiedWith.map((l) => l.owner.name).join(" and ")} for the most titles among current owners.`
+          : " — the most titles of any current owner."
+      }`
     );
   }
 
@@ -115,11 +125,22 @@ function luckBlurb(legacy: ManagerLegacy): string {
   return `Snakebitten: only ${legacy.regularWins} regular-season wins despite scoring that projects to ${legacy.expectedWins.toFixed(1)} — about ${Math.abs(l).toFixed(1)} wins worse than deserved.`;
 }
 
+// Describe a championship season with its actual seed and record, e.g.
+// "2023 (9-5, 3rd seed)", instead of just the bare year.
+function titleSeasonDetail(legacy: ManagerLegacy, year: number): string {
+  const season = legacy.seasons.find((s) => s.year === year);
+  if (!season) return String(year);
+  const seedNum = parseInt(season.playoffSeed, 10);
+  const seedText = Number.isFinite(seedNum) ? `, ${ordinal(seedNum)} seed` : "";
+  return `${year} (${season.wins}-${season.losses}${seedText})`;
+}
+
 function bestMomentBlurb(legacy: ManagerLegacy): string {
   const parts: string[] = [];
   if (legacy.championships > 0) {
+    const titleDetails = legacy.championshipYears.map((year) => titleSeasonDetail(legacy, year));
     parts.push(
-      `${legacy.championships > 1 ? "Multiple titles" : "League champion"} (${legacy.championshipYears.join(", ")}).`
+      `${legacy.championships > 1 ? `${legacy.championships}-time champion` : "League champion"}: ${titleDetails.join("; ")}.`
     );
   } else if (legacy.bestSeason) {
     parts.push(
