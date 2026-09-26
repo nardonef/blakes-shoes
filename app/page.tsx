@@ -269,34 +269,51 @@ export default function Home() {
             <span className="flex-1 h-0.5 bg-[#151515]" />
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 md:gap-x-11">
-            {champions.map((c) => (
-              <div
-                key={c.year}
-                className="flex items-baseline gap-2.5 md:gap-4 py-[11px] border-b border-[var(--rule)]"
-              >
-                <span
-                  className="text-[24px] md:text-[29px] text-[var(--accent)] w-[58px] shrink-0"
-                  style={{ fontFamily: "var(--font-bebas-neue)" }}
+            {champions.map((c) => {
+              const champOwner = owners.find((o) => o.name === c.manager);
+              return (
+                <div
+                  key={c.year}
+                  className="flex items-center gap-3 md:gap-4 py-2.5 border-b border-[var(--rule)]"
                 >
-                  {c.year}
-                </span>
-                <span className="text-sm font-semibold text-[#151515]">{c.manager}</span>
-                {(titleCounts.get(c.manager) ?? 0) > 1 && (
+                  <div className="w-[44px] h-[44px] md:w-[50px] md:h-[50px] rounded-full overflow-hidden shrink-0 relative bg-[var(--accent)]">
+                    {champOwner ? (
+                      <Image src={champOwner.image} alt={c.manager} fill className="object-cover" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <span
+                          className="text-[18px] text-[#f5f5f0]"
+                          style={{ fontFamily: "var(--font-bebas-neue)" }}
+                        >
+                          {c.manager.charAt(0)}
+                        </span>
+                      </div>
+                    )}
+                  </div>
                   <span
-                    className="text-[9.5px] font-semibold tracking-[.08em] text-[var(--accent)]"
+                    className="text-[22px] md:text-[26px] text-[var(--accent)] w-[46px] shrink-0"
+                    style={{ fontFamily: "var(--font-bebas-neue)" }}
+                  >
+                    {c.year}
+                  </span>
+                  <span className="text-[15px] font-semibold text-[#151515]">{c.manager}</span>
+                  {(titleCounts.get(c.manager) ?? 0) > 1 && (
+                    <span
+                      className="text-[9.5px] font-semibold tracking-[.08em] text-[var(--accent)]"
+                      style={{ fontFamily: "var(--font-geist-mono)" }}
+                    >
+                      ×{titleCounts.get(c.manager)}
+                    </span>
+                  )}
+                  <span
+                    className="text-[10.5px] text-[var(--muted-light)] ml-auto text-right"
                     style={{ fontFamily: "var(--font-geist-mono)" }}
                   >
-                    ×{titleCounts.get(c.manager)}
+                    {c.team}
                   </span>
-                )}
-                <span
-                  className="text-[10.5px] text-[var(--muted-light)] ml-auto text-right"
-                  style={{ fontFamily: "var(--font-geist-mono)" }}
-                >
-                  {c.team}
-                </span>
-              </div>
-            ))}
+                </div>
+              );
+            })}
           </div>
         </section>
 
@@ -314,20 +331,20 @@ export default function Home() {
               TAP FOR SCOUTING REPORT
             </span>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-0.5 bg-[var(--rule)]">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-0.5 bg-[var(--rule)]">
             {owners.map((owner) => (
               <Link
                 key={owner.name}
                 href={`/legacy#${slug(owner.name)}`}
-                className="bg-[var(--background)] hover:bg-white transition-colors duration-150 p-4 md:p-5 min-h-12 flex items-center gap-3.5"
+                className="bg-[var(--background)] hover:bg-white transition-colors duration-150 p-5 md:p-6 min-h-12 flex items-center gap-4 md:gap-5"
               >
-                <div className="w-[58px] h-[58px] rounded-full overflow-hidden shrink-0 bg-[var(--rule)] relative">
+                <div className="w-[88px] h-[88px] md:w-[104px] md:h-[104px] rounded-full overflow-hidden shrink-0 bg-[var(--rule)] relative">
                   <Image src={owner.image} alt={owner.name} fill className="object-cover" />
                 </div>
                 <div className="min-w-0">
-                  <div className="text-[13.5px] font-bold text-[#151515]">{owner.name}</div>
+                  <div className="text-[16px] md:text-[17px] font-bold text-[#151515]">{owner.name}</div>
                   <div
-                    className="text-[10px] tracking-[.06em] text-[var(--muted-light)] truncate"
+                    className="text-[10.5px] tracking-[.06em] text-[var(--muted-light)] truncate"
                     style={{ fontFamily: "var(--font-geist-mono)" }}
                   >
                     {owner.team.toUpperCase()}
