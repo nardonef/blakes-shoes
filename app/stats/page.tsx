@@ -65,7 +65,7 @@ function SectionHeading({
     <div className="mb-5">
       <div className="flex items-center gap-4 flex-wrap">
         <h2
-          className="text-[30px] md:text-[42px] text-[#151515]"
+          className="text-[32px] md:text-[46px] text-[#151515]"
           style={{ fontFamily: "var(--font-bebas-neue)" }}
         >
           {children}
@@ -265,7 +265,7 @@ function StatsContent() {
           >
             LEAGUE STATS
           </h1>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-0.5 bg-[#3a3a38] translate-y-px">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-0.5 bg-[var(--body-text)] translate-y-px">
             <div className="bg-[var(--panel)] p-4 md:p-[22px]">
               <div
                 className="text-[9.5px] font-semibold tracking-[.18em] text-[var(--muted-dark)] mb-1.5"
@@ -710,14 +710,14 @@ function StatsContent() {
             {/* Season Standings */}
             <section>
               <div className="flex items-center gap-4 mb-5 flex-wrap">
-                <h2 className="text-[30px] md:text-[42px] text-[#151515]" style={{ fontFamily: "var(--font-bebas-neue)" }}>
+                <h2 className="text-[32px] md:text-[46px] text-[#151515]" style={{ fontFamily: "var(--font-bebas-neue)" }}>
                   SEASON STANDINGS
                 </h2>
                 <span className="flex-1 min-w-[20px] h-0.5 bg-[#151515]" />
                 <select
                   value={selectedSeason}
                   onChange={(e) => setSelectedSeason(Number(e.target.value))}
-                  className="bg-[#151515] text-white border-none px-3.5 py-2.5 text-[11px] font-semibold tracking-[.12em] focus:outline-none"
+                  className="bg-[#151515] text-white border-none px-3.5 py-2.5 text-[11px] font-semibold tracking-[.12em] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent-light)]"
                   style={{ fontFamily: "var(--font-geist-mono)" }}
                 >
                   {seasons.map((season) => (

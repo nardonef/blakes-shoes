@@ -224,7 +224,7 @@ export default function Home() {
             </div>
           </section>
 
-          <section className="bg-white p-[22px] md:p-[30px] border-l-[3px] border-[var(--accent)]">
+          <section className="bg-white p-[22px] md:p-[30px]">
             <div className="flex items-baseline justify-between gap-3 mb-5 flex-wrap">
               <h3 className="text-[26px] md:text-[36px] text-[#151515]" style={{ fontFamily: "var(--font-bebas-neue)" }}>
                 NEXT UP

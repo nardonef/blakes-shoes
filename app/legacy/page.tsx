@@ -216,7 +216,7 @@ export default function LegacyPage() {
                 >
                   {String(index + 1).padStart(2, "0")}
                 </div>
-                <div className="w-[60px] h-[60px] md:w-[76px] md:h-[76px] rounded-full overflow-hidden bg-[#3a3a38] shrink-0 relative">
+                <div className="w-[60px] h-[60px] md:w-[76px] md:h-[76px] rounded-full overflow-hidden bg-[var(--body-text)] shrink-0 relative">
                   <Image
                     src={legacy.owner.image}
                     alt={legacy.owner.name}

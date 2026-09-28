@@ -35,7 +35,7 @@ export default function NavBar() {
                 className={`flex items-center justify-center min-w-[74px] px-2.5 md:px-[18px] py-4 text-[11px] font-semibold tracking-[.12em] transition-colors duration-150 ${
                   isActive
                     ? "bg-[var(--accent)] text-white"
-                    : "text-[#a3a3a0] hover:text-white"
+                    : "text-[var(--muted-dark)] hover:text-white"
                 }`}
                 style={{ fontFamily: "var(--font-geist-mono)" }}
               >

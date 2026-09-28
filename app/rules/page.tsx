@@ -50,7 +50,7 @@ function SectionHeading({ children, subtitle }: { children: React.ReactNode; sub
     <div className="mb-2">
       <div className="flex items-center gap-4 flex-wrap">
         <h2
-          className="text-[30px] md:text-[42px] text-[#151515]"
+          className="text-[32px] md:text-[46px] text-[#151515]"
           style={{ fontFamily: "var(--font-bebas-neue)" }}
         >
           {children}
@@ -79,7 +79,7 @@ function RuleCard({
   return (
     <div className="bg-white p-[22px] md:p-7">
       <h3
-        className="text-[22px] md:text-[27px] mb-4 text-[#151515]"
+        className="text-[22px] md:text-[30px] mb-4 text-[#151515]"
         style={{ fontFamily: "var(--font-bebas-neue)" }}
       >
         {title}
@@ -190,7 +190,7 @@ export default function RulesPage() {
           <SectionHeading subtitle="Posted by Commissioner Peter Klensch, Esq. in the league group chat">
             TOWN HALL NOTES
           </SectionHeading>
-          <div className="bg-white border-l-[3px] border-[var(--accent)] p-6 md:p-9 mt-5">
+          <div className="bg-white border border-[var(--rule)] p-6 md:p-9 mt-5">
             <h3
               className="text-[22px] md:text-[30px] mb-1 text-[#151515]"
               style={{ fontFamily: "var(--font-bebas-neue)" }}
