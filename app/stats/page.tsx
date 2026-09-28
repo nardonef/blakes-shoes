@@ -329,7 +329,7 @@ function StatsContent() {
       {/* Section picker */}
       <div className="bg-[var(--background)] border-b border-[var(--rule)]">
         <div className="max-w-[1160px] mx-auto px-4 md:px-10 pt-5 md:pt-7">
-          <div className="grid grid-cols-[repeat(auto-fit,minmax(210px,1fr))] gap-0.5 bg-[var(--rule)]">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-0.5 bg-[var(--rule)]">
             {TABS.map((tab) => {
               const active = activeTab === tab.id;
               return (
