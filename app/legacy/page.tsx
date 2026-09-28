@@ -162,7 +162,7 @@ export default function LegacyPage() {
 
   return (
     <div className="min-h-screen" style={{ background: "var(--background)" }}>
-      <header className="bg-[#151515] text-[#f5f5f0] px-4 md:px-10 py-8 md:py-[52px]">
+      <header className="bg-[var(--foreground)] text-[var(--background)] px-4 md:px-10 py-8 md:py-[52px]">
         <div className="max-w-[1160px] mx-auto">
           <div
             className="text-[11px] font-semibold tracking-[.26em] text-[var(--accent-light)] mb-2.5"
@@ -209,14 +209,14 @@ export default function LegacyPage() {
               className="bg-white scroll-mt-[70px]"
             >
               {/* Card header */}
-              <div className="flex flex-wrap items-center gap-3.5 md:gap-5 p-[18px] md:p-6 bg-[#151515] text-[#f5f5f0]">
+              <div className="flex flex-wrap items-center gap-3.5 md:gap-5 p-[18px] md:p-6 bg-[var(--foreground)] text-[var(--background)]">
                 <div
                   className="text-[26px] md:text-[34px] leading-none text-[var(--accent-light)] w-[42px] shrink-0"
                   style={{ fontFamily: "var(--font-bebas-neue)" }}
                 >
                   {String(index + 1).padStart(2, "0")}
                 </div>
-                <div className="w-[60px] h-[60px] md:w-[76px] md:h-[76px] rounded-full overflow-hidden bg-[#3a3a38] shrink-0 relative">
+                <div className="w-[60px] h-[60px] md:w-[76px] md:h-[76px] rounded-full overflow-hidden bg-[var(--body-text)] shrink-0 relative">
                   <Image
                     src={legacy.owner.image}
                     alt={legacy.owner.name}
@@ -376,7 +376,7 @@ export default function LegacyPage() {
                       >
                         OWNS
                       </span>
-                      <span className="text-sm font-semibold text-[#151515]">
+                      <span className="text-sm font-semibold text-[var(--foreground)]">
                         {legacy.bestRival!.opponentName} ({legacy.bestRival!.wins}-{legacy.bestRival!.losses}
                         {legacy.bestRival!.ties ? `-${legacy.bestRival!.ties}` : ""})
                       </span>
@@ -390,7 +390,7 @@ export default function LegacyPage() {
                       >
                         STRUGGLES VS
                       </span>
-                      <span className="text-sm font-semibold text-[#151515]">
+                      <span className="text-sm font-semibold text-[var(--foreground)]">
                         {legacy.worstRival!.opponentName} ({legacy.worstRival!.wins}-{legacy.worstRival!.losses}
                         {legacy.worstRival!.ties ? `-${legacy.worstRival!.ties}` : ""})
                       </span>
