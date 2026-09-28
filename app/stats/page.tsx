@@ -65,12 +65,12 @@ function SectionHeading({
     <div className="mb-5">
       <div className="flex items-center gap-4 flex-wrap">
         <h2
-          className="text-[32px] md:text-[46px] text-[#151515]"
+          className="text-[32px] md:text-[46px] text-[var(--foreground)]"
           style={{ fontFamily: "var(--font-bebas-neue)" }}
         >
           {children}
         </h2>
-        <span className="flex-1 min-w-[20px] h-0.5 bg-[#151515]" />
+        <span className="flex-1 min-w-[20px] h-0.5 bg-[var(--foreground)]" />
       </div>
       {subtitle && (
         <p
@@ -102,12 +102,12 @@ function SubHeading({
     <div className="mb-4">
       <div className="flex items-center gap-3.5">
         <h3
-          className="text-[24px] md:text-[32px] text-[#151515]"
+          className="text-[24px] md:text-[32px] text-[var(--foreground)]"
           style={{ fontFamily: "var(--font-bebas-neue)" }}
         >
           {children}
         </h3>
-        <span className="flex-1 h-0.5 bg-[#151515]" />
+        <span className="flex-1 h-0.5 bg-[var(--foreground)]" />
       </div>
       {subtitle && (
         <p
@@ -151,7 +151,7 @@ function RankedList({
               {row.rank}
             </div>
             <div className="flex-1 min-w-0">
-              <div className="text-[13.5px] font-semibold text-[#151515] truncate">{row.primary}</div>
+              <div className="text-[13.5px] font-semibold text-[var(--foreground)] truncate">{row.primary}</div>
               <div
                 className="text-[9.5px] text-[var(--muted-light)] truncate"
                 style={{ fontFamily: "var(--font-geist-mono)" }}
@@ -186,7 +186,7 @@ function CustomTooltip({
   if (!active || !payload) return null;
   return (
     <div className="bg-white p-3 border border-[var(--hairline)]">
-      <p className="font-semibold text-[#151515] mb-1">{label}</p>
+      <p className="font-semibold text-[var(--foreground)] mb-1">{label}</p>
       {payload.map((entry, index) => (
         <p key={index} className="text-sm" style={{ color: entry.color }}>
           {entry.name}: {typeof entry.value === "number" ? entry.value.toFixed(1) : entry.value}
@@ -251,7 +251,7 @@ function StatsContent() {
   return (
     <div className="min-h-screen" style={{ background: "var(--background)" }}>
       {/* Header band + summary tiles */}
-      <header className="bg-[#151515] text-[#f5f5f0] px-4 md:px-10 pt-8 md:pt-[52px]">
+      <header className="bg-[var(--foreground)] text-[var(--background)] px-4 md:px-10 pt-8 md:pt-[52px]">
         <div className="max-w-[1160px] mx-auto">
           <div
             className="text-[11px] font-semibold tracking-[.26em] text-[var(--accent-light)] mb-2.5"
@@ -342,7 +342,7 @@ function StatsContent() {
                   }`}
                 >
                   <span
-                    className={`text-[20px] md:text-[25px] leading-[1.02] ${active ? "text-white" : "text-[#151515]"}`}
+                    className={`text-[20px] md:text-[25px] leading-[1.02] ${active ? "text-white" : "text-[var(--foreground)]"}`}
                     style={{ fontFamily: "var(--font-bebas-neue)" }}
                   >
                     {tab.title}
@@ -375,7 +375,7 @@ function StatsContent() {
                 MANAGER LEADERBOARD
               </SectionHeading>
               <div
-                className="grid grid-cols-[22px_minmax(0,1fr)_28px_28px_42px_42px_26px] md:grid-cols-[36px_minmax(0,1fr)_46px_46px_62px_62px_40px] bg-[#151515] text-[#f5f5f0] text-[8px] md:text-[9.5px] font-semibold tracking-[.06em] md:tracking-[.1em]"
+                className="grid grid-cols-[22px_minmax(0,1fr)_28px_28px_42px_42px_26px] md:grid-cols-[36px_minmax(0,1fr)_46px_46px_62px_62px_40px] bg-[var(--foreground)] text-[var(--background)] text-[8px] md:text-[9.5px] font-semibold tracking-[.06em] md:tracking-[.1em]"
                 style={{ fontFamily: "var(--font-geist-mono)" }}
               >
                 <div className="py-[11px] pl-1.5 md:pl-3">#</div>
@@ -401,8 +401,8 @@ function StatsContent() {
                     >
                       {index + 1}
                     </div>
-                    <div className="py-[11px] px-1 md:px-2 font-semibold text-[#151515] truncate">{manager.manager}</div>
-                    <div className="py-[11px] px-0.5 md:px-1 text-right font-semibold text-[#151515]">{manager.totalWins}</div>
+                    <div className="py-[11px] px-1 md:px-2 font-semibold text-[var(--foreground)] truncate">{manager.manager}</div>
+                    <div className="py-[11px] px-0.5 md:px-1 text-right font-semibold text-[var(--foreground)]">{manager.totalWins}</div>
                     <div className="py-[11px] px-0.5 md:px-1 text-right text-[var(--muted-light)]">{manager.totalLosses}</div>
                     <div className="py-[11px] px-0.5 md:px-1 text-right font-semibold text-[var(--accent)]">
                       {(manager.winPercentage * 100).toFixed(1)}%
@@ -507,7 +507,7 @@ function StatsContent() {
                           className="h-[18px]"
                           style={{
                             width: `${(c.stdDev / consistencyMax) * 100}%`,
-                            background: i < 3 ? "var(--accent)" : "#151515",
+                            background: i < 3 ? "var(--accent)" : "var(--foreground)",
                           }}
                         />
                       </div>
@@ -526,7 +526,7 @@ function StatsContent() {
                     MOST CONSISTENT (TOP 3)
                   </span>
                   <span className="flex items-center gap-1.5">
-                    <span className="w-2.5 h-2.5 bg-[#151515]" />
+                    <span className="w-2.5 h-2.5 bg-[var(--foreground)]" />
                     BOOM OR BUST
                   </span>
                 </div>
@@ -547,7 +547,7 @@ function StatsContent() {
                 PLAYOFF PERFORMANCE
               </SectionHeading>
               <div
-                className="grid grid-cols-[20px_minmax(0,1fr)_36px_36px_36px_36px] md:grid-cols-[36px_minmax(0,1fr)_56px_56px_56px_56px] bg-[#151515] text-[#f5f5f0] text-[8px] md:text-[9.5px] font-semibold tracking-[.06em] md:tracking-[.1em]"
+                className="grid grid-cols-[20px_minmax(0,1fr)_36px_36px_36px_36px] md:grid-cols-[36px_minmax(0,1fr)_56px_56px_56px_56px] bg-[var(--foreground)] text-[var(--background)] text-[8px] md:text-[9.5px] font-semibold tracking-[.06em] md:tracking-[.1em]"
                 style={{ fontFamily: "var(--font-geist-mono)" }}
               >
                 <div className="py-[11px] pl-1.5 md:pl-3">#</div>
@@ -572,11 +572,11 @@ function StatsContent() {
                     >
                       {index + 1}
                     </div>
-                    <div className="py-[11px] px-1 md:px-2 font-semibold text-[#151515] truncate">{stats.manager}</div>
-                    <div className="py-[11px] px-0.5 md:px-1 text-right font-semibold text-[#151515]">
+                    <div className="py-[11px] px-1 md:px-2 font-semibold text-[var(--foreground)] truncate">{stats.manager}</div>
+                    <div className="py-[11px] px-0.5 md:px-1 text-right font-semibold text-[var(--foreground)]">
                       {stats.playoffWins}-{stats.playoffLosses}
                     </div>
-                    <div className="py-[11px] px-0.5 md:px-1 text-right text-[#151515]">{stats.playoffPPG.toFixed(1)}</div>
+                    <div className="py-[11px] px-0.5 md:px-1 text-right text-[var(--foreground)]">{stats.playoffPPG.toFixed(1)}</div>
                     <div className="py-[11px] px-0.5 md:px-1 text-right text-[var(--muted-light)]">{stats.regularPPG.toFixed(1)}</div>
                     <div
                       className="py-[11px] pr-1.5 pl-0.5 md:pr-3 md:pl-1 text-right text-[13px] md:text-[20px] leading-none"
@@ -686,7 +686,7 @@ function StatsContent() {
                         {record.manager1}
                       </span>
                       <span
-                        className="text-[20px] leading-none text-[#151515] shrink-0"
+                        className="text-[20px] leading-none text-[var(--foreground)] shrink-0"
                         style={{ fontFamily: "var(--font-bebas-neue)" }}
                       >
                         {record.manager1_wins}–{record.manager2_wins}
@@ -710,14 +710,14 @@ function StatsContent() {
             {/* Season Standings */}
             <section>
               <div className="flex items-center gap-4 mb-5 flex-wrap">
-                <h2 className="text-[32px] md:text-[46px] text-[#151515]" style={{ fontFamily: "var(--font-bebas-neue)" }}>
+                <h2 className="text-[32px] md:text-[46px] text-[var(--foreground)]" style={{ fontFamily: "var(--font-bebas-neue)" }}>
                   SEASON STANDINGS
                 </h2>
-                <span className="flex-1 min-w-[20px] h-0.5 bg-[#151515]" />
+                <span className="flex-1 min-w-[20px] h-0.5 bg-[var(--foreground)]" />
                 <select
                   value={selectedSeason}
                   onChange={(e) => setSelectedSeason(Number(e.target.value))}
-                  className="bg-[#151515] text-white border-none px-3.5 py-2.5 text-[11px] font-semibold tracking-[.12em] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent-light)]"
+                  className="bg-[var(--foreground)] text-white border-none px-3.5 py-2.5 text-[11px] font-semibold tracking-[.12em] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent-light)]"
                   style={{ fontFamily: "var(--font-geist-mono)" }}
                 >
                   {seasons.map((season) => (
@@ -729,7 +729,7 @@ function StatsContent() {
               </div>
 
               <div
-                className="grid grid-cols-[36px_minmax(0,1fr)_56px_50px_68px] bg-[#151515] text-[#f5f5f0] text-[9.5px] font-semibold tracking-[.1em]"
+                className="grid grid-cols-[36px_minmax(0,1fr)_56px_50px_68px] bg-[var(--foreground)] text-[var(--background)] text-[9.5px] font-semibold tracking-[.1em]"
                 style={{ fontFamily: "var(--font-geist-mono)" }}
               >
                 <div className="py-[11px] pl-3">#</div>
@@ -754,7 +754,7 @@ function StatsContent() {
                       {team.final_rank}
                     </div>
                     <div className="py-[11px] px-2 min-w-0">
-                      <div className="text-[13.5px] font-semibold text-[#151515] truncate">{team.team_name}</div>
+                      <div className="text-[13.5px] font-semibold text-[var(--foreground)] truncate">{team.team_name}</div>
                       <div
                         className="text-[9.5px] tracking-[.06em] text-[var(--muted-light)] truncate"
                         style={{ fontFamily: "var(--font-geist-mono)" }}
@@ -763,7 +763,7 @@ function StatsContent() {
                       </div>
                     </div>
                     <div
-                      className="py-[11px] px-1 text-right text-[20px] leading-none text-[#151515]"
+                      className="py-[11px] px-1 text-right text-[20px] leading-none text-[var(--foreground)]"
                       style={{ fontFamily: "var(--font-bebas-neue)" }}
                     >
                       {team.wins}-{team.losses}
@@ -886,7 +886,7 @@ function StatsContent() {
                             const data = payload[0].payload;
                             return (
                               <div className="bg-white p-3 border border-[var(--hairline)]">
-                                <p className="font-semibold text-[#151515]">{data.range} points</p>
+                                <p className="font-semibold text-[var(--foreground)]">{data.range} points</p>
                                 <p className="text-sm text-[var(--muted-light)]">{data.count} games</p>
                                 <p className="text-sm" style={{ color: chartColors.primary }}>
                                   {data.percentage.toFixed(1)}% of all games

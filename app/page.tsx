@@ -72,7 +72,7 @@ export default function Home() {
   return (
     <div className="min-h-screen" style={{ background: "var(--background)" }}>
       {/* Masthead */}
-      <header className="bg-[#151515] text-[#f5f5f0] text-center px-4 md:px-10 pt-10 md:pt-[60px] pb-9 md:pb-12">
+      <header className="bg-[var(--foreground)] text-[var(--background)] text-center px-4 md:px-10 pt-10 md:pt-[60px] pb-9 md:pb-12">
         <div className="flex items-center justify-center gap-3.5 mb-4 flex-wrap">
           <span className="w-4 md:w-8 h-0.5 bg-[var(--accent-light)]" />
           <span
@@ -107,9 +107,9 @@ export default function Home() {
 
       <main className="max-w-[1160px] mx-auto px-4 md:px-10 py-7 md:py-11 pb-14 md:pb-[88px] flex flex-col gap-8 md:gap-12">
         {/* Champion band */}
-        <section className="bg-[var(--accent)] text-[#f5f5f0] grid grid-cols-1 sm:grid-cols-2">
+        <section className="bg-[var(--accent)] text-[var(--background)] grid grid-cols-1 sm:grid-cols-2">
           <div className="p-[26px] md:p-[34px] flex flex-col items-center gap-4 border-b sm:border-b-0 sm:border-r border-white/[.18]">
-            <div className="w-[118px] h-[118px] md:w-[152px] md:h-[152px] rounded-full overflow-hidden border-[3px] border-[#f5f5f0] relative">
+            <div className="w-[118px] h-[118px] md:w-[152px] md:h-[152px] rounded-full overflow-hidden border-[3px] border-[var(--background)] relative">
               <Image
                 src={currentChampion.avatar}
                 alt={currentChampion.name}
@@ -187,7 +187,7 @@ export default function Home() {
 
         {/* Trade deadline + Next up */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-[26px]">
-          <section className="bg-[#151515] text-[#f5f5f0] p-[22px] md:p-[30px]">
+          <section className="bg-[var(--foreground)] text-[var(--background)] p-[22px] md:p-[30px]">
             <div className="flex items-baseline justify-between gap-3 mb-5 flex-wrap">
               <h3 className="text-[26px] md:text-[36px]" style={{ fontFamily: "var(--font-bebas-neue)" }}>
                 TRADE DEADLINE
@@ -226,7 +226,7 @@ export default function Home() {
 
           <section className="bg-white p-[22px] md:p-[30px]">
             <div className="flex items-baseline justify-between gap-3 mb-5 flex-wrap">
-              <h3 className="text-[26px] md:text-[36px] text-[#151515]" style={{ fontFamily: "var(--font-bebas-neue)" }}>
+              <h3 className="text-[26px] md:text-[36px] text-[var(--foreground)]" style={{ fontFamily: "var(--font-bebas-neue)" }}>
                 NEXT UP
               </h3>
               <span
@@ -237,7 +237,7 @@ export default function Home() {
               </span>
             </div>
             <div className="flex items-center gap-4 md:gap-[22px]">
-              <div className="w-[78px] h-[78px] bg-[#151515] text-white flex flex-col items-center justify-center shrink-0">
+              <div className="w-[78px] h-[78px] bg-[var(--foreground)] text-white flex flex-col items-center justify-center shrink-0">
                 <span className="text-[10px] tracking-[.16em] text-[var(--accent-light)]" style={{ fontFamily: "var(--font-geist-mono)" }}>
                   JUNE
                 </span>
@@ -246,7 +246,7 @@ export default function Home() {
                 </span>
               </div>
               <div>
-                <div className="text-[24px] md:text-[30px] text-[#151515] leading-none" style={{ fontFamily: "var(--font-bebas-neue)" }}>
+                <div className="text-[24px] md:text-[30px] text-[var(--foreground)] leading-none" style={{ fontFamily: "var(--font-bebas-neue)" }}>
                   J1 MEETING
                 </div>
                 <div
@@ -263,10 +263,10 @@ export default function Home() {
         {/* Hall of Champions */}
         <section>
           <div className="flex items-center gap-4 mb-5">
-            <h2 className="text-[32px] md:text-[46px] text-[#151515]" style={{ fontFamily: "var(--font-bebas-neue)" }}>
+            <h2 className="text-[32px] md:text-[46px] text-[var(--foreground)]" style={{ fontFamily: "var(--font-bebas-neue)" }}>
               HALL OF CHAMPIONS
             </h2>
-            <span className="flex-1 h-0.5 bg-[#151515]" />
+            <span className="flex-1 h-0.5 bg-[var(--foreground)]" />
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 md:gap-x-11">
             {champions.map((c) => {
@@ -282,7 +282,7 @@ export default function Home() {
                     ) : (
                       <div className="w-full h-full flex items-center justify-center">
                         <span
-                          className="text-[18px] text-[#f5f5f0]"
+                          className="text-[18px] text-[var(--background)]"
                           style={{ fontFamily: "var(--font-bebas-neue)" }}
                         >
                           {c.manager.charAt(0)}
@@ -296,7 +296,7 @@ export default function Home() {
                   >
                     {c.year}
                   </span>
-                  <span className="text-[15px] font-semibold text-[#151515]">{c.manager}</span>
+                  <span className="text-[15px] font-semibold text-[var(--foreground)]">{c.manager}</span>
                   {(titleCounts.get(c.manager) ?? 0) > 1 && (
                     <span
                       className="text-[9.5px] font-semibold tracking-[.08em] text-[var(--accent)]"
@@ -320,10 +320,10 @@ export default function Home() {
         {/* The Owners */}
         <section>
           <div className="flex items-center gap-4 mb-6 flex-wrap">
-            <h2 className="text-[32px] md:text-[46px] text-[#151515]" style={{ fontFamily: "var(--font-bebas-neue)" }}>
+            <h2 className="text-[32px] md:text-[46px] text-[var(--foreground)]" style={{ fontFamily: "var(--font-bebas-neue)" }}>
               THE OWNERS
             </h2>
-            <span className="flex-1 min-w-[20px] h-0.5 bg-[#151515]" />
+            <span className="flex-1 min-w-[20px] h-0.5 bg-[var(--foreground)]" />
             <span
               className="text-[11px] tracking-[.14em] text-[var(--muted-light)]"
               style={{ fontFamily: "var(--font-geist-mono)" }}
@@ -342,7 +342,7 @@ export default function Home() {
                   <Image src={owner.image} alt={owner.name} fill className="object-cover" />
                 </div>
                 <div className="min-w-0">
-                  <div className="text-[16px] md:text-[17px] font-bold text-[#151515]">{owner.name}</div>
+                  <div className="text-[16px] md:text-[17px] font-bold text-[var(--foreground)]">{owner.name}</div>
                   <div
                     className="text-[10.5px] tracking-[.06em] text-[var(--muted-light)] truncate"
                     style={{ fontFamily: "var(--font-geist-mono)" }}
