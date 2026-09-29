@@ -224,7 +224,7 @@ export default function LegacyPage() {
                     className="object-cover"
                   />
                 </div>
-                <div className="flex-1 basis-[200px] min-w-0">
+                <div className="flex-1 basis-0 md:basis-[200px] min-w-0">
                   <h2
                     className="text-[26px] md:text-[34px] leading-[1.02]"
                     style={{ fontFamily: "var(--font-bebas-neue)" }}
@@ -238,7 +238,7 @@ export default function LegacyPage() {
                     {legacy.owner.team.toUpperCase()} · {legacy.firstSeason}–{legacy.lastSeason}
                   </div>
                 </div>
-                <div className="flex gap-3.5 md:gap-[26px] flex-wrap items-end">
+                <div className="flex gap-3.5 md:gap-[26px] flex-wrap items-end w-full md:w-auto">
                   <div>
                     <div
                       className="text-[9px] tracking-[.14em] text-[var(--muted-dark)]"
