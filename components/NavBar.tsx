@@ -8,6 +8,7 @@ const links = [
   { href: "/rules", label: "RULES" },
   { href: "/legacy", label: "LEGACY" },
   { href: "/stats", label: "STATS" },
+  { href: "/jobs", label: "JOBS" },
 ];
 
 export default function NavBar() {
@@ -32,7 +33,7 @@ export default function NavBar() {
               <Link
                 key={link.href}
                 href={link.href}
-                className={`flex items-center justify-center min-w-[74px] px-2.5 md:px-[18px] py-4 text-[11px] font-semibold tracking-[.12em] transition-colors duration-150 ${
+                className={`flex items-center justify-center min-w-[60px] px-2.5 md:px-[18px] py-4 text-[11px] font-semibold tracking-[.12em] transition-colors duration-150 ${
                   isActive
                     ? "bg-[var(--accent)] text-white"
                     : "text-[#a3a3a0] hover:text-white"
