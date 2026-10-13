@@ -1,11 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import {
-  FEEDBACK_EMAIL,
-  MAX_MESSAGE_LENGTH,
-  buildFeedbackMailto,
-} from "@/lib/feedback";
+import { MAX_MESSAGE_LENGTH, buildFeedbackMailto } from "@/lib/feedback";
 
 const fieldClass =
   "w-full bg-[var(--background)] border border-[var(--rule)] px-4 py-3 text-base text-[#151515] focus:outline-none focus:border-[var(--accent)]";
@@ -77,14 +73,6 @@ export default function FeedbackForm() {
           Your mail app should open with the message ready. Press send there to finish.
         </p>
       )}
-
-      <p className="text-[12px] text-[var(--muted-light)] leading-[1.45]">
-        Nothing opening? Email{" "}
-        <a href={`mailto:${FEEDBACK_EMAIL}`} className="underline text-[var(--accent)]">
-          {FEEDBACK_EMAIL}
-        </a>{" "}
-        directly.
-      </p>
     </form>
   );
 }

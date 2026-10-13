@@ -16,13 +16,12 @@ Let anyone send the commissioner feedback from the site. Submissions are not ano
 - `components/FeedbackForm.tsx` (`"use client"`)
   - Controlled Name input and Message textarea (`maxLength` = cap), both required, with a live character count.
   - Submit calls `buildFeedbackMailto` and sets `window.location.href`.
-  - Always shows a fallback line with the plain address, for people with no mail client.
   - After submit shows "Your mail app should open. Press send there to finish." The site cannot confirm delivery.
 - `app/feedback/page.tsx`: server component, same header and container style as `/jobs`, renders `FeedbackForm`. Exports metadata title `Feedback | Blake's Shoes`.
 - `app/page.tsx`: add a small "Got feedback?" card linking to `/feedback`, placed after reading the page for the best spot (probably after the owners grid). No change to existing sections.
 
 ## Limits (accepted)
-- Nothing happens without a configured mail client (fallback address shown).
+- Nothing happens without a configured mail client (no fallback address is shown; removed at the owner's request).
 - No delivery confirmation.
 - "Not anonymous" is enforced only by the required Name field; the mail also carries the sender's own address.
 - Very long mailto URLs may be truncated by some clients, hence the 1500-character cap.
