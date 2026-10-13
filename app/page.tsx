@@ -360,6 +360,35 @@ export default function Home() {
             ))}
           </div>
         </section>
+
+        {/* Feedback CTA */}
+        <section>
+          <Link
+            href="/feedback"
+            className="bg-[var(--accent)] text-[#f5f5f0] p-6 md:p-9 min-h-12 flex items-center justify-between gap-4 hover:opacity-90 transition-opacity duration-150"
+          >
+            <div>
+              <div
+                className="text-[11px] font-semibold tracking-[.26em] text-[var(--accent-pale)] mb-2"
+                style={{ fontFamily: "var(--font-geist-mono)" }}
+              >
+                GOT FEEDBACK?
+              </div>
+              <div
+                className="text-[30px] md:text-[44px] leading-none"
+                style={{ fontFamily: "var(--font-bebas-neue)" }}
+              >
+                TELL THE COMMISH
+              </div>
+            </div>
+            <span
+              className="text-[22px] shrink-0"
+              style={{ fontFamily: "var(--font-geist-mono)" }}
+            >
+              ›
+            </span>
+          </Link>
+        </section>
       </main>
     </div>
   );
