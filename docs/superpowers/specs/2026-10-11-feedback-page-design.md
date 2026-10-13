@@ -6,7 +6,7 @@ Let anyone send the commissioner feedback from the site. Submissions are not ano
 ## Scope
 - New `/feedback` page with a form (Name, Message).
 - Call-to-action on the home page linking to `/feedback`.
-- Out of scope: server route, database, email provider, auth, NavBar link (five links already barely fit at 375px).
+- Out of scope: server route, database, email provider, auth. (A NavBar `FEEDBACK` link was added later at the owner's request; see Components.)
 
 ## Components
 - `lib/feedback.ts`
@@ -18,6 +18,7 @@ Let anyone send the commissioner feedback from the site. Submissions are not ano
   - Submit calls `buildFeedbackMailto` and sets `window.location.href`.
   - After submit shows "Your mail app should open. Press send there to finish." The site cannot confirm delivery.
 - `app/feedback/page.tsx`: server component, same header and container style as `/jobs`, renders `FeedbackForm`. Exports metadata title `Feedback | Blake's Shoes`.
+- `components/NavBar.tsx`: add a `FEEDBACK` link. Six links do not fit at 375px as styled (measured 391px against 343px available), so on mobile drop `min-w`, use `px-2` and `tracking-[.06em]`; from `md:` up keep `md:px-[18px]` and `md:tracking-[.12em]`.
 - `app/page.tsx`: add a small "Got feedback?" card linking to `/feedback`, placed after reading the page for the best spot (probably after the owners grid). No change to existing sections.
 
 ## Limits (accepted)

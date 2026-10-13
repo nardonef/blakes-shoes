@@ -16,7 +16,7 @@
 - Message cap is 1500 characters (`MAX_MESSAGE_LENGTH`).
 - Name and message are both required; name is not anonymous.
 - Subject is `Blake's Shoes feedback from <name>`; body is the message, a blank line, then `- <name>`.
-- No NavBar link (five links already barely fit at 375px). `NavBar` is rendered in `app/layout.tsx`; pages must not render it themselves.
+- A NavBar `FEEDBACK` link was added after the plan was executed (see spec); six links needed tighter mobile spacing. `NavBar` is rendered in `app/layout.tsx`; pages must not render it themselves.
 - Mobile-first: verify at a real 375px viewport (use emulate's viewport, not `resize_page`); touch targets at least 44px.
 - Fonts: use `var(--font-bebas-neue)` and `var(--font-geist-mono)` only. `var(--font-display)`, `var(--font-mono)`, `var(--font-sans)` never resolve.
 - Commit messages carry no AI attribution trailer (user rule). Do not open a PR or merge without the owner asking; never auto-merge.
