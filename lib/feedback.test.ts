@@ -52,6 +52,13 @@ describe("buildFeedbackMailto", () => {
     expect(parse(buildFeedbackMailto("Zoë", msg)).body).toBe(`${msg}\n\n- Zoë`);
   });
 
+  it("replaces a lone surrogate (half an emoji) instead of throwing", () => {
+    const halfEmoji = "\ud83c";
+    const p = parse(buildFeedbackMailto("Frank", `hi ${halfEmoji}`));
+    expect(p.body).toBe("hi \ufffd\n\n- Frank");
+    expect(parse(buildFeedbackMailto(`Zo${halfEmoji}`, "hi")).subject).toBe("Blake's Shoes feedback from Zo\ufffd");
+  });
+
   it("accepts a message of exactly the cap, including trailing padding that trims to it", () => {
     const exact = "x".repeat(MAX_MESSAGE_LENGTH);
     expect(() => buildFeedbackMailto("Frank", exact)).not.toThrow();
