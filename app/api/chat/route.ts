@@ -93,8 +93,23 @@ const tools = {
   }),
 };
 
+// Bound per-request input cost; the endpoint is public.
+const MAX_MESSAGES = 20;
+const MAX_MESSAGE_CHARS = 2000;
+
+function messageChars(m: UIMessage): number {
+  return m.parts.reduce((n, p) => n + (p.type === "text" ? p.text.length : 0), 0);
+}
+
 export async function POST(req: Request) {
   const { messages }: { messages: UIMessage[] } = await req.json();
+
+  if (messages.length > MAX_MESSAGES || messages.some((m) => messageChars(m) > MAX_MESSAGE_CHARS)) {
+    return Response.json(
+      { error: `Limit is ${MAX_MESSAGES} messages and ${MAX_MESSAGE_CHARS} characters per message.` },
+      { status: 400 }
+    );
+  }
 
   const result = streamText({
     model: anthropic("claude-haiku-5-5"),

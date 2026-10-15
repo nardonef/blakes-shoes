@@ -60,4 +60,21 @@ describe("POST /api/chat", () => {
     expect(body).toContain("Frankie and Kaplan are 9-9.");
     expect(step).toBe(2);
   });
+
+  function post(messages: unknown[]) {
+    return POST(new Request("http://localhost/api/chat", { method: "POST", body: JSON.stringify({ messages }) }));
+  }
+  const userMsg = (i: number, text = "hi") => ({ id: `u${i}`, role: "user", parts: [{ type: "text", text }] });
+
+  it("rejects more than 20 messages without calling the model", async () => {
+    const before = step;
+    const res = await post(Array.from({ length: 21 }, (_, i) => userMsg(i)));
+    expect(res.status).toBe(400);
+    expect(step).toBe(before);
+  });
+
+  it("rejects a message over 2000 characters", async () => {
+    const res = await post([userMsg(0, "x".repeat(2001))]);
+    expect(res.status).toBe(400);
+  });
 });

@@ -80,6 +80,7 @@ export default function ChatBox() {
         <textarea
           id="chat-input"
           rows={2}
+          maxLength={2000}
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => {
