@@ -1,0 +1,111 @@
+import { anthropic } from "@ai-sdk/anthropic";
+import {
+  convertToModelMessages,
+  createUIMessageStreamResponse,
+  isStepCount,
+  streamText,
+  tool,
+  toUIMessageStream,
+  type UIMessage,
+} from "ai";
+import { z } from "zod";
+import {
+  listManagers,
+  getChampions,
+  getSeasonStandings,
+  getCareerStats,
+  getHeadToHead,
+  getRecords,
+  queryMatchups,
+  getLeagueSettings,
+  RECORD_KINDS,
+} from "@/lib/chat-tools";
+
+export const maxDuration = 30;
+
+const SYSTEM = `You answer questions about the history of "Blake's Shoes", a 12-team Yahoo fantasy football league, seasons 2012-2025.
+
+Rules:
+- Every number, name, record or result you state must come from a tool call in this conversation. Never guess or use outside knowledge.
+- Manager names: pass what the user typed (e.g. "Kaplan", "Frankie") to the tools. If a tool says a name is ambiguous, ask the user which one they mean.
+- If a tool returns an error, fix the input (e.g. pick a valid season) or tell the user what's unavailable.
+- Data the league does NOT have: drafted player names, trades, waiver transactions, rosters, individual player stats. Say so plainly if asked.
+- Some early-season managers are hidden by Yahoo privacy settings and are excluded from all stats.
+- Keep answers short and direct. Reply in plain text (no markdown); use one line per row when listing several items.`;
+
+const season = z.number().int().describe("Season year, e.g. 2019");
+const managerName = z.string().describe("Manager name as the user wrote it, e.g. 'Kaplan'");
+
+const tools = {
+  listManagers: tool({
+    description: "List current owners (with current team names) and every manager who has ever played.",
+    inputSchema: z.object({}),
+    execute: async () => listManagers(),
+  }),
+  getChampions: tool({
+    description: "Champion, runner-up and third place for every season.",
+    inputSchema: z.object({}),
+    execute: async () => getChampions(),
+  }),
+  getSeasonStandings: tool({
+    description: "Final standings for one season: rank, manager, team, record, points for/against, playoff seed.",
+    inputSchema: z.object({ year: season }),
+    execute: async ({ year }) => getSeasonStandings(year),
+  }),
+  getCareerStats: tool({
+    description:
+      "All-time career stats per manager: seasons, W-L, win %, points, championships, playoff record, best/worst season and game. Omit manager for everyone.",
+    inputSchema: z.object({ manager: managerName.optional() }),
+    execute: async ({ manager }) => getCareerStats(manager),
+  }),
+  getHeadToHead: tool({
+    description:
+      "All-time head-to-head record (regular season + playoffs). Give both managers for one rivalry, or only managerA for their record against every opponent.",
+    inputSchema: z.object({ managerA: managerName, managerB: managerName.optional() }),
+    execute: async ({ managerA, managerB }) => getHeadToHead(managerA, managerB),
+  }),
+  getRecords: tool({
+    description:
+      "League-wide leaderboards: highest/lowest single-week scores, biggest blowouts, closest games, luck index (wins vs expected), scoring consistency (lowest std dev first), playoff performance (clutch rating).",
+    inputSchema: z.object({
+      kind: z.enum(RECORD_KINDS),
+      limit: z.number().int().min(1).max(25).default(10),
+    }),
+    execute: async ({ kind, limit }) => getRecords(kind, limit),
+  }),
+  queryMatchups: tool({
+    description:
+      "Search individual weekly games. All filters optional and combinable. When manager is given, each row is from that manager's side (result = their win/loss). Returns at most 50 rows plus totalMatches.",
+    inputSchema: z.object({
+      season: season.optional(),
+      week: z.number().int().optional(),
+      manager: managerName.optional(),
+      opponent: managerName.optional(),
+      type: z.enum(["regular", "playoff"]).optional(),
+      limit: z.number().int().min(1).max(50).optional(),
+    }),
+    execute: async (q) => queryMatchups(q),
+  }),
+  getLeagueSettings: tool({
+    description: "League settings for a season: team count, playoff start week, playoff teams, trade deadline, draft and waiver type.",
+    inputSchema: z.object({ year: season }),
+    execute: async ({ year }) => getLeagueSettings(year),
+  }),
+};
+
+export async function POST(req: Request) {
+  const { messages }: { messages: UIMessage[] } = await req.json();
+
+  const result = streamText({
+    model: anthropic("claude-haiku-5-5"),
+    system: SYSTEM,
+    messages: await convertToModelMessages(messages),
+    tools,
+    stopWhen: isStepCount(6),
+    maxOutputTokens: 1024,
+  });
+
+  return createUIMessageStreamResponse({
+    stream: toUIMessageStream({ stream: result.stream }),
+  });
+}
