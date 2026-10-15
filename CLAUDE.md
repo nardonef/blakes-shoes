@@ -85,4 +85,4 @@ Uses ESLint with Next.js configuration for both JavaScript and TypeScript.
 - The countdown timer updates every second using `useEffect` and `setInterval`
 - All hardcoded data is currently in `app/page.tsx` - consider extracting to separate data files if the site grows
 - Several UI sections are hidden or commented out for future implementation
-- The `/ask` chat page calls `app/api/chat/route.ts` (Claude Haiku via the Vercel AI SDK), which requires `ANTHROPIC_API_KEY` in `.env.local` locally and in the Vercel project env. Its data tools live in `lib/chat-tools.ts`
+- The `/shoesgpt` chat page (ShoesGPT) calls `app/api/chat/route.ts` (Claude Haiku via the Vercel AI SDK), which requires `ANTHROPIC_API_KEY` in `.env.local` locally and in the Vercel project env. Its data tools live in `lib/chat-tools.ts`

@@ -17,7 +17,7 @@ import {
   getPlayoffStats,
 } from "@/lib/stats-data";
 
-// Plain data-lookup functions backing the /ask chat tools. Every manager name
+// Plain data-lookup functions backing the /shoesgpt chat tools. Every manager name
 // returned here is the resolved display name (e.g. "Ryan Kaplan", not the raw
 // Yahoo username "Ryan").
 

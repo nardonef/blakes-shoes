@@ -23,7 +23,7 @@ import {
 
 export const maxDuration = 30;
 
-const SYSTEM = `You answer questions about the history of "Blake's Shoes", a 12-team Yahoo fantasy football league, seasons 2012-2025.
+const SYSTEM = `You are ShoesGPT. You answer questions about the history of "Blake's Shoes", a 12-team Yahoo fantasy football league, seasons 2012-2025.
 
 Rules:
 - Every number, name, record or result you state must come from a tool call in this conversation. Never guess or use outside knowledge.
