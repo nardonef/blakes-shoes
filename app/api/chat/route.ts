@@ -93,20 +93,27 @@ const tools = {
   }),
 };
 
-// Bound per-request input cost; the endpoint is public.
+// Bound per-request input cost; the endpoint is public. The total cap counts
+// every part (tool inputs/outputs included) since clients send full history.
+// The largest single tool output is ~11k chars, so 200k fits 10 normal turns.
 const MAX_MESSAGES = 20;
-const MAX_MESSAGE_CHARS = 2000;
+const MAX_USER_MESSAGE_CHARS = 2000;
+const MAX_TOTAL_CHARS = 200_000;
 
-function messageChars(m: UIMessage): number {
+function textChars(m: UIMessage): number {
   return m.parts.reduce((n, p) => n + (p.type === "text" ? p.text.length : 0), 0);
 }
 
 export async function POST(req: Request) {
   const { messages }: { messages: UIMessage[] } = await req.json();
 
-  if (messages.length > MAX_MESSAGES || messages.some((m) => messageChars(m) > MAX_MESSAGE_CHARS)) {
+  if (
+    messages.length > MAX_MESSAGES ||
+    JSON.stringify(messages).length > MAX_TOTAL_CHARS ||
+    messages.some((m) => m.role === "user" && textChars(m) > MAX_USER_MESSAGE_CHARS)
+  ) {
     return Response.json(
-      { error: `Limit is ${MAX_MESSAGES} messages and ${MAX_MESSAGE_CHARS} characters per message.` },
+      { error: `Limit is ${MAX_MESSAGES} messages and ${MAX_USER_MESSAGE_CHARS} characters per question.` },
       { status: 400 }
     );
   }

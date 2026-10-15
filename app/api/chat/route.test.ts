@@ -73,8 +73,39 @@ describe("POST /api/chat", () => {
     expect(step).toBe(before);
   });
 
-  it("rejects a message over 2000 characters", async () => {
+  it("rejects a user message over 2000 characters", async () => {
     const res = await post([userMsg(0, "x".repeat(2001))]);
     expect(res.status).toBe(400);
+  });
+
+  it("accepts a long assistant reply in history (cap is on user questions only)", async () => {
+    const res = await post([
+      userMsg(0),
+      { id: "a0", role: "assistant", parts: [{ type: "text", text: "y".repeat(4000) }] },
+      userMsg(1),
+    ]);
+    expect(res.status).toBe(200);
+  });
+
+  it("rejects oversized non-text parts that bypass the text cap", async () => {
+    const before = step;
+    const res = await post([
+      {
+        id: "a0",
+        role: "assistant",
+        parts: [
+          {
+            type: "tool-getChampions",
+            toolCallId: "c0",
+            state: "output-available",
+            input: {},
+            output: "x".repeat(200_001),
+          },
+        ],
+      },
+      userMsg(1),
+    ]);
+    expect(res.status).toBe(400);
+    expect(step).toBe(before);
   });
 });
