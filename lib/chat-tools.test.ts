@@ -106,6 +106,25 @@ describe("getRecords", () => {
   it("respects the limit", () => {
     expect(getRecords("closest_games", 3)).toHaveLength(3);
   });
+
+  it("ranks winless season starts (losses and ties count)", () => {
+    const r = getRecords("winless_season_starts", 3) as { manager: string; season: number; winlessGames: number }[];
+    expect(r.slice(0, 2)).toMatchObject([
+      { manager: "Ryan Kaplan", season: 2017, winlessGames: 6 },
+      { manager: "Eric Rios", season: 2022, winlessGames: 6 },
+    ]);
+    expect(r[2]).toMatchObject({ manager: "Ryan Kaplan", season: 2021, winlessGames: 5 });
+  });
+
+  it("ranks win streaks within a regular season", () => {
+    const [top] = getRecords("win_streaks", 1);
+    expect(top).toEqual({ manager: "Peter Klensch", season: 2017, streak: 10, fromWeek: 1, toWeek: 10 });
+  });
+
+  it("ranks losing streaks within a regular season", () => {
+    const [top] = getRecords("losing_streaks", 1);
+    expect(top).toEqual({ manager: "Eric Rios", season: 2018, streak: 12, fromWeek: 2, toWeek: 13 });
+  });
 });
 
 describe("queryMatchups", () => {

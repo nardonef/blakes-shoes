@@ -1,4 +1,5 @@
 import leagueInfoData from "@/data/league_info.json";
+import { buildLeagueTables, type GameRow } from "@/lib/league-sql";
 import { CURRENT_OWNERS, getManagerLegacies } from "@/lib/legacy-data";
 import {
   champions,
@@ -170,6 +171,9 @@ export const RECORD_KINDS = [
   "luck",
   "consistency",
   "playoff_performance",
+  "winless_season_starts",
+  "win_streaks",
+  "losing_streaks",
 ] as const;
 export type RecordKind = (typeof RECORD_KINDS)[number];
 
@@ -194,7 +198,70 @@ export function getRecords(kind: RecordKind, limit = 10) {
       return getManagerConsistency().slice(0, limit);
     case "playoff_performance":
       return getPlayoffStats().slice(0, limit);
+    case "winless_season_starts":
+      return getWinlessStarts().slice(0, limit);
+    case "win_streaks":
+      return getStreaks("W").slice(0, limit);
+    case "losing_streaks":
+      return getStreaks("L").slice(0, limit);
   }
+}
+
+// Regular-season games per manager-season in week order.
+function regularSeasonLogs(): { season: number; manager: string; games: GameRow[] }[] {
+  const logs = new Map<string, { season: number; manager: string; games: GameRow[] }>();
+  buildLeagueTables()
+    .games.filter((g) => g.game_type === "regular")
+    .forEach((g) => {
+      const key = `${g.season}|${g.manager}`;
+      const log = logs.get(key) ?? { season: g.season, manager: g.manager, games: [] };
+      log.games.push(g);
+      logs.set(key, log);
+    });
+  const all = Array.from(logs.values());
+  all.forEach((l) => l.games.sort((a, b) => a.week - b.week));
+  return all;
+}
+
+// Games without a win (losses and ties) from week 1 of a regular season.
+function getWinlessStarts() {
+  return regularSeasonLogs()
+    .map(({ season, manager, games }) => {
+      const firstWin = games.findIndex((g) => g.result === "W");
+      const start = firstWin === -1 ? games : games.slice(0, firstWin);
+      const ties = start.filter((g) => g.result === "T").length;
+      return {
+        manager,
+        season,
+        winlessGames: start.length,
+        record: `0-${start.length - ties}${ties ? `-${ties}` : ""}`,
+        firstWinWeek: firstWin === -1 ? null : games[firstWin].week,
+      };
+    })
+    .filter((s) => s.winlessGames > 0)
+    .sort((a, b) => b.winlessGames - a.winlessGames || a.season - b.season);
+}
+
+// Longest consecutive run of one result within a regular season (a tie breaks it).
+function getStreaks(result: "W" | "L") {
+  return regularSeasonLogs()
+    .map(({ season, manager, games }) => {
+      let best = { length: 0, fromWeek: 0, toWeek: 0 };
+      let run = 0;
+      let from = 0;
+      for (const g of games) {
+        if (g.result !== result) {
+          run = 0;
+          continue;
+        }
+        if (run === 0) from = g.week;
+        run++;
+        if (run > best.length) best = { length: run, fromWeek: from, toWeek: g.week };
+      }
+      return { manager, season, streak: best.length, fromWeek: best.fromWeek, toWeek: best.toWeek };
+    })
+    .filter((s) => s.streak > 0)
+    .sort((a, b) => b.streak - a.streak || a.season - b.season);
 }
 
 export interface MatchupQuery {
