@@ -20,6 +20,7 @@ import {
   getLeagueSettings,
   RECORD_KINDS,
 } from "@/lib/chat-tools";
+import { runSql, SQL_SCHEMA, MAX_SQL_ROWS } from "@/lib/league-sql";
 
 export const maxDuration = 30;
 
@@ -28,7 +29,9 @@ const SYSTEM = `You are ShoesGPT. You answer questions about the history of "Bla
 Rules:
 - Every number, name, record or result you state must come from a tool call in this conversation. Never guess or use outside knowledge.
 - Manager names: pass what the user typed (e.g. "Kaplan", "Frankie") to the tools. If a tool says a name is ambiguous, ask the user which one they mean.
-- If a tool returns an error, fix the input (e.g. pick a valid season) or tell the user what's unavailable.
+- Use the specific tools first (champions, standings, career stats, head-to-head, records incl. streaks, matchups). Use runSql only for questions they can't answer, such as counts, thresholds, splits by week or opponent, or anything spanning many seasons.
+- Never answer from partial data. If a result says truncated: true, or a queryMatchups totalMatches is larger than the rows returned, aggregate in SQL instead or tell the user you couldn't get the full answer.
+- If a tool returns an error, fix the input (e.g. pick a valid season or correct the SQL) or tell the user what's unavailable.
 - Data the league does NOT have: drafted player names, trades, waiver transactions, rosters, individual player stats. Say so plainly if asked.
 - Some early-season managers are hidden by Yahoo privacy settings and are excluded from all stats.
 - Keep answers short and direct. Reply in plain text (no markdown); use one line per row when listing several items.`;
@@ -66,7 +69,7 @@ const tools = {
   }),
   getRecords: tool({
     description:
-      "League-wide leaderboards: highest/lowest single-week scores, biggest blowouts, closest games, luck index (wins vs expected), scoring consistency (lowest std dev first), playoff performance (clutch rating).",
+      "League-wide leaderboards: highest/lowest single-week scores, biggest blowouts, closest games, luck index (wins vs expected), scoring consistency (lowest std dev first), playoff performance (clutch rating), winless season starts (games without a win from week 1, ties count as winless), and longest win/losing streaks within a regular season.",
     inputSchema: z.object({
       kind: z.enum(RECORD_KINDS),
       limit: z.number().int().min(1).max(25).default(10),
@@ -85,6 +88,14 @@ const tools = {
       limit: z.number().int().min(1).max(50).optional(),
     }),
     execute: async (q) => queryMatchups(q),
+  }),
+  runSql: tool({
+    description: `Run one read-only SQLite SELECT over the whole league history. Returns at most ${MAX_SQL_ROWS} rows; aggregate (COUNT, SUM, GROUP BY, ORDER BY ... LIMIT) instead of fetching raw rows. 3 second limit.
+
+Tables:
+${SQL_SCHEMA}`,
+    inputSchema: z.object({ sql: z.string().describe("A single SELECT or WITH query") }),
+    execute: async ({ sql }) => runSql(sql),
   }),
   getLeagueSettings: tool({
     description: "League settings for a season: team count, playoff start week, playoff teams, trade deadline, draft and waiver type.",
@@ -123,8 +134,9 @@ export async function POST(req: Request) {
     system: SYSTEM,
     messages: await convertToModelMessages(messages),
     tools,
-    stopWhen: isStepCount(6),
-    maxOutputTokens: 1024,
+    stopWhen: isStepCount(8),
+    // Haiku's reasoning counts against this; 1024 cut off multi-tool steps mid-call.
+    maxOutputTokens: 4096,
   });
 
   return createUIMessageStreamResponse({

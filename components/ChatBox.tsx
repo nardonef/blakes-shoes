@@ -95,7 +95,14 @@ export default function ChatBox() {
               <div key={m.id} className="flex gap-3">
                 <Avatar />
                 <div className="flex-1 min-w-0 pt-1 text-[15px] leading-[1.6] text-[#151515] whitespace-pre-wrap break-words">
-                  {text || (busy ? <Thinking /> : null)}
+                  {text ||
+                    (busy ? (
+                      <Thinking />
+                    ) : (
+                      <span className="text-[var(--muted-light)]">
+                        ShoesGPT couldn&apos;t finish that answer. Try asking it more specifically.
+                      </span>
+                    ))}
                 </div>
               </div>
             );
