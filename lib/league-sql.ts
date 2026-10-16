@@ -179,9 +179,21 @@ process.on("message", (msg) => {
 
 export type SqlResult = { rows: Record<string, unknown>[]; truncated: boolean } | { error: string };
 
+// Queries share one process and run one at a time, so a slow query delays
+// the rest by at most SQL_TIMEOUT_MS. Temp data spills to disk (memory stays
+// small; hard_heap_limit isn't enforced by Node's SQLite build) and is freed
+// when the query ends or the process is killed.
+interface Pending {
+  proc: ChildProcess;
+  sql: string;
+  retried: boolean;
+  timer: NodeJS.Timeout;
+  resolve: (r: SqlResult) => void;
+}
+
 let child: ChildProcess | null = null;
 let nextId = 0;
-const pending = new Map<number, { proc: ChildProcess; done: (r: SqlResult) => void }>();
+const pending = new Map<number, Pending>();
 
 function getChild(): ChildProcess {
   if (child) return child;
@@ -190,19 +202,12 @@ function getChild(): ChildProcess {
   });
   c.on("message", (m: { id: number } & SqlResult) => {
     const entry = pending.get(m.id);
-    if (!entry) return;
+    if (!entry || entry.proc !== c) return;
     pending.delete(m.id);
-    entry.done("error" in m ? { error: m.error } : { rows: m.rows, truncated: m.truncated });
+    clearTimeout(entry.timer);
+    entry.resolve("error" in m ? { error: m.error } : { rows: m.rows, truncated: m.truncated });
   });
-  c.on("exit", () => {
-    if (child === c) child = null;
-    // Only fail queries sent to this process; a replacement may already be running others.
-    for (const [id, entry] of pending) {
-      if (entry.proc !== c) continue;
-      pending.delete(id);
-      entry.done({ error: "Query process exited unexpectedly. Try again." });
-    }
-  });
+  c.on("exit", () => failOver(c));
   // Don't keep the parent alive just for an idle query process.
   c.unref();
   c.channel?.unref();
@@ -211,27 +216,35 @@ function getChild(): ChildProcess {
   return c;
 }
 
-export function runSql(sql: string): Promise<SqlResult> {
+// Move queries off a dead process. Innocent queries that were queued behind
+// a killed one get one retry on a fresh process; a second loss is reported.
+function failOver(dead: ChildProcess) {
+  if (child === dead) child = null;
+  for (const [id, entry] of pending) {
+    if (entry.proc !== dead) continue;
+    pending.delete(id);
+    clearTimeout(entry.timer);
+    if (entry.retried) entry.resolve({ error: "Query process exited unexpectedly. Try again." });
+    else dispatch(id, entry.sql, entry.resolve, true);
+  }
+}
+
+function dispatch(id: number, sql: string, resolve: (r: SqlResult) => void, retried: boolean) {
   const c = getChild();
-  const id = nextId++;
-  return new Promise((resolve) => {
-    const timer = setTimeout(() => {
-      pending.delete(id);
-      if (child === c) child = null;
-      c.kill("SIGKILL");
-      resolve({
-        error: `Query took longer than ${SQL_TIMEOUT_MS / 1000}s and was stopped. Simplify it (avoid cross joins and unbounded recursion).`,
-      });
-    }, SQL_TIMEOUT_MS);
-    pending.set(id, {
-      proc: c,
-      done: (r) => {
-        clearTimeout(timer);
-        resolve(r);
-      },
+  const timer = setTimeout(() => {
+    pending.delete(id);
+    resolve({
+      error: `Query took longer than ${SQL_TIMEOUT_MS / 1000}s and was stopped. Simplify it (avoid cross joins and unbounded recursion).`,
     });
-    c.send({ id, sql });
-  });
+    c.kill("SIGKILL");
+    failOver(c);
+  }, SQL_TIMEOUT_MS);
+  pending.set(id, { proc: c, sql, retried, timer, resolve });
+  c.send({ id, sql });
+}
+
+export function runSql(sql: string): Promise<SqlResult> {
+  return new Promise((resolve) => dispatch(nextId++, sql, resolve, false));
 }
 
 // Test helper: stop the query process.

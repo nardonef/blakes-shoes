@@ -93,4 +93,16 @@ describe("runSql", () => {
     },
     SQL_TIMEOUT_MS + 10_000
   );
+
+  it(
+    "doesn't fail other queries queued behind a killed one",
+    async () => {
+      const runaway = runSql("WITH RECURSIVE c(n) AS (SELECT 1 UNION ALL SELECT n + 1 FROM c) SELECT COUNT(*) FROM c");
+      const innocent = runSql("SELECT COUNT(*) AS n FROM champions");
+      const [r1, r2] = await Promise.all([runaway, innocent]);
+      expect((r1 as { error: string }).error).toMatch(/took longer/);
+      expect(r2).toEqual({ rows: [{ n: 14 }], truncated: false });
+    },
+    SQL_TIMEOUT_MS * 2 + 10_000
+  );
 });
