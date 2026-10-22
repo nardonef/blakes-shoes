@@ -50,12 +50,12 @@ function SectionHeading({ children, subtitle }: { children: React.ReactNode; sub
     <div className="mb-2">
       <div className="flex items-center gap-4 flex-wrap">
         <h2
-          className="text-[30px] md:text-[42px] text-[#151515]"
+          className="text-[32px] md:text-[46px] text-[var(--foreground)]"
           style={{ fontFamily: "var(--font-bebas-neue)" }}
         >
           {children}
         </h2>
-        <span className="flex-1 min-w-[20px] h-0.5 bg-[#151515]" />
+        <span className="flex-1 min-w-[20px] h-0.5 bg-[var(--foreground)]" />
       </div>
       {subtitle && (
         <p
@@ -79,7 +79,7 @@ function RuleCard({
   return (
     <div className="bg-white p-[22px] md:p-7">
       <h3
-        className="text-[22px] md:text-[27px] mb-4 text-[#151515]"
+        className="text-[22px] md:text-[30px] mb-4 text-[var(--foreground)]"
         style={{ fontFamily: "var(--font-bebas-neue)" }}
       >
         {title}
@@ -98,7 +98,7 @@ function Fact({ label, value }: { label: string; value: string | number }) {
       >
         {label.toUpperCase()}
       </span>
-      <span className="text-sm font-semibold text-[#151515] text-right">{value}</span>
+      <span className="text-sm font-semibold text-[var(--foreground)] text-right">{value}</span>
     </div>
   );
 }
@@ -133,7 +133,7 @@ function MarkerList({ items }: { items: string[] }) {
 export default function RulesPage() {
   return (
     <div className="min-h-screen" style={{ background: "var(--background)" }}>
-      <header className="bg-[#151515] text-[#f5f5f0] px-4 md:px-10 py-8 md:py-[52px]">
+      <header className="bg-[var(--foreground)] text-[var(--background)] px-4 md:px-10 py-8 md:py-[52px]">
         <div className="max-w-[1160px] mx-auto flex items-end justify-between gap-5 flex-wrap">
           <div>
             <div
@@ -160,7 +160,7 @@ export default function RulesPage() {
 
       <main className="max-w-[1160px] mx-auto px-4 md:px-10 py-7 md:py-11 pb-14 md:pb-[88px] flex flex-col gap-9 md:gap-14">
         {/* Official Rules */}
-        <section className="bg-[var(--accent)] text-[#f5f5f0] p-6 md:p-9">
+        <section className="bg-[var(--accent)] text-[var(--background)] p-6 md:p-9">
           <div
             className="text-[11px] font-semibold tracking-[.26em] text-[var(--accent-pale)] mb-[18px]"
             style={{ fontFamily: "var(--font-geist-mono)" }}
@@ -174,7 +174,7 @@ export default function RulesPage() {
                 className="flex gap-3.5 md:gap-[22px] items-baseline border-t border-white/[.22] pt-[18px]"
               >
                 <span
-                  className="text-[34px] md:text-[44px] leading-none shrink-0 text-[#f5f5f0]"
+                  className="text-[34px] md:text-[44px] leading-none shrink-0 text-[var(--background)]"
                   style={{ fontFamily: "var(--font-bebas-neue)" }}
                 >
                   {String(index + 1).padStart(2, "0")}
@@ -190,9 +190,9 @@ export default function RulesPage() {
           <SectionHeading subtitle="Posted by Commissioner Peter Klensch, Esq. in the league group chat">
             TOWN HALL NOTES
           </SectionHeading>
-          <div className="bg-white border-l-[3px] border-[var(--accent)] p-6 md:p-9 mt-5">
+          <div className="bg-white border border-[var(--rule)] p-6 md:p-9 mt-5">
             <h3
-              className="text-[22px] md:text-[30px] mb-1 text-[#151515]"
+              className="text-[22px] md:text-[30px] mb-1 text-[var(--foreground)]"
               style={{ fontFamily: "var(--font-bebas-neue)" }}
             >
               JUNE 1, 2026 — FIRST ANNUAL BICENTENNIAL MEMORIAL J1 TOWN HALL
@@ -276,7 +276,7 @@ export default function RulesPage() {
           <SectionHeading subtitle="Result of the draft-position lottery">DRAFT ORDER</SectionHeading>
           <div className="mt-5">
             <div
-              className="grid grid-cols-[52px_1fr_auto] bg-[#151515] text-[#f5f5f0] text-[9.5px] font-semibold tracking-[.16em]"
+              className="grid grid-cols-[52px_1fr_auto] bg-[var(--foreground)] text-[var(--background)] text-[9.5px] font-semibold tracking-[.16em]"
               style={{ fontFamily: "var(--font-geist-mono)" }}
             >
               <div className="py-3 px-3.5">PICK</div>
@@ -296,7 +296,7 @@ export default function RulesPage() {
                     {slot.pick}
                   </div>
                   <div className="py-3 px-3.5 min-w-0">
-                    <div className="text-sm font-semibold text-[#151515]">{slot.owner}</div>
+                    <div className="text-sm font-semibold text-[var(--foreground)]">{slot.owner}</div>
                     <div
                       className="text-[10px] tracking-[.06em] text-[var(--muted-light)] truncate"
                       style={{ fontFamily: "var(--font-geist-mono)" }}
@@ -305,7 +305,7 @@ export default function RulesPage() {
                     </div>
                   </div>
                   <div className="py-3 px-3.5 text-right">
-                    <div className="text-sm font-semibold text-[#151515]">{slot.keeper}</div>
+                    <div className="text-sm font-semibold text-[var(--foreground)]">{slot.keeper}</div>
                     <div
                       className="text-[10px] tracking-[.06em] text-[var(--muted-light)]"
                       style={{ fontFamily: "var(--font-geist-mono)" }}
@@ -382,7 +382,7 @@ export default function RulesPage() {
                     >
                       TEAMS
                     </div>
-                    <div className="text-[13.5px] font-semibold text-[#151515]">{s.num_teams}</div>
+                    <div className="text-[13.5px] font-semibold text-[var(--foreground)]">{s.num_teams}</div>
                   </div>
                   <div>
                     <div
@@ -391,7 +391,7 @@ export default function RulesPage() {
                     >
                       DRAFT
                     </div>
-                    <div className="text-[13.5px] font-semibold text-[#151515] capitalize">{s.draft_type}</div>
+                    <div className="text-[13.5px] font-semibold text-[var(--foreground)] capitalize">{s.draft_type}</div>
                   </div>
                   <div>
                     <div
@@ -400,7 +400,7 @@ export default function RulesPage() {
                     >
                       PLAYOFF TEAMS
                     </div>
-                    <div className="text-[13.5px] font-semibold text-[#151515]">{s.num_playoff_teams}</div>
+                    <div className="text-[13.5px] font-semibold text-[var(--foreground)]">{s.num_playoff_teams}</div>
                   </div>
                   <div>
                     <div
@@ -409,7 +409,7 @@ export default function RulesPage() {
                     >
                       PLAYOFFS START
                     </div>
-                    <div className="text-[13.5px] font-semibold text-[#151515]">{`Week ${s.playoff_start_week}`}</div>
+                    <div className="text-[13.5px] font-semibold text-[var(--foreground)]">{`Week ${s.playoff_start_week}`}</div>
                   </div>
                   <div>
                     <div
@@ -418,7 +418,7 @@ export default function RulesPage() {
                     >
                       TRADE DEADLINE
                     </div>
-                    <div className="text-[13.5px] font-semibold text-[#151515]">{formatDate(s.trade_end_date)}</div>
+                    <div className="text-[13.5px] font-semibold text-[var(--foreground)]">{formatDate(s.trade_end_date)}</div>
                   </div>
                   <div>
                     <div
@@ -427,7 +427,7 @@ export default function RulesPage() {
                     >
                       WAIVERS
                     </div>
-                    <div className="text-[13.5px] font-semibold text-[#151515]">{`${s.waiver_type} · ${s.waiver_rule}`}</div>
+                    <div className="text-[13.5px] font-semibold text-[var(--foreground)]">{`${s.waiver_type} · ${s.waiver_rule}`}</div>
                   </div>
                 </div>
               </div>
