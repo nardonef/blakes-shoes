@@ -1,3 +1,10 @@
+// League info data type (one row per season)
+export interface LeagueInfo {
+  season_year: number;
+  num_teams: number;
+  num_playoff_teams: string;
+}
+
 // Champion data type
 export interface Champion {
   season_year: number;

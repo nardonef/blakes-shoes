@@ -1,5 +1,12 @@
 import Image from "next/image";
-import { getManagerLegacies, slug, type ManagerLegacy } from "@/lib/legacy-data";
+import {
+  getManagerLegacies,
+  getBanners,
+  getHeadToHeadMatrix,
+  getLeagueTopLineStats,
+  slug,
+  type ManagerLegacy,
+} from "@/lib/legacy-data";
 
 function ordinal(n: number): string {
   const s = ["th", "st", "nd", "rd"];
@@ -13,88 +20,321 @@ function rankOf(values: number[], value: number, higherIsBetter: boolean): numbe
   return sorted.indexOf(value) + 1;
 }
 
+function formatWeekSpan(streak: { startYear: number; startWeek: number; endYear: number; endWeek: number }): string {
+  return streak.startYear === streak.endYear
+    ? `weeks ${streak.startWeek}-${streak.endWeek}, ${streak.startYear}`
+    : `week ${streak.startWeek} of ${streak.startYear} to week ${streak.endWeek} of ${streak.endYear}`;
+}
+
+interface Candidate {
+  text: string;
+  rank: number;
+}
+
+// A stat where a manager's rank (1 = best, n = worst) determines whether it's
+// notable enough to surface. `goodText`/`badText` are only built lazily
+// (via the caller) when their side actually qualifies.
+function pushRanked(
+  list: Candidate[],
+  values: number[],
+  value: number,
+  higherIsBetterForGoodness: boolean,
+  text: string,
+  side: "good" | "bad",
+  threshold = 4
+) {
+  const rank =
+    side === "good"
+      ? rankOf(values, value, higherIsBetterForGoodness)
+      : rankOf(values, value, !higherIsBetterForGoodness);
+  if (rank <= threshold) {
+    list.push({ text, rank });
+  }
+}
+
+// Builds every stat-backed candidate for a manager's DOES WELL / DOESN'T DO
+// WELL lists, ranks each candidate against the rest of the league, and keeps
+// only the 3 most extreme (most rank-worthy) on each side. This intentionally
+// replaces a fixed, always-checked-in-the-same-order list: with a league this
+// title-heavy (9 of 12 current owners have exactly one championship), a fixed
+// order means everyone above a threshold gets the exact same line regardless
+// of how they actually distinguish themselves. Ranking first and picking the
+// top 3 per manager makes each card surface whatever is *genuinely* unusual
+// about that specific manager.
 function buildScoutingReport(legacy: ManagerLegacy, all: ManagerLegacy[]) {
   const n = all.length;
-  const winPctRank = rankOf(all.map((l) => l.winPct), legacy.winPct, true);
-  const ppgRank = rankOf(all.map((l) => l.avgPointsPerGame), legacy.avgPointsPerGame, true);
-  const champRank = rankOf(all.map((l) => l.championships), legacy.championships, true);
-  const consistencyRankLowIsBest = rankOf(all.map((l) => l.consistency), legacy.consistency, false);
-  const clutchRank = rankOf(all.map((l) => l.clutchRating), legacy.clutchRating, true);
+  const strengths: Candidate[] = [];
+  const weaknesses: Candidate[] = [];
 
-  const strengths: string[] = [];
-  const weaknesses: string[] = [];
+  const winPcts = all.map((l) => l.winPct);
+  pushRanked(
+    strengths,
+    winPcts,
+    legacy.winPct,
+    true,
+    `Wins at a top-tier clip: ${(legacy.winPct * 100).toFixed(1)}% all-time.`,
+    "good"
+  );
+  pushRanked(
+    weaknesses,
+    winPcts,
+    legacy.winPct,
+    true,
+    `All-time win rate of just ${(legacy.winPct * 100).toFixed(1)}%, ${ordinal(rankOf(winPcts, legacy.winPct, false))}-worst of ${n} current owners.`,
+    "bad"
+  );
 
-  if (winPctRank <= 3) {
-    strengths.push(
-      `Wins at a top-tier clip: ${(legacy.winPct * 100).toFixed(1)}% all-time (${winPctRank === 1 ? "best" : ordinal(winPctRank)} among current owners).`
-    );
-  } else if (winPctRank >= n - 2) {
-    weaknesses.push(
-      `All-time win rate of ${(legacy.winPct * 100).toFixed(1)}% ranks ${ordinal(winPctRank)} of ${n} among current owners.`
-    );
-  }
+  const ppgs = all.map((l) => l.avgPointsPerGame);
+  pushRanked(
+    strengths,
+    ppgs,
+    legacy.avgPointsPerGame,
+    true,
+    `Consistently high scorer: ${legacy.avgPointsPerGame.toFixed(1)} points per game for his career.`,
+    "good"
+  );
+  pushRanked(
+    weaknesses,
+    ppgs,
+    legacy.avgPointsPerGame,
+    true,
+    `Career scoring average of just ${legacy.avgPointsPerGame.toFixed(1)} PPG, ${ordinal(rankOf(ppgs, legacy.avgPointsPerGame, false))}-worst of ${n}.`,
+    "bad"
+  );
 
-  if (ppgRank <= 3) {
-    strengths.push(
-      `Consistently high scorer: ${legacy.avgPointsPerGame.toFixed(1)} points per game for his career (${ppgRank === 1 ? "highest" : ordinal(ppgRank)} of ${n}).`
-    );
-  } else if (ppgRank >= n - 2) {
-    weaknesses.push(
-      `Career scoring average of ${legacy.avgPointsPerGame.toFixed(1)} PPG is ${ordinal(ppgRank)} of ${n} among current owners.`
-    );
-  }
+  const consistencies = all.map((l) => l.consistency);
+  pushRanked(
+    strengths,
+    consistencies,
+    legacy.consistency,
+    false,
+    `Steady week to week — a ${legacy.consistency.toFixed(1)}-point scoring standard deviation, among the least volatile in the league.`,
+    "good"
+  );
+  pushRanked(
+    weaknesses,
+    consistencies,
+    legacy.consistency,
+    false,
+    `Boom-or-bust scorer — a ${legacy.consistency.toFixed(1)}-point standard deviation makes him one of the least predictable teams week to week.`,
+    "bad"
+  );
 
-  if (legacy.championships > 0 && champRank <= 3) {
-    strengths.push(
-      `${legacy.championships}-time champion (${legacy.championshipYears.join(", ")}) — knows how to close a season out.`
+  const pointDiffs = all.map((l) => l.pointDifferential);
+  if (legacy.pointDifferential > 0) {
+    pushRanked(
+      strengths,
+      pointDiffs,
+      legacy.pointDifferential,
+      true,
+      `Outscores opponents by ${legacy.pointDifferential.toFixed(0)} points over his career, ${ordinal(rankOf(pointDiffs, legacy.pointDifferential, true))}-best in the league.`,
+      "good"
     );
-  }
-
-  if (consistencyRankLowIsBest <= 3) {
-    strengths.push(
-      `Steady week to week — a ${legacy.consistency.toFixed(1)}-point scoring standard deviation, among the lowest (least volatile) in the league.`
-    );
-  } else if (consistencyRankLowIsBest >= n - 2) {
-    weaknesses.push(
-      `Boom-or-bust scorer — a ${legacy.consistency.toFixed(1)}-point standard deviation makes him one of the least predictable teams week to week.`
+  } else if (legacy.pointDifferential < 0) {
+    pushRanked(
+      weaknesses,
+      pointDiffs,
+      legacy.pointDifferential,
+      true,
+      `Outscored by opponents by ${Math.abs(legacy.pointDifferential).toFixed(0)} points over his career, ${ordinal(rankOf(pointDiffs, legacy.pointDifferential, false))}-worst in the league.`,
+      "bad"
     );
   }
 
   if (legacy.playoffGames >= 3) {
-    if (legacy.clutchRating > 3 && clutchRank <= 3) {
-      strengths.push(
-        `Elevates his game in the playoffs: ${legacy.playoffPPG.toFixed(1)} PPG in the postseason vs. ${legacy.regularPPG.toFixed(1)} in the regular season (+${legacy.clutchRating.toFixed(1)}).`
+    const clutchRatings = all.filter((l) => l.playoffGames >= 3).map((l) => l.clutchRating);
+    if (legacy.clutchRating > 0) {
+      pushRanked(
+        strengths,
+        clutchRatings,
+        legacy.clutchRating,
+        true,
+        `Elevates his game in the playoffs: ${legacy.playoffPPG.toFixed(1)} PPG in the postseason vs. ${legacy.regularPPG.toFixed(1)} in the regular season (+${legacy.clutchRating.toFixed(1)}).`,
+        "good"
       );
-    } else if (legacy.clutchRating < -3) {
-      weaknesses.push(
-        `Fades under playoff pressure: ${legacy.playoffPPG.toFixed(1)} PPG in the postseason, down from ${legacy.regularPPG.toFixed(1)} in the regular season (${legacy.clutchRating.toFixed(1)}).`
+    } else if (legacy.clutchRating < 0) {
+      pushRanked(
+        weaknesses,
+        clutchRatings,
+        legacy.clutchRating,
+        true,
+        `Fades under playoff pressure: ${legacy.playoffPPG.toFixed(1)} PPG in the postseason, down from ${legacy.regularPPG.toFixed(1)} in the regular season (${legacy.clutchRating.toFixed(1)}).`,
+        "bad"
       );
     }
   }
 
-  if (legacy.championships === 0 && legacy.playoffGames >= 5) {
-    weaknesses.push(
-      `${legacy.playoffGames} career playoff games and no title to show for it${legacy.runnerUps > 0 ? ` — ${legacy.runnerUps === 1 ? "including a runner-up finish" : `including ${legacy.runnerUps} runner-up finishes`}` : ""}.`
+  if (legacy.longestWinStreak) {
+    const streaks = all.map((l) => l.longestWinStreak?.length ?? 0);
+    pushRanked(
+      strengths,
+      streaks,
+      legacy.longestWinStreak.length,
+      true,
+      `Won ${legacy.longestWinStreak.length} straight games at his peak, ${formatWeekSpan(legacy.longestWinStreak)}.`,
+      "good"
     );
   }
-  if (legacy.runnerUps >= 2) {
-    weaknesses.push(
-      `A ${legacy.runnerUps}-time runner-up (${legacy.runnerUpYears.map((r) => r.year).join(", ")}) — gets to the final, hasn't sealed it enough.`
+  if (legacy.longestLossStreak) {
+    const streaks = all.map((l) => l.longestLossStreak?.length ?? 0);
+    pushRanked(
+      weaknesses,
+      streaks,
+      legacy.longestLossStreak.length,
+      false,
+      `Dropped ${legacy.longestLossStreak.length} straight games at his worst, ${formatWeekSpan(legacy.longestLossStreak)}.`,
+      "bad"
     );
   }
 
-  if (strengths.length === 0) {
-    strengths.push(
+  const blowoutTotal = legacy.blowoutGames.wins + legacy.blowoutGames.losses;
+  if (blowoutTotal >= 8) {
+    const blowoutPct = legacy.blowoutGames.wins / blowoutTotal;
+    const blowoutPcts = all
+      .map((l) => {
+        const t = l.blowoutGames.wins + l.blowoutGames.losses;
+        return t >= 8 ? l.blowoutGames.wins / t : null;
+      })
+      .filter((v): v is number => v !== null);
+    if (legacy.blowoutGames.wins > legacy.blowoutGames.losses) {
+      pushRanked(
+        strengths,
+        blowoutPcts,
+        blowoutPct,
+        true,
+        `Runs up the score: ${legacy.blowoutGames.wins}-${legacy.blowoutGames.losses} in games decided by 25+ points.`,
+        "good"
+      );
+    } else if (legacy.blowoutGames.losses > legacy.blowoutGames.wins) {
+      pushRanked(
+        weaknesses,
+        blowoutPcts,
+        blowoutPct,
+        true,
+        `Gets run off the field: ${legacy.blowoutGames.wins}-${legacy.blowoutGames.losses} in games decided by 25+ points.`,
+        "bad"
+      );
+    }
+  }
+
+  const closeTotal = legacy.closeGames.wins + legacy.closeGames.losses;
+  if (closeTotal >= 8) {
+    const closePct = legacy.closeGames.wins / closeTotal;
+    const closePcts = all
+      .map((l) => {
+        const t = l.closeGames.wins + l.closeGames.losses;
+        return t >= 8 ? l.closeGames.wins / t : null;
+      })
+      .filter((v): v is number => v !== null);
+    if (legacy.closeGames.wins > legacy.closeGames.losses) {
+      pushRanked(
+        strengths,
+        closePcts,
+        closePct,
+        true,
+        `Wins the close ones: ${legacy.closeGames.wins}-${legacy.closeGames.losses} in games decided by 3 points or fewer.`,
+        "good"
+      );
+    } else if (legacy.closeGames.losses > legacy.closeGames.wins) {
+      pushRanked(
+        weaknesses,
+        closePcts,
+        closePct,
+        true,
+        `Loses the close ones: ${legacy.closeGames.wins}-${legacy.closeGames.losses} in games decided by 3 points or fewer.`,
+        "bad"
+      );
+    }
+  }
+
+  const regularGamesPlayed = legacy.regularWins + legacy.regularLosses;
+  if (regularGamesPlayed > 0) {
+    const topRates = all.map((l) => l.weeksAsTopScorer / Math.max(l.regularWins + l.regularLosses, 1));
+    const bottomRates = all.map(
+      (l) => l.weeksAsBottomScorer / Math.max(l.regularWins + l.regularLosses, 1)
+    );
+    if (legacy.weeksAsTopScorer > 0) {
+      pushRanked(
+        strengths,
+        topRates,
+        legacy.weeksAsTopScorer / regularGamesPlayed,
+        true,
+        `Led the league in scoring ${legacy.weeksAsTopScorer} different weeks.`,
+        "good"
+      );
+    }
+    if (legacy.weeksAsBottomScorer > 0) {
+      pushRanked(
+        weaknesses,
+        bottomRates,
+        legacy.weeksAsBottomScorer / regularGamesPlayed,
+        false,
+        `Posted the week's lowest score ${legacy.weeksAsBottomScorer} different times.`,
+        "bad"
+      );
+    }
+  }
+
+  // A single title is the league-typical outcome here (9 of 12 current owners
+  // have exactly one), so it isn't a distinguishing strength on its own —
+  // only call it out when a manager leads or ties for the most titles.
+  // Treated as a near-guaranteed top pick (rank 0) since it's rare by
+  // construction, not by a comparative threshold.
+  const maxChampionships = Math.max(...all.map((l) => l.championships));
+  if (legacy.championships >= 2 && legacy.championships === maxChampionships) {
+    const tiedWith = all.filter(
+      (l) => l.championships === maxChampionships && l.owner.name !== legacy.owner.name
+    );
+    strengths.push({
+      rank: 0,
+      text: `${legacy.championships}-time champion (${legacy.championshipYears.join(", ")})${
+        tiedWith.length > 0
+          ? ` — tied with ${tiedWith.map((l) => l.owner.name).join(" and ")} for the most titles among current owners.`
+          : " — the most titles of any current owner."
+      }`,
+    });
+  }
+
+  if (legacy.championships === 0 && legacy.playoffGames >= 5) {
+    weaknesses.push({
+      rank: 1,
+      text: `${legacy.playoffGames} career playoff games and no title to show for it${legacy.runnerUps > 0 ? ` — ${legacy.runnerUps === 1 ? "including a runner-up finish" : `including ${legacy.runnerUps} runner-up finishes`}` : ""}.`,
+    });
+  }
+  if (legacy.runnerUps >= 2) {
+    weaknesses.push({
+      rank: 1,
+      text: `A ${legacy.runnerUps}-time runner-up (${legacy.runnerUpYears.map((r) => r.year).join(", ")}) — gets to the final, hasn't sealed it enough.`,
+    });
+  }
+  if (legacy.lastPlaceSeasons.length > 0) {
+    weaknesses.push({
+      rank: 2,
+      text: `Finished dead last in ${legacy.lastPlaceSeasons.join(", ")}.`,
+    });
+  }
+  if (legacy.missedPlayoffSeasons.length > 0 && legacy.missedPlayoffSeasons.length <= 2) {
+    weaknesses.push({
+      rank: 3,
+      text: `Missed the playoffs in ${legacy.missedPlayoffSeasons.join(", ")} — the only ${legacy.missedPlayoffSeasons.length === 1 ? "blemish" : "blemishes"} on an otherwise perfect playoff résumé.`,
+    });
+  }
+
+  const topStrengths = strengths.sort((a, b) => a.rank - b.rank).slice(0, 3).map((c) => c.text);
+  const topWeaknesses = weaknesses.sort((a, b) => a.rank - b.rank).slice(0, 3).map((c) => c.text);
+
+  if (topStrengths.length === 0) {
+    topStrengths.push(
       `A ${legacy.wins}-${legacy.losses}${legacy.ties ? `-${legacy.ties}` : ""} all-time record across ${legacy.seasonsPlayed} seasons.`
     );
   }
-  if (weaknesses.length === 0) {
-    weaknesses.push(
+  if (topWeaknesses.length === 0) {
+    topWeaknesses.push(
       `No glaring statistical weakness — a middle-of-the-pack profile across scoring, wins, and consistency.`
     );
   }
 
-  return { strengths: strengths.slice(0, 3), weaknesses: weaknesses.slice(0, 3) };
+  return { strengths: topStrengths, weaknesses: topWeaknesses };
 }
 
 function luckBlurb(legacy: ManagerLegacy): string {
@@ -108,11 +348,22 @@ function luckBlurb(legacy: ManagerLegacy): string {
   return `Snakebitten: only ${legacy.regularWins} regular-season wins despite scoring that projects to ${legacy.expectedWins.toFixed(1)} — about ${Math.abs(l).toFixed(1)} wins worse than deserved.`;
 }
 
+// Describe a championship season with its actual seed and record, e.g.
+// "2023 (9-5, 3rd seed)", instead of just the bare year.
+function titleSeasonDetail(legacy: ManagerLegacy, year: number): string {
+  const season = legacy.seasons.find((s) => s.year === year);
+  if (!season) return String(year);
+  const seedNum = parseInt(season.playoffSeed, 10);
+  const seedText = Number.isFinite(seedNum) ? `, ${ordinal(seedNum)} seed` : "";
+  return `${year} (${season.wins}-${season.losses}${seedText})`;
+}
+
 function bestMomentBlurb(legacy: ManagerLegacy): string {
   const parts: string[] = [];
   if (legacy.championships > 0) {
+    const titleDetails = legacy.championshipYears.map((year) => titleSeasonDetail(legacy, year));
     parts.push(
-      `${legacy.championships > 1 ? "Multiple titles" : "League champion"} (${legacy.championshipYears.join(", ")}).`
+      `${legacy.championships > 1 ? `${legacy.championships}-time champion` : "League champion"}: ${titleDetails.join("; ")}.`
     );
   } else if (legacy.bestSeason) {
     parts.push(
@@ -157,8 +408,48 @@ function worstMomentBlurb(legacy: ManagerLegacy): string {
   return parts.join(" ");
 }
 
+function initials(name: string): string {
+  return name
+    .split(" ")
+    .map((p) => p[0])
+    .join("")
+    .toUpperCase();
+}
+
+function BannerStat({
+  label,
+  name,
+  detail,
+  highlight,
+}: {
+  label: string;
+  name: string;
+  detail: string;
+  highlight?: boolean;
+}) {
+  return (
+    <div className="min-w-0">
+      <div
+        className="text-[9px] tracking-[.14em] text-[var(--muted-dark)] mb-1"
+        style={{ fontFamily: "var(--font-geist-mono)" }}
+      >
+        {label}
+      </div>
+      <div
+        className={`text-sm font-semibold truncate ${highlight ? "text-[var(--accent)]" : "text-[#151515]"}`}
+      >
+        {name}
+      </div>
+      <div className="text-[11px] text-[var(--muted-light)] truncate">{detail}</div>
+    </div>
+  );
+}
+
 export default function LegacyPage() {
   const legacies = getManagerLegacies().sort((a, b) => b.winPct - a.winPct);
+  const topLine = getLeagueTopLineStats();
+  const banners = getBanners();
+  const { owners: h2hOwners, matrix: h2hMatrix } = getHeadToHeadMatrix();
 
   return (
     <div className="min-h-screen" style={{ background: "var(--background)" }}>
@@ -180,10 +471,195 @@ export default function LegacyPage() {
             Every manager currently in Blake&apos;s Shoes, graded on every game the league has
             played since 2012. Ranked by all-time win percentage.
           </p>
+          <div className="flex flex-wrap gap-x-8 gap-y-4 mt-6 pt-6 border-t border-[#2a2a28]">
+            {[
+              { label: "SEASONS RUN", value: String(topLine.seasonsRun) },
+              { label: "DIFFERENT CHAMPIONS", value: String(topLine.differentChampions) },
+              {
+                label: "TITLES BY TOP SCORER",
+                value: `${topLine.titlesByTopScorer} of ${topLine.totalChampionships}`,
+              },
+            ].map((stat) => (
+              <div key={stat.label}>
+                <div
+                  className="text-[26px] md:text-[34px] leading-none text-[var(--accent-light)]"
+                  style={{ fontFamily: "var(--font-bebas-neue)" }}
+                >
+                  {stat.value}
+                </div>
+                <div
+                  className="text-[9px] tracking-[.14em] text-[#b0b0aa] mt-1"
+                  style={{ fontFamily: "var(--font-geist-mono)" }}
+                >
+                  {stat.label}
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </header>
 
       <main className="max-w-[1160px] mx-auto px-4 md:px-10 py-7 md:py-11 pb-14 md:pb-[88px] flex flex-col gap-0.5 bg-[var(--rule)]">
+        {/* Banners */}
+        <section className="bg-white p-[18px] md:p-8">
+          <div className="mb-5">
+            <div className="flex items-center gap-4 flex-wrap">
+              <h2
+                className="text-[26px] md:text-[38px] leading-none text-[#151515]"
+                style={{ fontFamily: "var(--font-bebas-neue)" }}
+              >
+                BANNERS
+              </h2>
+              <span className="flex-1 min-w-[20px] h-0.5 bg-[#151515]" />
+            </div>
+            <p className="text-sm text-[var(--body-text)] leading-[1.55] max-w-[68ch] mt-2">
+              Every champion, runner-up, third-place finish and regular-season points leader
+              since 2012.
+            </p>
+          </div>
+          <div className="flex flex-col gap-2.5">
+            {banners.map((b) => (
+              <div key={b.year} className="border border-[var(--hairline)] p-3.5 md:p-4">
+                <div className="flex items-baseline gap-3 flex-wrap mb-3">
+                  <div
+                    className="text-[22px] leading-none text-[var(--accent)]"
+                    style={{ fontFamily: "var(--font-bebas-neue)" }}
+                  >
+                    {b.year}
+                  </div>
+                  {b.numTeams && (
+                    <div
+                      className="text-[10px] tracking-[.1em] text-[var(--muted-dark)]"
+                      style={{ fontFamily: "var(--font-geist-mono)" }}
+                    >
+                      {b.numTeams} TM
+                      {b.numPlayoffTeams ? ` · ${b.numPlayoffTeams} MAKE PLAYOFFS` : ""}
+                    </div>
+                  )}
+                </div>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3.5">
+                  <BannerStat
+                    label="CHAMPION"
+                    name={b.champion.name}
+                    detail={`${b.champion.team} (${b.champion.wins}-${b.champion.losses})`}
+                    highlight
+                  />
+                  <BannerStat label="RUNNER-UP" name={b.runnerUp.name} detail={b.runnerUp.team} />
+                  <BannerStat label="THIRD" name={b.thirdPlace.name} detail={b.thirdPlace.team} />
+                  {b.topScorer && (
+                    <BannerStat
+                      label="TOP SCORER"
+                      name={b.topScorer.name}
+                      detail={`${b.topScorer.points.toFixed(1)} pts`}
+                    />
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* Head to head */}
+        <section className="bg-white p-[18px] md:p-8">
+          <div className="mb-5">
+            <div className="flex items-center gap-4 flex-wrap">
+              <h2
+                className="text-[26px] md:text-[38px] leading-none text-[#151515]"
+                style={{ fontFamily: "var(--font-bebas-neue)" }}
+              >
+                HEAD TO HEAD
+              </h2>
+              <span className="flex-1 min-w-[20px] h-0.5 bg-[#151515]" />
+            </div>
+            <p className="text-sm text-[var(--body-text)] leading-[1.55] max-w-[68ch] mt-2">
+              All-time record among current owners, regular season and playoffs combined. Read
+              across: the row manager&apos;s wins&ndash;losses against the column manager. Scroll
+              to see the full grid.
+            </p>
+          </div>
+          <div className="flex">
+            {/* Fixed name column — not part of the horizontally-scrolling table,
+                so nothing can render behind it or peek out from underneath. */}
+            <table
+              className="border-separate border-spacing-0 text-[11px] whitespace-nowrap shrink-0"
+              style={{ fontFamily: "var(--font-geist-mono)" }}
+            >
+              <thead>
+                <tr>
+                  <th className="p-2 text-left" />
+                </tr>
+              </thead>
+              <tbody>
+                {h2hOwners.map((rowOwner) => (
+                  <tr key={rowOwner.name}>
+                    <th className="p-2 pr-3 text-left font-semibold text-[#151515] border-t border-[var(--hairline)]">
+                      {rowOwner.name}
+                    </th>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+
+            <div className="overflow-x-auto">
+              <table
+                className="border-separate border-spacing-0 text-[11px] whitespace-nowrap"
+                style={{ fontFamily: "var(--font-geist-mono)" }}
+              >
+                <thead>
+                  <tr>
+                    {h2hOwners.map((o) => (
+                      <th
+                        key={o.name}
+                        className="p-2 text-center font-semibold text-[var(--muted-dark)]"
+                        title={o.name}
+                      >
+                        {initials(o.name)}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {h2hOwners.map((rowOwner, i) => (
+                    <tr key={rowOwner.name}>
+                      {h2hOwners.map((colOwner, j) => {
+                        const cell = h2hMatrix[i][j];
+                        if (i === j || !cell || cell.games === 0) {
+                          return (
+                            <td
+                              key={colOwner.name}
+                              className="p-2 text-center text-[var(--dim)] border-t border-[var(--hairline)]"
+                            >
+                              {i === j ? "–" : "0-0"}
+                            </td>
+                          );
+                        }
+                        const winning = cell.wins > cell.losses;
+                        const losing = cell.losses > cell.wins;
+                        return (
+                          <td
+                            key={colOwner.name}
+                            className="p-2 text-center border-t border-[var(--hairline)]"
+                            style={{
+                              color: winning
+                                ? "var(--accent)"
+                                : losing
+                                  ? "var(--muted-dark)"
+                                  : "var(--body-text)",
+                            }}
+                          >
+                            {cell.wins}-{cell.losses}
+                            {cell.ties ? `-${cell.ties}` : ""}
+                          </td>
+                        );
+                      })}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
         {legacies.map((legacy, index) => {
           const { strengths, weaknesses } = buildScoutingReport(legacy, legacies);
           const finishLabel =
