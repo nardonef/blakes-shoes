@@ -24,6 +24,22 @@ describe("buildLeagueTables", () => {
   it("flags current owners", () => {
     expect(t.managers.filter((m) => m.is_current === 1)).toHaveLength(12);
   });
+
+  it("has a lineup whose starters add up to every game score", () => {
+    const started = new Map<string, number>();
+    for (const l of t.lineups.filter((l) => l.started)) {
+      const k = `${l.season}|${l.week}|${l.team}`;
+      started.set(k, (started.get(k) ?? 0) + (l.points ?? 0));
+    }
+    const off = t.games.filter((g) => Math.abs((started.get(`${g.season}|${g.week}|${g.team}`) ?? -1) - g.points) > 0.011);
+    expect(off).toEqual([]);
+  });
+
+  it("names the manager on both sides of a trade", () => {
+    const trade = t.transactions.filter((r) => r.season === 2012 && r.type === "trade" && r.date === "2012-11-14 14:22");
+    expect(trade.find((r) => r.player === "Trent Richardson")).toMatchObject({ manager: "Ryan Kaplan", team: "Bear Jews" });
+    expect(new Set(trade.map((r) => r.txn)).size).toBe(1);
+  });
 });
 
 describe("runSql", () => {
@@ -45,6 +61,13 @@ describe("runSql", () => {
        WHERE manager = 'Frankie Nardone' AND week = 1 AND game_type = 'regular'`
     )) as Rows;
     expect(r.rows).toEqual([{ w: 10, l: 4 }]);
+  });
+
+  it("queries weekly lineups by player", async () => {
+    const r = (await runSql(
+      "SELECT manager, slot, started, points FROM lineups WHERE season = 2012 AND week = 1 AND player = 'Matt Ryan'"
+    )) as Rows;
+    expect(r.rows).toEqual([{ manager: "Peter Klensch", slot: "QB", started: 1, points: 32.46 }]);
   });
 
   it("caps rows and reports truncation", async () => {

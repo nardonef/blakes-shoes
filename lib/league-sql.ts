@@ -1,6 +1,9 @@
 import { spawn, type ChildProcess } from "node:child_process";
 import { CURRENT_OWNERS } from "@/lib/legacy-data";
 import { champions, matchups, resolveManagerName, standings } from "@/lib/stats-data";
+import lineupsData from "@/data/weekly_lineups.json";
+import transactionsData from "@/data/transactions.json";
+import type { LineupRow, TransactionRow } from "@/lib/yahoo/parse";
 
 // Read-only SQL over league history for the ShoesGPT runSql tool.
 //
@@ -45,6 +48,30 @@ export interface LeagueTables {
   }[];
   champions: { season: number; champion: string; champion_team: string; runner_up: string; third_place: string }[];
   managers: { name: string; is_current: number; current_team: string | null }[];
+  lineups: {
+    season: number;
+    week: number;
+    manager: string;
+    team: string;
+    slot: string;
+    started: number;
+    player: string;
+    points: number | null;
+    projected: number | null;
+  }[];
+  transactions: {
+    season: number;
+    txn: number;
+    date: string;
+    type: string;
+    manager: string;
+    team: string;
+    player: string;
+    nfl_team: string;
+    position: string;
+    detail: string;
+    faab: number | null;
+  }[];
 }
 
 function displayName(raw: string): string {
@@ -79,8 +106,40 @@ export function buildLeagueTables(): LeagueTables {
     }
   });
 
+  // Scraped rows identify teams by Yahoo team number; standings maps that to manager and team name.
+  const teams = new Map(
+    standings.map((s) => [
+      `${s.season_year}|${Number(s.team_key.split(".t.")[1])}`,
+      { manager: displayName(s.manager_name), team: s.team_name },
+    ]),
+  );
+  const teamOf = (season: number, teamId: number) =>
+    teams.get(`${season}|${teamId}`) ?? { manager: HIDDEN_LABEL, team: `Team ${teamId}` };
+
   const names = new Set(games.map((g) => g.manager));
   return {
+    lineups: (lineupsData as LineupRow[]).map((r) => ({
+      season: r.season,
+      week: r.week,
+      ...teamOf(r.season, r.team_id),
+      slot: r.slot,
+      started: r.slot === "BN" || r.slot === "IR" ? 0 : 1,
+      player: r.player,
+      points: r.points,
+      projected: r.projected,
+    })),
+    transactions: (transactionsData as TransactionRow[]).map((r) => ({
+      season: r.season,
+      txn: r.txn,
+      date: r.date,
+      type: r.type,
+      ...teamOf(r.season, r.team_id),
+      player: r.player,
+      nfl_team: r.nfl_team,
+      position: r.position,
+      detail: r.detail,
+      faab: r.faab,
+    })),
     games,
     standings: standings
       .filter((s) => s.manager_name !== HIDDEN)
@@ -125,6 +184,16 @@ champions: one row per season
   season, champion, champion_team, runner_up, third_place
 managers: everyone who has played
   name TEXT, is_current INTEGER (1 = current owner), current_team TEXT|NULL
+lineups: every rostered player for every team-week (starters and bench)
+  season, week, manager, team, slot TEXT (QB, RB, WR, TE, W/R, W/R/T, K, DEF, BN, IR, ...),
+  started INTEGER (1 = in the starting lineup), player TEXT,
+  points REAL|NULL (NULL = did not play), projected REAL|NULL
+  Starters' points sum to the team's score in games. Bench points left on the table = SUM(points) WHERE started = 0.
+transactions: every add, drop and trade, one row per player moved
+  season, txn INTEGER (rows of one transaction share it within a season), date TEXT ('YYYY-MM-DD HH:MM'),
+  type TEXT ('add'|'drop'|'trade'), manager, team (who received the player; for drops, who released him),
+  player, nfl_team, position, detail TEXT ('Free Agent', '$12 Waiver', 'To Waivers', 'Traded to', ...),
+  faab INTEGER|NULL (waiver bid in dollars)
 Manager names are full display names (e.g. 'Ryan Kaplan'). Games against a hidden Yahoo manager have opponent = 'Hidden manager'.`;
 
 // Runs inside the child process (CommonJS via `node -e`).
@@ -137,7 +206,11 @@ CREATE TABLE games (season INTEGER, week INTEGER, game_type TEXT, manager TEXT, 
 CREATE TABLE standings (season INTEGER, manager TEXT, team TEXT, final_rank INTEGER, playoff_seed INTEGER,
   wins INTEGER, losses INTEGER, ties INTEGER, points_for REAL, points_against REAL);
 CREATE TABLE champions (season INTEGER, champion TEXT, champion_team TEXT, runner_up TEXT, third_place TEXT);
-CREATE TABLE managers (name TEXT, is_current INTEGER, current_team TEXT);`)};
+CREATE TABLE managers (name TEXT, is_current INTEGER, current_team TEXT);
+CREATE TABLE lineups (season INTEGER, week INTEGER, manager TEXT, team TEXT, slot TEXT, started INTEGER,
+  player TEXT, points REAL, projected REAL);
+CREATE TABLE transactions (season INTEGER, txn INTEGER, date TEXT, type TEXT, manager TEXT, team TEXT,
+  player TEXT, nfl_team TEXT, position TEXT, detail TEXT, faab INTEGER);`)};
 const ALLOWED = new Set([C.SQLITE_SELECT, C.SQLITE_READ, C.SQLITE_FUNCTION, C.SQLITE_RECURSIVE]);
 let db;
 
