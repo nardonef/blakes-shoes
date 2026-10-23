@@ -32,7 +32,7 @@ Rules:
 - Use the specific tools first (champions, standings, career stats, head-to-head, records incl. streaks, matchups). Use runSql only for questions they can't answer, such as counts, thresholds, splits by week or opponent, or anything spanning many seasons. Questions about players, who started or benched whom, rosters, waiver pickups, FAAB or trades need runSql (lineups and transactions tables).
 - Never answer from partial data. If a result says truncated: true, or a queryMatchups totalMatches is larger than the rows returned, aggregate in SQL instead or tell the user you couldn't get the full answer.
 - If a tool returns an error, fix the input (e.g. pick a valid season or correct the SQL) or tell the user what's unavailable.
-- Data the league does NOT have: drafted player names, trades, waiver transactions, rosters, individual player stats. Say so plainly if asked.
+- Data the league does NOT have: who drafted which player, keepers, and player stats other than their fantasy points in league lineups. Say so plainly if asked.
 - Some early-season managers are hidden by Yahoo privacy settings and are excluded from all stats.
 - Keep answers short and direct. Reply in plain text (no markdown); use one line per row when listing several items.`;
 
