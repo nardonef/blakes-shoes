@@ -136,15 +136,19 @@ function SubHeading({
 function RankedList({
   title,
   subtitle,
+  description,
   rows,
 }: {
   title: string;
   subtitle: string;
+  description?: React.ReactNode;
   rows: { rank: number; rankColor: string; primary: string; meta: string; value: string; valueColor: string }[];
 }) {
   return (
     <section>
-      <SubHeading subtitle={subtitle}>{title}</SubHeading>
+      <SubHeading subtitle={subtitle} description={description}>
+        {title}
+      </SubHeading>
       <div className="bg-white">
         {rows.map((row, i) => (
           <div
@@ -306,13 +310,14 @@ function FrontOfficeSections({ data }: { data: FrontOffice }) {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-9">
         <RankedList
           title="WAIVER WIRE HALL OF FAME"
-          subtitle="Starting points for the team that picked him up"
+          subtitle="Points above a typical starter at his position"
+          description="Each week a pickup started, he's measured against the median starter at his position league-wide, so a big RB week counts as much as a big QB week."
           rows={data.pickups.map((p, i) => ({
             rank: i + 1,
             rankColor: i < 3 ? "var(--accent)" : "var(--dim)",
-            primary: p.player,
-            meta: `${p.manager} · ${p.season} WK ${p.week} · ${p.how} · ${p.starts} STARTS`.toUpperCase(),
-            value: p.points.toFixed(1),
+            primary: `${p.player} · ${p.pos}`,
+            meta: `${p.manager} · ${p.season} WK ${p.week} · ${p.how} · ${p.points.toFixed(1)} PTS IN ${p.starts} STARTS`.toUpperCase(),
+            value: `+${p.aboveAvg.toFixed(1)}`,
             valueColor: "var(--accent)",
           }))}
         />

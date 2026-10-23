@@ -50,11 +50,45 @@ describe("projection beat", () => {
 });
 
 describe("pickups and FAAB", () => {
-  it("ranks the top 10 pickups by starting points for the team that added them", () => {
+  it("ranks the top 10 pickups by points above a typical starter at their position", () => {
     expect(fo.pickups).toHaveLength(10);
-    expect(fo.pickups[0]).toMatchObject({ season: 2018, manager: "Blake Kozloski", player: "Patrick Mahomes" });
-    expect(fo.pickups[0].points).toBeGreaterThan(300);
-    for (const p of fo.pickups) expect(p.starts).toBeGreaterThan(0);
+    expect(fo.pickups[0]).toMatchObject({ season: 2018, manager: "Blake Kozloski", player: "Patrick Mahomes", pos: "QB" });
+    expect(fo.pickups.map((p) => p.aboveAvg)).toEqual([...fo.pickups.map((p) => p.aboveAvg)].sort((a, b) => b - a));
+    for (const p of fo.pickups) {
+      expect(p.starts).toBeGreaterThan(0);
+      expect(p.pos).not.toBe("");
+    }
+  });
+
+  it("no longer lets quarterbacks crowd out every other position", () => {
+    const qbs = fo.pickups.filter((p) => p.pos === "QB").length;
+    expect(qbs).toBeLessThanOrEqual(3);
+    expect(new Set(fo.pickups.map((p) => p.pos)).size).toBeGreaterThanOrEqual(3);
+  });
+
+  it("matches Mahomes' 2018 value computed straight from the SQL tables", async () => {
+    // runSql caps results at 100 rows and 2018 has 192 QB starts, so fetch it in two 96-row halves.
+    const rows: Record<string, unknown>[] = [];
+    for (const [lo, hi] of [[1, 8], [9, 16]]) {
+      const r = (await runSql(
+        `SELECT week, manager, player, COALESCE(points, 0) AS pts FROM lineups
+         WHERE season = 2018 AND slot = 'QB' AND started = 1 AND week BETWEEN ${lo} AND ${hi}`
+      )) as { rows: Record<string, unknown>[]; truncated: boolean };
+      expect(r.truncated).toBe(false);
+      rows.push(...r.rows);
+    }
+    const r = { rows };
+    const byWeek = new Map<number, number[]>();
+    for (const row of r.rows) byWeek.set(row.week as number, [...(byWeek.get(row.week as number) ?? []), row.pts as number]);
+    const median = (xs: number[]) => {
+      const s = [...xs].sort((a, b) => a - b);
+      return s.length % 2 ? s[(s.length - 1) / 2] : (s[s.length / 2 - 1] + s[s.length / 2]) / 2;
+    };
+    const mahomes = fo.pickups[0];
+    const expected = r.rows
+      .filter((row) => row.player === "Patrick Mahomes" && row.manager === "Blake Kozloski" && (row.week as number) >= mahomes.week)
+      .reduce((a, row) => a + (row.pts as number) - median(byWeek.get(row.week as number)!), 0);
+    expect(mahomes.aboveAvg).toBeCloseTo(expected, 0);
   });
 
   it("only rates managers who spent at least $50 of FAAB", () => {

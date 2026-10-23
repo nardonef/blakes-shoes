@@ -23,9 +23,12 @@ export interface Pickup {
   season: number;
   manager: string;
   player: string;
+  pos: string;
   how: string;
   week: number;
   points: number;
+  /** Points beyond a typical starter at his position, summed over the weeks he started. */
+  aboveAvg: number;
   starts: number;
 }
 
@@ -96,11 +99,46 @@ export function getProjectionBeat(): ProjectionBeat[] {
     .sort((a, b) => b.perWeek - a.perWeek);
 }
 
+const median = (xs: number[]) => {
+  const s = [...xs].sort((a, b) => a - b);
+  const m = Math.floor(s.length / 2);
+  return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2;
+};
+
+/** Median points of every started player at each position, per week: the "typical starter" baseline. */
+export function weeklyStarterMedians(S: SeasonModel): Map<string, number> {
+  const pts = new Map<string, number[]>();
+  for (const weeks of S.by.values()) {
+    for (const [w, rows] of weeks) {
+      for (const r of rows) {
+        if (!r.started) continue;
+        const k = `${w}|${S.info.get(r.player)?.pos ?? ""}`;
+        pts.set(k, [...(pts.get(k) ?? []), r.points ?? 0]);
+      }
+    }
+  }
+  return new Map([...pts].map(([k, v]) => [k, median(v)]));
+}
+
+/** Points above that week's typical starter at the player's position, over his starts for mgr from week `from` on. */
+function aboveAverage(S: SeasonModel, base: Map<string, number>, mgr: string, player: string, from: number) {
+  const pos = S.info.get(player)?.pos ?? "";
+  let total = 0;
+  for (const [w, rows] of S.by.get(mgr) ?? []) {
+    if (w < from) continue;
+    for (const r of rows) {
+      if (r.player === player && r.started) total += (r.points ?? 0) - (base.get(`${w}|${pos}`) ?? 0);
+    }
+  }
+  return total;
+}
+
 /** Every season's add/pickup scored by what it started for the team that added it, from the add week on. */
 function allPickups(): (Pickup & { faab: number; faabWeek: number | null })[] {
   const out: (Pickup & { faab: number; faabWeek: number | null })[] = [];
   for (const y of getRosterSeasons()) {
     const S = getSeasonModel(y)!;
+    const base = weeklyStarterMedians(S);
     const groups = new Map<string, typeof S.txns>();
     for (const t of S.txns) {
       if (t.type !== "add" || !known(t.mgr)) continue;
@@ -115,9 +153,11 @@ function allPickups(): (Pickup & { faab: number; faabWeek: number | null })[] {
         season: y,
         manager: first.mgr,
         player: first.player,
+        pos: S.info.get(first.player)?.pos ?? "",
         how: first.label,
         week: first.week,
         ...startedFrom(S, first.mgr, first.player, first.week),
+        aboveAvg: aboveAverage(S, base, first.mgr, first.player, first.week),
         faab: paid.reduce((a, t) => a + t.faab, 0),
         faabWeek,
       });
@@ -143,11 +183,11 @@ export function getFrontOffice(): FrontOffice {
     trades: getTradeRecords(),
     projections: getProjectionBeat(),
     pickups: pickups
-      .sort((a, b) => b.points - a.points)
+      .sort((a, b) => b.aboveAvg - a.aboveAvg)
       .slice(0, 10)
       .map((p) => ({
-        season: p.season, manager: p.manager, player: p.player, how: p.how,
-        week: p.week, points: round1(p.points), starts: p.starts,
+        season: p.season, manager: p.manager, player: p.player, pos: p.pos, how: p.how,
+        week: p.week, points: round1(p.points), aboveAvg: round1(p.aboveAvg), starts: p.starts,
       })),
     faab: [...faab]
       .filter(([, f]) => f.spent >= 50)
