@@ -67,7 +67,8 @@ let checked = 0;
 const mismatches: string[] = [];
 for (const m of matchups) {
   for (const [name, score] of [[m.team1_name, m.team1_score], [m.team2_name, m.team2_score]] as const) {
-    const got = scored.get(`${m.season_year}|${m.week}|${name}`);
+    // An abandoned team with every slot empty has no lineup rows and scores 0.
+    const got = scored.get(`${m.season_year}|${m.week}|${name}`) ?? (Number(score) === 0 ? 0 : undefined);
     if (got === undefined) { mismatches.push(`missing ${m.season_year} w${m.week} ${name}`); continue; }
     checked++;
     if (Math.abs(got - Number(score)) > 0.011) mismatches.push(`${m.season_year} w${m.week} ${name}: lineup ${got.toFixed(2)} vs ${score}`);
