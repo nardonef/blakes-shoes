@@ -7,7 +7,7 @@ export const JOBS: Job[] = [
   { holder: "AB", job: "12 leg parlay czar and also HIPAA czar" },
   { holder: "kozzy", job: "kozzypredicts" },
   { holder: "Curby", job: "Talks the shoes" },
-  { holder: "yatty", job: "CBS pickem reminder" },
+  { holder: "yatty", job: "Pickem czar" },
   { holder: "Kennedy and Lil Ant", job: "Leather working" },
   { holder: "Jenk", job: "Award Show czar" },
 ];

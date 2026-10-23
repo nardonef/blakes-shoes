@@ -15,6 +15,10 @@ describe("jobs data", () => {
     expect(JOBS).toContainEqual({ holder: "kozzy", job: "kozzypredicts" });
   });
 
+  it("makes yatty the Pickem czar", () => {
+    expect(JOBS).toContainEqual({ holder: "yatty", job: "Pickem czar" });
+  });
+
   it("makes Jenk the Award Show czar", () => {
     expect(JOBS).toContainEqual({ holder: "Jenk", job: "Award Show czar" });
   });
