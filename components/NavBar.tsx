@@ -8,6 +8,7 @@ const links = [
   { href: "/rules", label: "RULES" },
   { href: "/legacy", label: "LEGACY" },
   { href: "/stats", label: "STATS" },
+  { href: "/rosters", label: "ROSTERS" },
   { href: "/jobs", label: "JOBS" },
   { href: "/shoesgpt", label: "SHOESGPT" },
   { href: "/feedback", label: "FEEDBACK" },
@@ -28,14 +29,14 @@ export default function NavBar() {
           <span className="text-[var(--accent-light)]">.</span>
         </Link>
 
-        <div className="flex items-stretch flex-1 justify-end max-[480px]:justify-center">
+        <div className="flex items-stretch flex-1 min-w-0 overflow-x-auto justify-end max-[480px]:basis-full max-[480px]:[justify-content:safe_center]">
           {links.map((link) => {
             const isActive = pathname === link.href;
             return (
               <Link
                 key={link.href}
                 href={link.href}
-                className={`flex items-center justify-center px-2 max-[480px]:px-1.5 md:px-[18px] py-4 text-[11px] font-semibold tracking-[.06em] max-[480px]:tracking-[.02em] md:tracking-[.12em] transition-colors duration-150 ${
+                className={`flex items-center justify-center px-2 max-[480px]:px-[2px] md:px-[18px] py-4 text-[11px] max-[480px]:text-[10px] font-semibold tracking-[.06em] max-[480px]:tracking-normal md:tracking-[.12em] transition-colors duration-150 ${
                   isActive
                     ? "bg-[var(--accent)] text-white"
                     : "text-[#a3a3a0] hover:text-white"
