@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useState } from "react";
 
 const links = [
   { href: "/", label: "HOME" },
@@ -14,12 +15,20 @@ const links = [
   { href: "/feedback", label: "FEEDBACK" },
 ];
 
+const MONO = { fontFamily: "var(--font-geist-mono)" };
+
 export default function NavBar() {
   const pathname = usePathname();
+  // The menu remembers the page it was opened on, so navigating closes it.
+  const [openOn, setOpenOn] = useState<string | null>(null);
+  const menuOpen = openOn === pathname;
 
   return (
-    <nav className="sticky top-0 z-50 bg-[#151515] border-b-[3px] border-[var(--accent)]">
-      <div className="max-w-[1160px] mx-auto px-4 md:px-10 flex items-center justify-between flex-wrap">
+    <nav
+      className="sticky top-0 z-50 bg-[#151515] border-b-[3px] border-[var(--accent)]"
+      onKeyDown={(e) => e.key === "Escape" && setOpenOn(null)}
+    >
+      <div className="max-w-[1160px] mx-auto px-4 md:px-10 flex items-center justify-between">
         <Link
           href="/"
           className="py-3.5 text-[19px] md:text-[24px] tracking-[.02em] text-white"
@@ -29,26 +38,62 @@ export default function NavBar() {
           <span className="text-[var(--accent-light)]">.</span>
         </Link>
 
-        <div className="flex items-stretch flex-1 min-w-0 overflow-x-auto justify-end max-[480px]:basis-full max-[480px]:[justify-content:safe_center]">
+        <div className="hidden sm:flex items-stretch flex-1 justify-end">
           {links.map((link) => {
             const isActive = pathname === link.href;
             return (
               <Link
                 key={link.href}
                 href={link.href}
-                className={`flex items-center justify-center px-2 max-[480px]:px-[2px] md:px-[18px] py-4 text-[11px] max-[480px]:text-[10px] font-semibold tracking-[.06em] max-[480px]:tracking-normal md:tracking-[.12em] transition-colors duration-150 ${
+                className={`flex items-center justify-center px-2 lg:px-[18px] py-4 text-[11px] font-semibold tracking-[.06em] lg:tracking-[.12em] whitespace-nowrap transition-colors duration-150 ${
                   isActive
                     ? "bg-[var(--accent)] text-white"
                     : "text-[#a3a3a0] hover:text-white"
                 }`}
-                style={{ fontFamily: "var(--font-geist-mono)" }}
+                style={MONO}
               >
                 {link.label}
               </Link>
             );
           })}
         </div>
+
+        <button
+          type="button"
+          className="sm:hidden flex items-center gap-2 -mr-2 px-2 min-h-11 text-[12px] font-semibold tracking-[.12em] text-white"
+          style={MONO}
+          aria-expanded={menuOpen}
+          aria-controls="mobile-nav"
+          onClick={() => setOpenOn(menuOpen ? null : pathname)}
+        >
+          {menuOpen ? "CLOSE" : "MENU"}
+          <span aria-hidden="true" className="text-[16px] leading-none">
+            {menuOpen ? "✕" : "☰"}
+          </span>
+        </button>
       </div>
+
+      {menuOpen && (
+        <div id="mobile-nav" className="sm:hidden border-t border-[#262624]">
+          {links.map((link) => {
+            const isActive = pathname === link.href;
+            return (
+              <Link
+                key={link.href}
+                href={link.href}
+                aria-current={isActive ? "page" : undefined}
+                onClick={() => setOpenOn(null)}
+                className={`block px-4 py-3.5 text-[13px] font-semibold tracking-[.12em] border-b border-[#262624] last:border-b-0 ${
+                  isActive ? "bg-[var(--accent)] text-white" : "text-[#d6d6cc] hover:text-white"
+                }`}
+                style={MONO}
+              >
+                {link.label}
+              </Link>
+            );
+          })}
+        </div>
+      )}
     </nav>
   );
 }
