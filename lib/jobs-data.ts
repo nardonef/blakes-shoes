@@ -5,7 +5,7 @@ export const JOBS: Job[] = [
   { holder: "Peter", job: "Commish + TS third chair biweekly" },
   { holder: "Frank", job: "Blakesshoes.org + TS second chair biweekly" },
   { holder: "AB", job: "12 leg parlay czar and also HIPAA czar" },
-  { holder: "kozzypredicts", job: "" },
+  { holder: "kozzy", job: "kozzypredicts" },
   { holder: "Curby", job: "Talks the shoes" },
   { holder: "yatty", job: "CBS pickem reminder" },
   { holder: "Kennedy and Lil Ant", job: "Leather working" },

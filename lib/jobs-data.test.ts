@@ -11,6 +11,10 @@ describe("jobs data", () => {
     expect(PENDING).toEqual(["Borba", "Kap", "Jone", "Slagle"]);
   });
 
+  it("lists kozzy with the kozzypredicts job", () => {
+    expect(JOBS).toContainEqual({ holder: "kozzy", job: "kozzypredicts" });
+  });
+
   it("makes Jenk the Award Show czar", () => {
     expect(JOBS).toContainEqual({ holder: "Jenk", job: "Award Show czar" });
   });
