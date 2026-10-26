@@ -70,6 +70,15 @@ describe("runSql", () => {
     expect(r.rows).toEqual([{ manager: "Peter Klensch", slot: "QB", started: 1, points: 32.46 }]);
   });
 
+  it("queries draft picks with resolved managers", async () => {
+    const r = (await runSql(
+      "SELECT round, manager, team, position FROM draft WHERE season = 2025 AND player = 'Bijan Robinson'"
+    )) as Rows;
+    expect(r.rows).toEqual([{ round: 1, manager: "Blake Kozloski", team: "Wizards of Koz", position: "RB" }]);
+    const n = (await runSql("SELECT COUNT(*) AS n FROM draft")) as Rows;
+    expect(n.rows).toEqual([{ n: 2676 }]);
+  });
+
   it("caps rows and reports truncation", async () => {
     const r = (await runSql("SELECT * FROM games")) as Rows;
     expect(r.rows).toHaveLength(MAX_SQL_ROWS);

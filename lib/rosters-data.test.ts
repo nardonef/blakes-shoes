@@ -90,6 +90,14 @@ describe("team view", () => {
     });
   });
 
+  it("gives drafted defenses their round", () => {
+    const week1Defenses = S2025.managers
+      .flatMap((m) => getTeamView(S2025, m, 1).groups.flatMap((g) => g.rows))
+      .filter((r) => r.slot === "DEF" && r.acq.kind === "draft");
+    expect(week1Defenses.length).toBeGreaterThan(0);
+    for (const r of week1Defenses) expect(r.acq.label).toMatch(/^Draft · Rd \d+$/);
+  });
+
   it("sums the season's FAAB from add rows", () => {
     const v = getTeamView(S2025, "Eric Rios", null);
     const expected = S2025.txns.filter((t) => t.mgr === "Eric Rios" && t.type === "add").reduce((a, t) => a + t.faab, 0);
