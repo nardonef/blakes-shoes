@@ -4,6 +4,7 @@ import { champions, matchups, resolveManagerName, standings } from "@/lib/stats-
 import lineupsData from "@/data/weekly_lineups.json";
 import transactionsData from "@/data/transactions.json";
 import type { LineupRow, TransactionRow } from "@/lib/yahoo/parse";
+import { getDraftPicks } from "@/lib/draft-data";
 
 // Read-only SQL over league history for the ShoesGPT runSql tool.
 //
@@ -71,6 +72,15 @@ export interface LeagueTables {
     position: string;
     detail: string;
     faab: number | null;
+  }[];
+  draft: {
+    season: number;
+    round: number;
+    pick: number;
+    manager: string;
+    team: string;
+    player: string;
+    position: string;
   }[];
 }
 
@@ -140,6 +150,14 @@ export function buildLeagueTables(): LeagueTables {
       detail: r.detail,
       faab: r.faab,
     })),
+    draft: getDraftPicks().map((p) => ({
+      season: p.season,
+      round: p.round,
+      pick: p.pick,
+      ...teamOf(p.season, Number(p.teamKey.split(".t.")[1])),
+      player: p.player,
+      position: p.position,
+    })),
     games,
     standings: standings
       .filter((s) => s.manager_name !== HIDDEN)
@@ -194,6 +212,10 @@ transactions: every add, drop and trade, one row per player moved
   type TEXT ('add'|'drop'|'trade'), manager, team (who received the player; for drops, who released him),
   player, nfl_team, position, detail TEXT ('Free Agent', '$12 Waiver', 'To Waivers', 'Traded to', ...),
   faab INTEGER|NULL (waiver bid in dollars)
+draft: every draft pick, snake order (15 rounds in 2012, 16 after)
+  season, round INTEGER, pick INTEGER (overall, 1 = first pick), manager, team, player,
+  position TEXT ('' when unknown). A handful of picks are player = 'Unknown player...'.
+  Join to lineups/transactions on (season, player) to see how a pick worked out.
 Manager names are full display names (e.g. 'Ryan Kaplan'). Games against a hidden Yahoo manager have opponent = 'Hidden manager'.`;
 
 // Runs inside the child process (CommonJS via `node -e`).
@@ -210,7 +232,9 @@ CREATE TABLE managers (name TEXT, is_current INTEGER, current_team TEXT);
 CREATE TABLE lineups (season INTEGER, week INTEGER, manager TEXT, team TEXT, slot TEXT, started INTEGER,
   player TEXT, points REAL, projected REAL);
 CREATE TABLE transactions (season INTEGER, txn INTEGER, date TEXT, type TEXT, manager TEXT, team TEXT,
-  player TEXT, nfl_team TEXT, position TEXT, detail TEXT, faab INTEGER);`)};
+  player TEXT, nfl_team TEXT, position TEXT, detail TEXT, faab INTEGER);
+CREATE TABLE draft (season INTEGER, round INTEGER, pick INTEGER, manager TEXT, team TEXT, player TEXT,
+  position TEXT);`)};
 const ALLOWED = new Set([C.SQLITE_SELECT, C.SQLITE_READ, C.SQLITE_FUNCTION, C.SQLITE_RECURSIVE]);
 let db;
 

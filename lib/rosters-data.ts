@@ -1,7 +1,5 @@
-import draftHistory from "@/data/draft_history.json";
 import leagueInfo from "@/data/league_info.json";
-import transactionsRaw from "@/data/transactions.json";
-import lineupsRaw from "@/data/weekly_lineups.json";
+import { getDraftPicks } from "@/lib/draft-data";
 import { buildLeagueTables } from "@/lib/league-sql";
 import { matchups, resolveManagerName, standings } from "@/lib/stats-data";
 
@@ -174,17 +172,10 @@ function buildAll(): Map<number, SeasonModel> {
         faab: t.type === "add" ? Number(/\$(\d+)/.exec(t.detail)?.[1] ?? 0) : 0,
       }));
 
-    // Draft picks only carry a Yahoo player_key ("461.p.40055"); its number is the player_id
-    // the scraped lineups and transactions record.
-    const nameById = new Map<string, string>();
-    for (const r of [...lineupsRaw, ...transactionsRaw]) {
-      if (r.season === year && r.player_id) nameById.set(r.player_id, r.player);
-    }
     const draftRound = new Map<string, number>();
-    for (const d of draftHistory.filter((d) => d.season_year === year)) {
-      const mgr = teamLabel.get(d.team_key);
-      const player = nameById.get(d.player_key.split(".p.")[1]);
-      if (mgr && player) draftRound.set(`${mgr}|${player}`, d.round);
+    for (const d of getDraftPicks()) {
+      const mgr = teamLabel.get(d.teamKey);
+      if (d.season === year && mgr && d.resolved) draftRound.set(`${mgr}|${d.player}`, d.round);
     }
 
     const info = new Map<string, { pos: string; nfl: string }>();

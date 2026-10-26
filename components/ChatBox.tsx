@@ -174,7 +174,7 @@ export default function ChatBox() {
           )}
         </form>
         <p className="mt-2 text-center text-[11px] text-[var(--muted-light)]">
-          ShoesGPT knows league results, weekly lineups, pickups and trades. No draft picks.
+          ShoesGPT knows league results, drafts, weekly lineups, pickups and trades.
         </p>
       </div>
     </div>
