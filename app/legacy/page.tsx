@@ -1,4 +1,6 @@
 import Image from "next/image";
+import ChampionsBuilt from "@/components/ChampionsBuilt";
+import { getChampionBuilds } from "@/lib/champions-built-data";
 import { getManagerLegacies, slug, type ManagerLegacy } from "@/lib/legacy-data";
 
 function ordinal(n: number): string {
@@ -183,7 +185,21 @@ export default function LegacyPage() {
         </div>
       </header>
 
-      <main className="max-w-[1160px] mx-auto px-4 md:px-10 py-7 md:py-11 pb-14 md:pb-[88px] flex flex-col gap-0.5 bg-[var(--rule)]">
+      <main className="max-w-[1160px] mx-auto px-4 md:px-10 py-7 md:py-11 pb-14 md:pb-[88px] flex flex-col gap-9 md:gap-14">
+        <section>
+          <div className="flex items-center gap-4 flex-wrap mb-2">
+            <h2 className="text-[30px] md:text-[42px] text-[#151515]" style={{ fontFamily: "var(--font-bebas-neue)" }}>
+              THE MANAGERS
+            </h2>
+            <span className="flex-1 min-w-[20px] h-0.5 bg-[#151515]" />
+          </div>
+          <p
+            className="text-[10.5px] tracking-[.08em] text-[var(--muted-light)] mb-4"
+            style={{ fontFamily: "var(--font-geist-mono)" }}
+          >
+            RANKED BY ALL-TIME WIN %
+          </p>
+          <div className="flex flex-col gap-4 md:gap-5">
         {legacies.map((legacy, index) => {
           const { strengths, weaknesses } = buildScoutingReport(legacy, legacies);
           const finishLabel =
@@ -367,9 +383,9 @@ export default function LegacyPage() {
 
               {/* Rivalries — only called out when genuinely lopsided */}
               {(showOwns || showStruggles) && (
-                <div className="flex flex-wrap gap-0.5 bg-[var(--rule)] border-t border-[var(--rule)]">
+                <div className="flex flex-wrap gap-px bg-[#e2e2da] border-t border-[#e2e2da]">
                   {showOwns && (
-                    <div className="flex-1 basis-60 bg-[var(--background)] py-3.5 px-5 md:px-8">
+                    <div className="flex-1 basis-60 bg-[#fafaf6] py-3.5 px-5 md:px-8">
                       <span
                         className="text-[9.5px] font-semibold tracking-[.18em] text-[var(--accent)] mr-2.5"
                         style={{ fontFamily: "var(--font-geist-mono)" }}
@@ -383,7 +399,7 @@ export default function LegacyPage() {
                     </div>
                   )}
                   {showStruggles && (
-                    <div className="flex-1 basis-60 bg-[var(--background)] py-3.5 px-5 md:px-8">
+                    <div className="flex-1 basis-60 bg-[#fafaf6] py-3.5 px-5 md:px-8">
                       <span
                         className="text-[9.5px] font-semibold tracking-[.18em] text-[var(--muted-dark)] mr-2.5"
                         style={{ fontFamily: "var(--font-geist-mono)" }}
@@ -401,6 +417,9 @@ export default function LegacyPage() {
             </section>
           );
         })}
+          </div>
+        </section>
+        <ChampionsBuilt builds={getChampionBuilds()} />
       </main>
     </div>
   );
