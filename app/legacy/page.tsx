@@ -1,4 +1,6 @@
 import Image from "next/image";
+import ChampionsBuilt from "@/components/ChampionsBuilt";
+import { getChampionBuilds } from "@/lib/champions-built-data";
 import { getManagerLegacies, slug, type ManagerLegacy } from "@/lib/legacy-data";
 
 function ordinal(n: number): string {
@@ -402,6 +404,7 @@ export default function LegacyPage() {
           );
         })}
       </main>
+      <ChampionsBuilt builds={getChampionBuilds()} />
     </div>
   );
 }
