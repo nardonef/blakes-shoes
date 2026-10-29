@@ -15,6 +15,7 @@ import {
   type BoardPick,
   type DraftModel,
   type DraftSeason,
+  type SlotTitles,
 } from "@/lib/draft-board-view";
 
 const MONO = { fontFamily: "var(--font-geist-mono)" };
@@ -365,7 +366,47 @@ function Board({ model, sp, setParams }: { model: DraftModel; sp: URLSearchParam
         and at least 60 spots above where he was taken. <strong className="text-[#151515]">Bust</strong>: a round 1–4 pick
         who finished 100th or worse.
       </p>
+      <SlotTitlesChart titles={model.titlesBySlot} />
     </main>
+  );
+}
+
+function SlotTitlesChart({ titles }: { titles: SlotTitles[] }) {
+  const max = Math.max(1, ...titles.map((t) => t.titles.length));
+  const total = titles.reduce((a, t) => a + t.titles.length, 0);
+  return (
+    <section className="mt-6 max-w-[760px]">
+      <h2 className="text-[30px] md:text-[34px] leading-none mb-1.5" style={BEBAS}>
+        Does draft slot matter?
+      </h2>
+      <p className="m-0 mb-4 text-[13px] text-[#6b6b63]">
+        Where each of the {total} champions picked in round 1. Every slot has had 14 chances.
+      </p>
+      <div className="bg-white border border-[#e2e2da] px-4 md:px-6 py-4 flex flex-col gap-2">
+        {titles.map((t) => (
+          <div key={t.slot} className="grid grid-cols-[64px_minmax(0,1fr)] gap-3 items-center">
+            <span className="text-[11px] font-semibold tracking-[.08em] text-[#6b6b63] whitespace-nowrap" style={MONO}>
+              SLOT {t.slot}
+            </span>
+            <div className="flex items-center gap-2.5 min-w-0">
+              {t.titles.length > 0 ? (
+                <div
+                  className="h-[18px] rounded-r bg-[var(--accent)] shrink-0"
+                  style={{ width: `${(t.titles.length / max) * 45}%` }}
+                  title={`${t.titles.length} title${t.titles.length === 1 ? "" : "s"}: ${t.titles.map((x) => `${x.year} ${x.manager}`).join(", ")}`}
+                />
+              ) : (
+                <div className="h-[18px] w-px bg-[#d6d6cc] shrink-0" />
+              )}
+              <span className="text-[12px] text-[#4a4a44] min-w-0 truncate">
+                <strong className="text-[#151515] tabular-nums">{t.titles.length}</strong>
+                {t.titles.length > 0 && <span className="text-[#6b6b63]"> · {t.titles.map((x) => x.year).join(", ")}</span>}
+              </span>
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
   );
 }
 
