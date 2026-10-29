@@ -134,7 +134,7 @@ function aboveAverage(S: SeasonModel, base: Map<string, number>, mgr: string, pl
 }
 
 /** Every season's add/pickup scored by what it started for the team that added it, from the add week on. */
-function allPickups(): (Pickup & { faab: number; faabWeek: number | null })[] {
+export function allPickups(): (Pickup & { faab: number; faabWeek: number | null })[] {
   const out: (Pickup & { faab: number; faabWeek: number | null })[] = [];
   for (const y of getRosterSeasons()) {
     const S = getSeasonModel(y)!;
