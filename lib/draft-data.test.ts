@@ -20,7 +20,7 @@ describe("draft picks", () => {
 
   it("names drafted defenses the way the lineups do", () => {
     const defenses = picks.filter((p) => p.position === "DEF");
-    expect(defenses.length).toBe(196);
+    expect(defenses.filter((d) => d.season <= 2025).length).toBe(196);
     const lineupDefenseNames = new Set(lineupsRaw.filter((r) => r.slot === "DEF").map((r) => r.player));
     for (const d of defenses) expect(lineupDefenseNames).toContain(d.player);
   });

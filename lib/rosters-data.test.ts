@@ -28,8 +28,10 @@ describe("transactionWeek", () => {
 });
 
 describe("managers", () => {
-  it("covers 2012-2025, newest first", () => {
-    expect(getRosterSeasons()).toEqual([2025, 2024, 2023, 2022, 2021, 2020, 2019, 2018, 2017, 2016, 2015, 2014, 2013, 2012]);
+  it("covers every season from 2012, newest first", () => {
+    const years = getRosterSeasons();
+    expect(years.filter((y) => y <= 2025)).toEqual([2025, 2024, 2023, 2022, 2021, 2020, 2019, 2018, 2017, 2016, 2015, 2014, 2013, 2012]);
+    expect(years).toEqual([...years].sort((a, b) => b - a));
   });
 
   it("never shows a raw Yahoo username or a bare 'Hidden manager'", () => {
@@ -134,7 +136,7 @@ describe("trades", () => {
   it("lists every season's trades newest first with unique ids", () => {
     const trades = getAllTrades();
     expect(new Set(trades.map((t) => t.id)).size).toBe(trades.length);
-    expect(trades[0].season).toBe(2025);
+    expect(trades[0].season).toBe(Math.max(...trades.map((t) => t.season)));
     expect(trades.at(-1)!.season).toBe(2012);
   });
 });

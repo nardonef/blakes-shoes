@@ -16,8 +16,10 @@ const season = (y: number) => model.seasons.find((s) => s.year === y)!;
 const s2025 = season(2025);
 
 describe("draft model", () => {
-  it("covers 2012-2025, newest first", () => {
-    expect(model.seasons.map((s) => s.year)).toEqual([2025, 2024, 2023, 2022, 2021, 2020, 2019, 2018, 2017, 2016, 2015, 2014, 2013, 2012]);
+  it("covers every season from 2012, newest first", () => {
+    const years = model.seasons.map((s) => s.year);
+    expect(years.filter((y) => y <= 2025)).toEqual([2025, 2024, 2023, 2022, 2021, 2020, 2019, 2018, 2017, 2016, 2015, 2014, 2013, 2012]);
+    expect(years).toEqual([...years].sort((a, b) => b - a));
   });
 
   it("2025 is 12 columns x 16 rounds and every column has a grade", () => {
@@ -126,9 +128,11 @@ describe("views", () => {
     expect(historyManagers(model.seasons)).toContain("Blake Kozloski");
     expect(historyManagers(model.seasons).some((m) => m.includes("unknown manager"))).toBe(false);
     const h = managerHistory(model.seasons, "Blake Kozloski");
-    expect(h.years).toHaveLength(14);
-    expect(h.years[0]).toMatchObject({ year: 2025, slot: 1 });
-    expect(h.years[0].first?.player).toBe("Bijan Robinson");
+    expect(h.years.filter((y) => y.year <= 2025)).toHaveLength(14);
+    expect(h.years[0].year).toBe(model.seasons[0].year);
+    const y2025 = h.years.find((y) => y.year === 2025)!;
+    expect(y2025).toMatchObject({ slot: 1 });
+    expect(y2025.first?.player).toBe("Bijan Robinson");
     expect(h.bestEver?.value).toBeGreaterThan(0);
   });
 
