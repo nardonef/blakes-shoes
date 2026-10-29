@@ -10,7 +10,7 @@ const pct = (part: number, total: number) => Math.round((part / total) * 100);
 
 export default function ChampionsBuilt({ builds }: { builds: ChampionBuild[] }) {
   return (
-    <section className="max-w-[1160px] mx-auto px-4 md:px-10 pb-14 md:pb-[88px]">
+    <section>
       <div className="flex items-center gap-4 flex-wrap mb-2">
         <h2 className="text-[30px] md:text-[42px] text-[#151515]" style={{ fontFamily: "var(--font-bebas-neue)" }}>
           HOW CHAMPIONS WERE BUILT
