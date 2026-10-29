@@ -1,5 +1,7 @@
 import Image from "next/image";
+import Link from "next/link";
 import { getManagerLegacies, slug, type ManagerLegacy } from "@/lib/legacy-data";
+import { managerSlug } from "@/lib/rosters-data";
 
 function ordinal(n: number): string {
   const s = ["th", "st", "nd", "rd"];
@@ -237,6 +239,13 @@ export default function LegacyPage() {
                   >
                     {legacy.owner.team.toUpperCase()} · {legacy.firstSeason}–{legacy.lastSeason}
                   </div>
+                  <Link
+                    href={`/wrapped?mgr=${managerSlug(legacy.owner.name)}&season=${legacy.lastSeason}`}
+                    className="inline-block mt-1.5 text-[10px] font-semibold tracking-[.14em] text-[var(--accent-light)] hover:text-white"
+                    style={{ fontFamily: "var(--font-geist-mono)" }}
+                  >
+                    {legacy.lastSeason} WRAPPED →
+                  </Link>
                 </div>
                 <div className="flex gap-3.5 md:gap-[26px] flex-wrap items-end w-full md:w-auto">
                   <div>
