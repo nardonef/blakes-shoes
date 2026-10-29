@@ -1,6 +1,6 @@
 import Image from "next/image";
-import Link from "next/link";
 import { getManagerLegacies, slug, type ManagerLegacy } from "@/lib/legacy-data";
+import Link from "next/link";
 import { managerSlug } from "@/lib/rosters-data";
 
 function ordinal(n: number): string {

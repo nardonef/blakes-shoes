@@ -5,8 +5,11 @@ describe("wrapped", () => {
   it("lists known managers and the seasons each played", () => {
     expect(wrappedManagers()).toContain("Blake Kozloski");
     expect(wrappedManagers().some((m) => m.includes("unknown manager"))).toBe(false);
-    expect(wrappedSeasons("Blake Kozloski")).toHaveLength(14);
-    expect(wrappedSeasons("Tyler Falcone")).toEqual([2025, 2024]);
+    // Pinned to finished seasons; a season in progress adds one more for everyone in it.
+    expect(wrappedSeasons("Blake Kozloski").filter((y) => y <= 2025)).toHaveLength(14);
+    expect(wrappedSeasons("Tyler Falcone").filter((y) => y <= 2025)).toEqual([2025, 2024]);
+    const tyler = wrappedSeasons("Tyler Falcone");
+    expect(tyler).toEqual([...tyler].sort((a, b) => b - a));
   });
 
   it("builds Tyler Falcone's 2025 title season", () => {
