@@ -33,8 +33,9 @@ import {
   chartColors,
 } from "@/lib/stats-data";
 import type { FrontOffice } from "@/lib/front-office-data";
+import type { LuckAndLineups } from "@/lib/luck-lineups-data";
 
-type TabId = "rankings" | "records" | "seasons" | "office";
+type TabId = "rankings" | "records" | "seasons" | "office" | "luck";
 
 const TABS: { id: TabId; title: string; description: string }[] = [
   {
@@ -56,6 +57,11 @@ const TABS: { id: TabId; title: string; description: string }[] = [
     id: "office",
     title: "FRONT OFFICE",
     description: "Who wins trades, works the waiver wire, and beats Yahoo's projections.",
+  },
+  {
+    id: "luck",
+    title: "LUCK & LINEUPS",
+    description: "Who got lucky with the schedule, and who keeps starting the wrong guys.",
   },
 ];
 
@@ -338,6 +344,164 @@ function FrontOfficeSections({ data }: { data: FrontOffice }) {
   );
 }
 
+function LuckSections({ data }: { data: LuckAndLineups }) {
+  const maxAbs = Math.max(1, ...data.careers.map((c) => Math.abs(c.luck)));
+  const pct = (n: number) => `${(n * 100).toFixed(1)}%`;
+  const signed = (n: number) => `${n > 0 ? "+" : ""}${n.toFixed(1)}`;
+  const cols = "grid-cols-[22px_minmax(0,1fr)_52px_56px_62px] md:grid-cols-[36px_minmax(0,1fr)_100px_110px_130px]";
+
+  return (
+    <>
+      {/* Schedule Luck */}
+      <section>
+        <SectionHeading
+          description={
+            <>
+              Your <strong>all-play</strong> record is what you&apos;d have gone if you played every other team every
+              week. The gap between that and your real record is pure schedule luck: a green bar means you kept drawing
+              opponents on their off weeks, a red bar means you kept running into the week&apos;s top score. Regular
+              season only.
+            </>
+          }
+        >
+          SCHEDULE LUCK
+        </SectionHeading>
+        <div className="bg-white p-5 md:p-7">
+          <div className="flex flex-col gap-2.5">
+            {data.careers.map((c) => {
+              const w = (Math.abs(c.luck) / maxAbs) * 50;
+              const positive = c.luck >= 0;
+              const color = positive ? "var(--accent)" : "var(--negative)";
+              return (
+                <div
+                  key={c.manager}
+                  className="flex items-center gap-2.5"
+                  title={`Real ${pct(c.realPct)} vs all-play ${pct(c.allPlayPct)} over ${c.games} games`}
+                >
+                  <div
+                    className="w-[60px] md:w-[86px] text-[10px] text-[var(--body-text)] text-right truncate shrink-0"
+                    style={{ fontFamily: "var(--font-geist-mono)" }}
+                  >
+                    {c.manager}
+                  </div>
+                  <div className="flex-1 relative h-[18px] bg-[var(--background)]">
+                    <div className="absolute inset-y-0 left-1/2 w-px bg-[var(--rule)]" />
+                    <div
+                      className="absolute top-0 h-[18px]"
+                      style={{ left: positive ? "50%" : `${50 - w}%`, width: `${w}%`, background: color }}
+                    />
+                  </div>
+                  <div
+                    className="w-[44px] text-[10px] font-semibold shrink-0"
+                    style={{ fontFamily: "var(--font-geist-mono)", color }}
+                  >
+                    {signed(c.luck)}%
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          <div
+            className="flex gap-5 mt-[18px] pt-3.5 border-t border-[var(--hairline)] text-[9.5px] tracking-[.1em] text-[var(--muted-light)] flex-wrap"
+            style={{ fontFamily: "var(--font-geist-mono)" }}
+          >
+            <span className="flex items-center gap-1.5">
+              <span className="w-2.5 h-2.5 bg-[var(--accent)]" />
+              REAL RECORD BEAT ALL-PLAY
+            </span>
+            <span className="flex items-center gap-1.5">
+              <span className="w-2.5 h-2.5 bg-[var(--negative)]" />
+              SCHEDULE COST THEM WINS
+            </span>
+            <span>WIN % POINTS · 40+ GAMES</span>
+          </div>
+        </div>
+      </section>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-9">
+        <RankedList
+          title="LUCKIEST SEASONS"
+          subtitle="Real wins minus all-play expected wins"
+          rows={data.luckiest.map((s, i) => ({
+            rank: i + 1,
+            rankColor: i < 3 ? "var(--accent)" : "var(--dim)",
+            primary: s.manager,
+            meta: `${s.season} · WENT ${s.wins}-${s.losses} · DESERVED ${s.expectedWins.toFixed(1)} WINS`,
+            value: `${signed(s.luck)}`,
+            valueColor: "var(--accent)",
+          }))}
+        />
+        <RankedList
+          title="UNLUCKIEST SEASONS"
+          subtitle="Real wins minus all-play expected wins"
+          rows={data.unluckiest.map((s, i) => ({
+            rank: i + 1,
+            rankColor: i < 3 ? "var(--negative)" : "var(--dim)",
+            primary: s.manager,
+            meta: `${s.season} · WENT ${s.wins}-${s.losses} · DESERVED ${s.expectedWins.toFixed(1)} WINS`,
+            value: `${signed(s.luck)}`,
+            valueColor: "var(--negative)",
+          }))}
+        />
+      </div>
+
+      {/* Lineup Efficiency */}
+      <section>
+        <SectionHeading
+          description={
+            <>
+              Each week we rebuild the best lineup you could have started from your own roster.{" "}
+              <strong>Efficiency</strong> is the share of those points you actually started. <strong>Coulda won</strong>{" "}
+              counts losses where that best lineup would have beaten your opponent. Regular season only.
+            </>
+          }
+        >
+          LINEUP EFFICIENCY
+        </SectionHeading>
+        <div
+          className={`grid ${cols} bg-[#151515] text-[#f5f5f0] text-[8px] md:text-[9.5px] font-semibold tracking-[.06em] md:tracking-[.1em]`}
+          style={{ fontFamily: "var(--font-geist-mono)" }}
+        >
+          <div className="py-[11px] pl-1.5 md:pl-3">#</div>
+          <div className="py-[11px] px-1 md:px-2">MANAGER</div>
+          <div className="py-[11px] px-0.5 md:px-1 text-right">EFFICIENCY</div>
+          <div className="py-[11px] px-0.5 md:px-1 text-right">BENCH PTS/WK</div>
+          <div className="py-[11px] pr-1.5 pl-0.5 md:pr-3 md:pl-1 text-right">COULDA WON</div>
+        </div>
+        <div className="bg-white">
+          {data.lineups.map((l, i) => (
+            <div
+              key={l.manager}
+              className={`grid ${cols} border-b border-[var(--hairline)] items-center text-[11px] md:text-[13.5px]`}
+            >
+              <div
+                className="py-[11px] pl-1.5 md:pl-3 text-[15px] md:text-[20px] leading-none"
+                style={{ fontFamily: "var(--font-bebas-neue)", color: i < 3 ? "var(--accent)" : "var(--dim)" }}
+              >
+                {i + 1}
+              </div>
+              <div className="py-[11px] px-1 md:px-2 font-semibold text-[#151515] truncate">{l.manager}</div>
+              <div className="py-[11px] px-0.5 md:px-1 text-right font-semibold text-[var(--accent)] tabular-nums">
+                {pct(l.efficiency)}
+              </div>
+              <div className="py-[11px] px-0.5 md:px-1 text-right text-[var(--body-text)] tabular-nums">
+                {l.benchPerWeek.toFixed(1)}
+              </div>
+              <div className="py-[11px] pr-1.5 pl-0.5 md:pr-3 md:pl-1 text-right tabular-nums">
+                <span className="font-semibold text-[var(--negative)]">{l.couldaWon}</span>
+                <span className="text-[var(--muted-light)]"> of {l.losses} L</span>
+              </div>
+            </div>
+          ))}
+        </div>
+        <p className="text-[12px] text-[var(--muted-light)] mt-2.5 max-w-[68ch]">
+          A few bench players have no known position and can&apos;t be moved, so the best lineup is slightly understated.
+        </p>
+      </section>
+    </>
+  );
+}
+
 // Custom Tooltip Component (still used by Scoring Trends, the one panel that
 // keeps Recharts' <Tooltip>)
 function CustomTooltip({
@@ -362,21 +526,23 @@ function CustomTooltip({
   );
 }
 
-export default function StatsClient({ frontOffice }: { frontOffice: FrontOffice }) {
+export default function StatsClient({ frontOffice, luck }: { frontOffice: FrontOffice; luck: LuckAndLineups }) {
   return (
     <Suspense fallback={null}>
-      <StatsContent frontOffice={frontOffice} />
+      <StatsContent frontOffice={frontOffice} luck={luck} />
     </Suspense>
   );
 }
 
-function StatsContent({ frontOffice }: { frontOffice: FrontOffice }) {
+function StatsContent({ frontOffice, luck }: { frontOffice: FrontOffice; luck: LuckAndLineups }) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const tabParam = searchParams.get("tab");
   const activeTab: TabId =
-    tabParam === "records" || tabParam === "seasons" || tabParam === "office" ? tabParam : "rankings";
+    tabParam === "records" || tabParam === "seasons" || tabParam === "office" || tabParam === "luck"
+      ? tabParam
+      : "rankings";
 
   function setTab(tab: TabId) {
     router.replace(`${pathname}?tab=${tab}`, { scroll: false });
@@ -1084,6 +1250,7 @@ function StatsContent({ frontOffice }: { frontOffice: FrontOffice }) {
         )}
 
         {activeTab === "office" && <FrontOfficeSections data={frontOffice} />}
+        {activeTab === "luck" && <LuckSections data={luck} />}
 
         {/* Footer */}
         <div
