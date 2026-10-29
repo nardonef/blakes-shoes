@@ -10,6 +10,7 @@ const links = [
   { href: "/legacy", label: "LEGACY" },
   { href: "/stats", label: "STATS" },
   { href: "/rosters", label: "ROSTERS" },
+  { href: "/draft", label: "DRAFT" },
   { href: "/jobs", label: "JOBS" },
   { href: "/shoesgpt", label: "SHOESGPT" },
   { href: "/feedback", label: "FEEDBACK" },
@@ -38,14 +39,14 @@ export default function NavBar() {
           <span className="text-[var(--accent-light)]">.</span>
         </Link>
 
-        <div className="hidden sm:flex items-stretch flex-1 justify-end">
+        <div className="hidden md:flex items-stretch flex-1 justify-end">
           {links.map((link) => {
             const isActive = pathname === link.href;
             return (
               <Link
                 key={link.href}
                 href={link.href}
-                className={`flex items-center justify-center px-2 lg:px-[18px] py-4 text-[11px] font-semibold tracking-[.06em] lg:tracking-[.12em] whitespace-nowrap transition-colors duration-150 ${
+                className={`flex items-center justify-center px-2 xl:px-[18px] py-4 text-[11px] font-semibold tracking-[.06em] xl:tracking-[.12em] whitespace-nowrap transition-colors duration-150 ${
                   isActive
                     ? "bg-[var(--accent)] text-white"
                     : "text-[#a3a3a0] hover:text-white"
@@ -60,7 +61,7 @@ export default function NavBar() {
 
         <button
           type="button"
-          className="sm:hidden flex items-center gap-2 -mr-2 px-2 min-h-11 text-[12px] font-semibold tracking-[.12em] text-white"
+          className="md:hidden flex items-center gap-2 -mr-2 px-2 min-h-11 text-[12px] font-semibold tracking-[.12em] text-white"
           style={MONO}
           aria-expanded={menuOpen}
           aria-controls="mobile-nav"
@@ -74,7 +75,7 @@ export default function NavBar() {
       </div>
 
       {menuOpen && (
-        <div id="mobile-nav" className="sm:hidden border-t border-[#262624]">
+        <div id="mobile-nav" className="md:hidden border-t border-[#262624]">
           {links.map((link) => {
             const isActive = pathname === link.href;
             return (
