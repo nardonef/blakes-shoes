@@ -1,6 +1,5 @@
 import Link from "next/link";
 import RostersSelect from "@/components/RostersSelect";
-import { getLiveSeason } from "@/lib/season-status";
 import {
   defaultManager,
   getAllTrades,
@@ -13,6 +12,7 @@ import {
   type TeamView,
   type Trade,
 } from "@/lib/rosters-data";
+import { getLiveSeason } from "@/lib/season-status";
 
 export const metadata = { title: "Rosters | Blake's Shoes" };
 
