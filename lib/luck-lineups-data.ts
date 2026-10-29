@@ -81,7 +81,7 @@ function regularWeeks(S: SeasonModel): Map<number, { manager: string; points: nu
   return out;
 }
 
-export function getAllPlay(): Pick<LuckAndLineups, "careers" | "luckiest" | "unluckiest"> {
+function computeAllPlay() {
   const career = new Map<string, { w: number; l: number; rw: number; rl: number }>();
   const seasons: AllPlaySeason[] = [];
   for (const y of getRosterSeasons()) {
@@ -110,6 +110,16 @@ export function getAllPlay(): Pick<LuckAndLineups, "careers" | "luckiest" | "unl
       career.set(manager, c);
     }
   }
+  return { career, seasons };
+}
+
+/** Every known manager-season's real record vs all-play expected wins. */
+export function getAllPlaySeasons(): AllPlaySeason[] {
+  return computeAllPlay().seasons;
+}
+
+export function getAllPlay(): Pick<LuckAndLineups, "careers" | "luckiest" | "unluckiest"> {
+  const { career, seasons } = computeAllPlay();
   const careers = [...career]
     .map(([manager, c]) => {
       const games = c.rw + c.rl;

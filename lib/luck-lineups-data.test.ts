@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { getAllPlay, getLineupEfficiency, optimalPoints, weekLineup } from "./luck-lineups-data";
+import { getAllPlay, getAllPlaySeasons, getLineupEfficiency, optimalPoints, weekLineup } from "./luck-lineups-data";
 import { getSeasonModel } from "./rosters-data";
 
 describe("optimalPoints", () => {
@@ -38,6 +38,13 @@ describe("all-play", () => {
       expect(c.games).toBeGreaterThanOrEqual(40);
       expect(c.luck).toBeCloseTo((c.realPct - c.allPlayPct) * 100, 0);
     }
+  });
+
+  it("exposes every manager-season", () => {
+    const all = getAllPlaySeasons();
+    expect(all.find((s) => s.season === 2021 && s.manager === "Anthony Bove")).toMatchObject({ wins: 9, losses: 5 });
+    expect(all.some((s) => s.manager.endsWith("(unknown manager)"))).toBe(false);
+    expect(all.length).toBeGreaterThan(150);
   });
 
   it("finds the luckiest and unluckiest single seasons", () => {
