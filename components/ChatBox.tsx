@@ -54,7 +54,7 @@ export default function ChatBox() {
             SHOES<span className="text-[var(--accent)]">GPT</span>
           </h1>
           <p className="mt-2 mb-8 text-[15px] text-[var(--body-text)]">
-            Ask anything about Blake&apos;s Shoes history, 2012-2025.
+            Ask anything about Blake&apos;s Shoes history, from 2012 to this season.
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 w-full">
             {EXAMPLES.map((q) => (

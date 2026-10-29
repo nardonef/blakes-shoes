@@ -136,11 +136,14 @@ describe("queryMatchups", () => {
   it("puts the queried manager on the left with a result from their side", () => {
     const r = queryMatchups({ manager: "Frankie", opponent: "Kaplan" }) as {
       totalMatches: number;
-      matchups: { manager: string; result: string }[];
+      matchups: { manager: string; result: string; season: number }[];
     };
-    expect(r.totalMatches).toBe(18);
+    // Pinned to finished seasons; the season in progress keeps adding games.
+    const finished = r.matchups.filter((m) => m.season <= 2025);
+    expect(r.totalMatches).toBe(r.matchups.length);
+    expect(finished).toHaveLength(18);
     expect(r.matchups.every((m) => m.manager === "Frankie Nardone")).toBe(true);
-    expect(r.matchups.filter((m) => m.result === "win")).toHaveLength(9);
+    expect(finished.filter((m) => m.result === "win")).toHaveLength(9);
   });
 
   it("caps rows and reports truncation", () => {

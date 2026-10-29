@@ -1,7 +1,14 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { parseMatchup, parseTransactions, parseYahooDate } from "./parse";
+import {
+  parseDraftResults,
+  parseMatchup,
+  parseMatchupHeader,
+  parseStandings,
+  parseTransactions,
+  parseYahooDate,
+} from "./parse";
 
 const fixture = (name: string) => readFileSync(join(__dirname, "fixtures", name), "utf8");
 
@@ -62,5 +69,40 @@ describe("parseTransactions (2012 page 2)", () => {
     expect(rows.some((r) => r.type === "add")).toBe(true);
     expect(rows.some((r) => r.type === "drop")).toBe(true);
     expect(new Set(rows.map((r) => r.txn)).size).toBe(25);
+  });
+});
+
+describe("live-season fragments (2026)", () => {
+  it("reads both teams, managers and final scores from a matchup header", () => {
+    const { left, right } = parseMatchupHeader(fixture("mu-2026-w1-1-10.html"));
+    expect(left).toEqual({ team_id: 1, team: "All Business Pete", manager: "Peter", score: 75.92 });
+    expect(right).toEqual({ team_id: 10, team: "The Hullabaloos", manager: "efuego93", score: 166.06 });
+  });
+
+  it("matches the 2026 lineup tables to the header scores", () => {
+    const rows = parseMatchup(fixture("mu-2026-w1-1-10.html"), 2026, 1);
+    const started = (team: number) =>
+      Math.round(rows.filter((r) => r.team_id === team && r.slot !== "BN" && r.slot !== "IR").reduce((a, r) => a + (r.points ?? 0), 0) * 100) / 100;
+    expect(started(1)).toBe(75.92);
+    expect(started(10)).toBe(166.06);
+  });
+
+  it("reads all 12 standings rows", () => {
+    const st = parseStandings(fixture("st-2026.html"));
+    expect(st).toHaveLength(12);
+    expect(st[0]).toMatchObject({ rank: 1, team_id: 7, team: "Loose Cannons", wins: 7, losses: 0, ties: 0, points_for: 811.18, streak: "W-7" });
+    expect(new Set(st.map((s) => s.team_id)).size).toBe(12);
+    expect(st.map((s) => s.rank)).toEqual(Array.from({ length: 12 }, (_, i) => i + 1));
+  });
+
+  it("reads every draft pick in round order", () => {
+    const dr = parseDraftResults(fixture("dr-2026.html"));
+    expect(dr).toHaveLength(180);
+    expect(dr[0]).toEqual({
+      round: 1, pick_in_round: 1, player: "Christian McCaffrey", player_id: "30121",
+      nfl_team: "SF", position: "RB", team: "Anthony's Nifty Team",
+    });
+    expect(Math.max(...dr.map((d) => d.round))).toBe(15);
+    expect(dr.every((d) => d.pick_in_round >= 1 && d.pick_in_round <= 12 && d.team)).toBe(true);
   });
 });

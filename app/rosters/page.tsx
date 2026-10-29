@@ -1,5 +1,6 @@
 import Link from "next/link";
 import RostersSelect from "@/components/RostersSelect";
+import { getLiveSeason } from "@/lib/season-status";
 import {
   defaultManager,
   getAllTrades,
@@ -93,9 +94,10 @@ function TeamsTab({ sp }: { sp: Params }) {
   const prevWeek = v.isFinal ? last - 1 : Math.max(v.weeks[0], v.week - 1);
   const nextWeek = v.isFinal || v.week + 1 >= last ? undefined : v.week + 1;
 
+  const inProgress = getLiveSeason()?.season === season;
   const facts = v.standing
     ? [
-        { k: "FINISHED", v: ord(v.standing.final_rank) },
+        { k: inProgress ? "CURRENT" : "FINISHED", v: ord(v.standing.final_rank) },
         { k: "RECORD", v: `${v.standing.wins}–${v.standing.losses}${v.standing.ties ? `–${v.standing.ties}` : ""}` },
         { k: "POINTS FOR", v: f1(v.standing.points_for) },
       ]
@@ -144,7 +146,7 @@ function TeamsTab({ sp }: { sp: Params }) {
           </div>
         </div>
 
-        <WeekScrubber v={v} season={season} mgr={mgr} prevWeek={prevWeek} nextWeek={nextWeek} />
+        <WeekScrubber v={v} season={season} mgr={mgr} prevWeek={prevWeek} nextWeek={nextWeek} inProgress={inProgress} />
 
         <div className="grid grid-cols-1 min-[1000px]:grid-cols-3">
           <div className="min-w-0 min-[1000px]:col-span-2">
@@ -159,7 +161,21 @@ function TeamsTab({ sp }: { sp: Params }) {
   );
 }
 
-function WeekScrubber({ v, season, mgr, prevWeek, nextWeek }: { v: TeamView; season: number; mgr: string; prevWeek: number; nextWeek?: number }) {
+function WeekScrubber({
+  v,
+  season,
+  mgr,
+  prevWeek,
+  nextWeek,
+  inProgress,
+}: {
+  v: TeamView;
+  season: number;
+  mgr: string;
+  prevWeek: number;
+  nextWeek?: number;
+  inProgress: boolean;
+}) {
   const g = v.game;
   const resultColor = g?.result === "W" ? "var(--accent)" : g?.result === "L" ? "#a3412f" : "#6b6b63";
   const arrow = "w-11 h-9 border border-[#d6d6cc] bg-white text-base text-[#151515] flex items-center justify-center";
@@ -201,19 +217,21 @@ function WeekScrubber({ v, season, mgr, prevWeek, nextWeek }: { v: TeamView; sea
         <Link
           href={teamHref(season, mgr)}
           scroll={false}
-          title="End-of-season roster"
+          title={inProgress ? "Latest roster" : "End-of-season roster"}
           aria-current={v.isFinal ? "page" : undefined}
           className={`min-w-16 h-9 px-2 flex items-center justify-center border border-[var(--accent)] text-[12px] font-semibold tracking-[.06em] ${
             v.isFinal ? "bg-[var(--accent)] text-white" : "bg-white text-[var(--accent)]"
           }`}
           style={MONO}
         >
-          FINAL
+          {inProgress ? "LATEST" : "FINAL"}
         </Link>
       </div>
       <div className="text-[14px] text-[#151515] flex gap-2 items-baseline flex-wrap">
         <strong className="font-bold">
-          {v.isFinal ? `Final roster · after week ${v.week}` : `Week ${v.week}${v.week >= v.playoffStart ? " · Playoffs" : ""}`}
+          {v.isFinal
+            ? `${inProgress ? "Latest" : "Final"} roster · after week ${v.week}`
+            : `Week ${v.week}${v.week >= v.playoffStart ? " · Playoffs" : ""}`}
         </strong>
         {g && (
           <span className="font-semibold tabular-nums" style={{ color: resultColor }}>
