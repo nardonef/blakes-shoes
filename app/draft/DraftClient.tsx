@@ -359,8 +359,11 @@ function Board({ model, sp, setParams }: { model: DraftModel; sp: URLSearchParam
       <p className="m-0 text-[13px] text-[#6b6b63] max-w-[760px]">
         Points are what the player scored in the drafting team&apos;s starting lineup.{" "}
         <strong className="text-[#151515]">Grade</strong> ranks each team by the total points its own picks scored for it
-        that season. <strong className="text-[#151515]">Steal</strong>: finished top 60 and at least 60 spots above where
-        he was taken. <strong className="text-[#151515]">Bust</strong>: a round 1–4 pick who finished 100th or worse.
+        that season. <strong className="text-[#151515]">Finished</strong> ranks drafted QBs, RBs, WRs and TEs by how far
+        they outscored a typical starter at their position each week, so a QB&apos;s big raw totals don&apos;t count
+        extra; kickers and defenses aren&apos;t rated. <strong className="text-[#151515]">Steal</strong>: finished top 60
+        and at least 60 spots above where he was taken. <strong className="text-[#151515]">Bust</strong>: a round 1–4 pick
+        who finished 100th or worse.
       </p>
     </main>
   );
@@ -381,11 +384,18 @@ function PickDetail({ season, pick: p }: { season: DraftSeason; pick: BoardPick 
       sub: `${p.starts} start${p.starts === 1 ? "" : "s"} · ${p.weeks} wk${p.weeks === 1 ? "" : "s"} rostered`,
       fg: "#151515",
     },
-    { k: "FINISHED", v: p.finish ? ord(p.finish) : "—", sub: `of ${season.picks.length} drafted`, fg: "#151515" },
+    {
+      k: "FINISHED",
+      v: p.finish ? ord(p.finish) : "—",
+      sub: p.finish ? `of ${season.rated} QB/RB/WR/TE` : p.pos === "K" || p.pos === "DEF" ? "K and DEF aren't rated" : "Not rated",
+      fg: "#151515",
+    },
     {
       k: "VALUE VS SLOT",
       v: sgn(p.value),
-      sub: p.steal ? "Steal" : p.bust ? "Bust" : (p.value ?? 0) > 0 ? "Beat his slot" : (p.value ?? 0) < 0 ? "Below his slot" : "",
+      sub:
+        p.value == null ? "Not rated"
+        : p.steal ? "Steal" : p.bust ? "Bust" : p.value > 0 ? "Beat his slot" : p.value < 0 ? "Below his slot" : "",
       fg: (p.value ?? 0) > 0 ? "#2D5A3D" : (p.value ?? 0) < 0 ? "#a3412f" : "#151515",
     },
     {
@@ -454,8 +464,9 @@ function Steals({
           />
         </label>
         <p className="m-0 mb-1 text-[13px] text-[#6b6b63] max-w-[560px] flex-[1_1_300px]">
-          Value = where he was picked minus where he finished among all drafted players that year. Busts only count rounds
-          1–5, where the misses hurt.
+          Value = where he was picked minus where he finished among that year&apos;s drafted QBs, RBs, WRs and TEs, ranked
+          by points above a typical starter at their position. Kickers and defenses aren&apos;t rated. Busts only count
+          rounds 1–5, where the misses hurt.
         </p>
       </div>
       <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,420px),1fr))] gap-5">

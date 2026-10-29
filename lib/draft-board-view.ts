@@ -26,6 +26,7 @@ export interface BoardPick {
   pts: number;
   starts: number;
   weeks: number;
+  /** Rank among the season's drafted QB/RB/WR/TE by points above a typical starter; null for K/DEF. */
   finish: number | null;
   value: number | null;
   steal: boolean;
@@ -52,6 +53,8 @@ export interface DraftSeason {
   year: number;
   rounds: number;
   n: number;
+  /** How many picks have a finish rank (drafted QBs, RBs, WRs and TEs). */
+  rated: number;
   /** Managers in round-1 pick order: the board's columns. */
   slots: string[];
   totals: DraftTotal[];

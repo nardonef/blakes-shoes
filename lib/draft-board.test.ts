@@ -61,6 +61,27 @@ describe("draft model", () => {
     }
   });
 
+  it("rates only QBs, RBs, WRs and TEs, ranked 1..rated", () => {
+    for (const s of model.seasons) {
+      const rated = s.picks.filter((p) => p.finish != null);
+      expect(rated).toHaveLength(s.rated);
+      expect(rated.every((p) => ["QB", "RB", "WR", "TE"].includes(p.pos))).toBe(true);
+      expect(new Set(rated.map((p) => p.finish))).toEqual(new Set(Array.from({ length: s.rated }, (_, i) => i + 1)));
+      for (const p of s.picks.filter((p) => p.pos === "K" || p.pos === "DEF")) {
+        expect(p).toMatchObject({ finish: null, value: null, steal: false, bust: false });
+      }
+    }
+  });
+
+  it("no longer lets QBs dominate the steal tags", () => {
+    const steals = model.seasons.flatMap((s) => s.picks).filter((p) => p.steal);
+    const qbShare = steals.filter((p) => p.pos === "QB").length / steals.length;
+    // Raw points gave QBs 36% of steal tags (and kickers 30%); QBs are about 10% of picks.
+    expect(qbShare).toBeLessThan(0.3);
+    expect(steals.some((p) => p.pos === "RB")).toBe(true);
+    expect(steals.some((p) => p.pos === "WR")).toBe(true);
+  });
+
   it("grades by draft points: the top team gets A+, the bottom F", () => {
     const sorted = [...s2025.totals].sort((a, b) => a.rank - b.rank);
     expect(sorted[0].grade).toBe("A+");
@@ -96,6 +117,9 @@ describe("views", () => {
     expect(busts.every((p) => p.round <= 5)).toBe(true);
     expect(steals[0].value!).toBeGreaterThanOrEqual(steals[9].value!);
     expect(busts[0].value!).toBeLessThanOrEqual(busts[9].value!);
+    expect(steals.some((p) => p.season === 2019 && p.player === "Lamar Jackson")).toBe(true);
+    expect(busts.some((p) => p.season === 2015 && p.player === "Dez Bryant")).toBe(true);
+    expect(steals.every((p) => p.pos !== "K" && p.pos !== "DEF")).toBe(true);
   });
 
   it("builds Blake's draft history", () => {

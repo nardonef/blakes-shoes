@@ -1,4 +1,5 @@
 import { getDraftPicks } from "@/lib/draft-data";
+import { weeklyStarterMedians } from "@/lib/front-office-data";
 import { CURRENT_OWNERS } from "@/lib/legacy-data";
 import { getSeasonModel, managerLabel } from "@/lib/rosters-data";
 import { standings } from "@/lib/stats-data";
@@ -14,6 +15,7 @@ import {
 // Server-only: builds the /draft model from draft picks, lineups and transactions.
 
 const round1 = (n: number) => Math.round(n * 10) / 10;
+const RATED = new Set(["QB", "RB", "WR", "TE"]);
 
 function buildSeason(year: number): DraftSeason | null {
   const S = getSeasonModel(year);
@@ -24,11 +26,17 @@ function buildSeason(year: number): DraftSeason | null {
     standings.filter((s) => s.season_year === year).map((s) => [s.team_key, { mgr: managerLabel(s.manager_name, s.team_name), team: s.team_name }]),
   );
 
-  // Every player's starting points for whoever had him: ranks picks against each other.
+  // Every player's season, for whoever started him, as points above that week's typical (median)
+  // starter at his position. Ranking on raw points let QBs, kickers and defenses dominate the steals.
+  const base = weeklyStarterMedians(S);
   const allTeams = new Map<string, number>();
   for (const weeks of S.by.values()) {
-    for (const rows of weeks.values()) {
-      for (const r of rows) if (r.started) allTeams.set(r.player, (allTeams.get(r.player) ?? 0) + (r.points ?? 0));
+    for (const [w, rows] of weeks) {
+      for (const r of rows) {
+        if (!r.started) continue;
+        const above = (r.points ?? 0) - (base.get(`${w}|${S.info.get(r.player)?.pos ?? ""}`) ?? 0);
+        allTeams.set(r.player, (allTeams.get(r.player) ?? 0) + above);
+      }
     }
   }
 
@@ -74,14 +82,19 @@ function buildSeason(year: number): DraftSeason | null {
       season: year, round: d.round, pick: d.pick, manager: who.mgr, unknownMgr: /\(unknown manager\)/.test(who.mgr),
       team: who.team, player: d.player, pos: d.position.split(",")[0], posFull,
       kind, short, detail, pts: round1(pts), starts, weeks,
-      resolved: d.resolved, allTeamPts: allTeams.get(d.player) ?? 0,
+      // Never started for anyone: ranks below every player who did.
+      resolved: d.resolved, allTeamPts: allTeams.get(d.player) ?? -Infinity,
     };
   }).sort((a, b) => a.pick - b.pick);
 
-  // Finish rank among this season's drafted players by starting points for any team.
+  // Finish rank among this season's drafted QBs, RBs, WRs and TEs. Kickers and defenses always go in
+  // the last rounds, so pick-minus-finish would make nearly every one look like a steal; they're unrated.
   const finish = new Map<number, number>();
-  [...raw].filter((p) => p.resolved).sort((a, b) => b.allTeamPts - a.allTeamPts || a.pick - b.pick)
+  [...raw]
+    .filter((p) => p.resolved && RATED.has(p.pos))
+    .sort((a, b) => b.allTeamPts - a.allTeamPts || a.pick - b.pick)
     .forEach((p, i) => finish.set(p.pick, i + 1));
+  const rated = finish.size;
 
   const rounds = Math.max(...raw.map((p) => p.round));
   const n = raw.filter((p) => p.round === 1).length;
@@ -113,7 +126,7 @@ function buildSeason(year: number): DraftSeason | null {
   }));
   [...totals].sort((a, b) => b.pts - a.pts).forEach((t, i) => { t.rank = i + 1; t.grade = gradeFor(i + 1, n); });
 
-  return { year, rounds, n, slots, totals, runs: positionRuns(picks), picks };
+  return { year, rounds, n, rated, slots, totals, runs: positionRuns(picks), picks };
 }
 
 let cache: DraftModel | null = null;
