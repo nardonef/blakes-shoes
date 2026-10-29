@@ -108,6 +108,26 @@ describe("draft model", () => {
   });
 });
 
+describe("titles by draft slot", () => {
+  it("places every champion in the round-1 slot they drafted from", () => {
+    expect(model.titlesBySlot).toHaveLength(12);
+    const all = model.titlesBySlot.flatMap((s) => s.titles);
+    expect(all).toHaveLength(14);
+    expect(new Set(all.map((t) => t.year)).size).toBe(14);
+    for (const s of model.titlesBySlot) {
+      for (const t of s.titles) expect(season(t.year).slots[s.slot - 1]).toBe(t.manager);
+    }
+  });
+
+  it("matches the known split: slots 7 and 9 have three titles, 4, 8 and 12 none", () => {
+    const count = (slot: number) => model.titlesBySlot[slot - 1].titles.length;
+    expect(count(7)).toBe(3);
+    expect(count(9)).toBe(3);
+    expect([count(4), count(8), count(12)]).toEqual([0, 0, 0]);
+    expect(model.titlesBySlot[0].titles).toEqual([{ year: 2024, manager: "Ryan Jenks" }]);
+  });
+});
+
 describe("views", () => {
   it("lists 10 steals and 10 busts (rounds 1-5) across all seasons", () => {
     const steals = topSteals(model.seasons);
