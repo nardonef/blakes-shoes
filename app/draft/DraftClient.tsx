@@ -519,7 +519,6 @@ function Steals({
 
 function Slots({ stats }: { stats: SlotStats[] }) {
   const seasons = stats[0]?.seasons ?? 0;
-  const avgTrips = stats.reduce((a, s) => a + s.playoffs, 0) / Math.max(1, stats.length);
   const reliable = [...stats].sort((a, b) => b.playoffs - a.playoffs || a.avgFinish - b.avgFinish)[0];
   const mostTitles = Math.max(...stats.map((s) => s.titles.length));
   const titleSlots = stats.filter((s) => s.titles.length === mostTitles);
@@ -550,7 +549,7 @@ function Slots({ stats }: { stats: SlotStats[] }) {
     <main className="max-w-[1160px] mx-auto px-4 md:px-10 pt-7 pb-16 flex flex-col gap-5">
       <p className="m-0 text-[13px] text-[#6b6b63] max-w-[680px]">
         How the team picking from each round-1 slot finished, over the {seasons} completed seasons. A playoff trip is a
-        top-8 finish in 2012–13 and top 6 since. The tick on each bar is the average slot ({f1(avgTrips)} trips).
+        top-8 finish in 2012–13 and top 6 since.
       </p>
       <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,240px),1fr))] gap-3">
         {takeaways.map((t) => (
@@ -565,7 +564,7 @@ function Slots({ stats }: { stats: SlotStats[] }) {
       </div>
       <section className="bg-white border border-[#e2e2da]">
         <div
-          className="grid grid-cols-[52px_minmax(0,1fr)_56px] md:grid-cols-[72px_minmax(0,1.3fr)_minmax(0,1fr)_88px] gap-3 px-4 md:px-[22px] py-2.5 border-b border-[#e2e2da] text-[10px] font-semibold tracking-[.12em] text-[#6b6b63]"
+          className="grid grid-cols-[52px_minmax(0,1fr)_56px] md:grid-cols-[72px_140px_minmax(0,1fr)_88px] gap-3 px-4 md:px-[22px] py-2.5 border-b border-[#e2e2da] text-[10px] font-semibold tracking-[.12em] text-[#6b6b63]"
           style={MONO}
         >
           <span>SLOT</span>
@@ -578,28 +577,15 @@ function Slots({ stats }: { stats: SlotStats[] }) {
         {stats.map((s) => (
           <div
             key={s.slot}
-            className="grid grid-cols-[52px_minmax(0,1fr)_56px] md:grid-cols-[72px_minmax(0,1.3fr)_minmax(0,1fr)_88px] gap-x-3 gap-y-1 items-center px-4 md:px-[22px] py-3 border-b border-[#efefe8] last:border-b-0"
+            className="grid grid-cols-[52px_minmax(0,1fr)_56px] md:grid-cols-[72px_140px_minmax(0,1fr)_88px] gap-x-3 gap-y-1 items-center px-4 md:px-[22px] py-3 border-b border-[#efefe8] last:border-b-0"
           >
             <span className="text-[26px] leading-none text-[#151515]" style={BEBAS}>
               {s.slot}
             </span>
             <div className="flex flex-col gap-1 min-w-0 md:contents">
-              <div className="flex items-center gap-2.5 min-w-0">
-                <div className="relative h-3 flex-1 bg-[#efefe8] rounded-sm">
-                  <div
-                    className="absolute inset-y-0 left-0 rounded-sm bg-[var(--accent)]"
-                    style={{ width: `${(s.playoffs / Math.max(1, s.seasons)) * 100}%` }}
-                  />
-                  <div
-                    className="absolute -inset-y-[3px] w-[2px] bg-[#151515]"
-                    style={{ left: `${(avgTrips / Math.max(1, s.seasons)) * 100}%` }}
-                    aria-hidden
-                  />
-                </div>
-                <span className="text-[12px] text-[#4a4a44] whitespace-nowrap tabular-nums w-[52px]">
-                  <strong className="text-[#151515]">{s.playoffs}</strong> of {s.seasons}
-                </span>
-              </div>
+              <span className="text-[15px] text-[#4a4a44] whitespace-nowrap tabular-nums">
+                <strong className="text-[#151515]">{s.playoffs}</strong> of {s.seasons}
+              </span>
               <span className="text-[12px] text-[#4a4a44] min-w-0">
                 {s.titles.length ? (
                   <>
