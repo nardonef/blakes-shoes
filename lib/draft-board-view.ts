@@ -62,9 +62,15 @@ export interface DraftSeason {
   picks: BoardPick[];
 }
 
-export interface SlotTitles {
+export interface SlotStats {
   /** Round-1 draft position, 1-12. */
   slot: number;
+  /** Finished seasons counted (a season still being played has no final standings). */
+  seasons: number;
+  /** Seasons this slot's team made the playoffs. */
+  playoffs: number;
+  /** Mean final standing (1 = champion). */
+  avgFinish: number;
   /** Champions who drafted from this slot, oldest first. */
   titles: { year: number; manager: string }[];
 }
@@ -73,7 +79,7 @@ export interface DraftModel {
   /** Newest first. */
   seasons: DraftSeason[];
   photos: Record<string, string>;
-  titlesBySlot: SlotTitles[];
+  slotStats: SlotStats[];
 }
 
 export function gradeFor(rank: number, n: number): string {

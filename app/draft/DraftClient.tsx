@@ -15,7 +15,7 @@ import {
   type BoardPick,
   type DraftModel,
   type DraftSeason,
-  type SlotTitles,
+  type SlotStats,
 } from "@/lib/draft-board-view";
 
 const MONO = { fontFamily: "var(--font-geist-mono)" };
@@ -43,7 +43,7 @@ const valueBg = (p: BoardPick) =>
   p.value == null ? "#fff" : p.steal ? "#cfe3d4" : p.bust ? "#f0d6cf" : p.value >= 24 ? "#e9f1eb" : p.value <= -48 ? "#f8ece8" : "#fff";
 const plainMgr = (m: string) => m.replace(" (unknown manager)", "");
 
-type Tab = "board" | "steals" | "history";
+type Tab = "board" | "steals" | "history" | "slots";
 
 export default function DraftClient({ model }: { model: DraftModel }) {
   return (
@@ -58,7 +58,7 @@ function DraftContent({ model }: { model: DraftModel }) {
   const pathname = usePathname();
   const sp = useSearchParams();
   const tabParam = sp.get("tab");
-  const tab: Tab = tabParam === "steals" || tabParam === "history" ? tabParam : "board";
+  const tab: Tab = tabParam === "steals" || tabParam === "history" || tabParam === "slots" ? tabParam : "board";
   const years = model.seasons.map((s) => s.year);
 
   /** Replace some params (null deletes), keeping the rest. */
@@ -102,6 +102,7 @@ function DraftContent({ model }: { model: DraftModel }) {
               { id: "board", label: "DRAFT BOARD", desc: "Every pick, round by round" },
               { id: "steals", label: "STEALS & BUSTS", desc: "The best and worst value picks" },
               { id: "history", label: "BY MANAGER", desc: "One manager's drafts, every year" },
+              { id: "slots", label: "DRAFT SLOTS", desc: "Does where you pick in round 1 matter?" },
             ].map((t) => (
               <Link
                 key={t.id}
@@ -124,6 +125,7 @@ function DraftContent({ model }: { model: DraftModel }) {
       {tab === "board" && <Board model={model} sp={sp} setParams={setParams} />}
       {tab === "steals" && <Steals model={model} season={sp.get("season")} setParams={setParams} goBoard={goBoard} />}
       {tab === "history" && <History model={model} mgrSlug={sp.get("mgr")} setParams={setParams} goBoard={goBoard} />}
+      {tab === "slots" && <Slots stats={model.slotStats} />}
     </div>
   );
 }
@@ -366,47 +368,7 @@ function Board({ model, sp, setParams }: { model: DraftModel; sp: URLSearchParam
         and at least 60 spots above where he was taken. <strong className="text-[#151515]">Bust</strong>: a round 1–4 pick
         who finished 100th or worse.
       </p>
-      <SlotTitlesChart titles={model.titlesBySlot} />
     </main>
-  );
-}
-
-function SlotTitlesChart({ titles }: { titles: SlotTitles[] }) {
-  const max = Math.max(1, ...titles.map((t) => t.titles.length));
-  const total = titles.reduce((a, t) => a + t.titles.length, 0);
-  return (
-    <section className="mt-6 max-w-[760px]">
-      <h2 className="text-[30px] md:text-[34px] leading-none mb-1.5" style={BEBAS}>
-        Does draft slot matter?
-      </h2>
-      <p className="m-0 mb-4 text-[13px] text-[#6b6b63]">
-        Where each of the {total} champions picked in round 1. Every slot has had 14 chances.
-      </p>
-      <div className="bg-white border border-[#e2e2da] px-4 md:px-6 py-4 flex flex-col gap-2">
-        {titles.map((t) => (
-          <div key={t.slot} className="grid grid-cols-[64px_minmax(0,1fr)] gap-3 items-center">
-            <span className="text-[11px] font-semibold tracking-[.08em] text-[#6b6b63] whitespace-nowrap" style={MONO}>
-              SLOT {t.slot}
-            </span>
-            <div className="flex items-center gap-2.5 min-w-0">
-              {t.titles.length > 0 ? (
-                <div
-                  className="h-[18px] rounded-r bg-[var(--accent)] shrink-0"
-                  style={{ width: `${(t.titles.length / max) * 45}%` }}
-                  title={`${t.titles.length} title${t.titles.length === 1 ? "" : "s"}: ${t.titles.map((x) => `${x.year} ${x.manager}`).join(", ")}`}
-                />
-              ) : (
-                <div className="h-[18px] w-px bg-[#d6d6cc] shrink-0" />
-              )}
-              <span className="text-[12px] text-[#4a4a44] min-w-0 truncate">
-                <strong className="text-[#151515] tabular-nums">{t.titles.length}</strong>
-                {t.titles.length > 0 && <span className="text-[#6b6b63]"> · {t.titles.map((x) => x.year).join(", ")}</span>}
-              </span>
-            </div>
-          </div>
-        ))}
-      </div>
-    </section>
   );
 }
 
@@ -551,6 +513,122 @@ function Steals({
           </section>
         ))}
       </div>
+    </main>
+  );
+}
+
+function Slots({ stats }: { stats: SlotStats[] }) {
+  const seasons = stats[0]?.seasons ?? 0;
+  const avgTrips = stats.reduce((a, s) => a + s.playoffs, 0) / Math.max(1, stats.length);
+  const reliable = [...stats].sort((a, b) => b.playoffs - a.playoffs || a.avgFinish - b.avgFinish)[0];
+  const mostTitles = Math.max(...stats.map((s) => s.titles.length));
+  const titleSlots = stats.filter((s) => s.titles.length === mostTitles);
+  const finishes = stats.map((s) => s.avgFinish);
+  const best = Math.min(...finishes);
+  const worst = Math.max(...finishes);
+  const toughest = stats.find((s) => s.avgFinish === worst)!;
+  const takeaways = [
+    {
+      label: "MOST RELIABLE",
+      value: `Slot ${reliable.slot}`,
+      note: `Playoffs ${reliable.playoffs} of ${seasons} years, average finish ${ord(Math.round(reliable.avgFinish))}`,
+    },
+    {
+      label: "MOST TITLES",
+      value: `Slot${titleSlots.length > 1 ? "s" : ""} ${titleSlots.map((s) => s.slot).join(" & ")}`,
+      note: `${mostTitles} title${mostTitles === 1 ? "" : "s"}${titleSlots.length > 1 ? " each" : ""}, from ${titleSlots
+        .map((s) => s.playoffs)
+        .join(" and ")} playoff trips`,
+    },
+    {
+      label: "TOUGHEST",
+      value: `Slot ${toughest.slot}`,
+      note: `Average finish ${f1(toughest.avgFinish)}, ${toughest.titles.length ? `${toughest.titles.length} title${toughest.titles.length === 1 ? "" : "s"}` : "no titles"}`,
+    },
+  ];
+  return (
+    <main className="max-w-[1160px] mx-auto px-4 md:px-10 pt-7 pb-16 flex flex-col gap-5">
+      <p className="m-0 text-[13px] text-[#6b6b63] max-w-[680px]">
+        How the team picking from each round-1 slot finished, over the {seasons} completed seasons. A playoff trip is a
+        top-8 finish in 2012–13 and top 6 since. The tick on each bar is the average slot ({f1(avgTrips)} trips).
+      </p>
+      <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,240px),1fr))] gap-3">
+        {takeaways.map((t) => (
+          <div key={t.label} className="bg-white border border-[#e2e2da] px-4 py-3.5 flex flex-col gap-1">
+            <Label>{t.label}</Label>
+            <span className="text-[30px] leading-none text-[#151515]" style={BEBAS}>
+              {t.value}
+            </span>
+            <span className="text-[13px] text-[#4a4a44]">{t.note}</span>
+          </div>
+        ))}
+      </div>
+      <section className="bg-white border border-[#e2e2da]">
+        <div
+          className="grid grid-cols-[52px_minmax(0,1fr)_56px] md:grid-cols-[72px_minmax(0,1.3fr)_minmax(0,1fr)_88px] gap-3 px-4 md:px-[22px] py-2.5 border-b border-[#e2e2da] text-[10px] font-semibold tracking-[.12em] text-[#6b6b63]"
+          style={MONO}
+        >
+          <span>SLOT</span>
+          <span>
+            PLAYOFF TRIPS<span className="md:hidden"> · TITLES</span>
+          </span>
+          <span className="hidden md:block">TITLES</span>
+          <span className="text-right">AVG FINISH</span>
+        </div>
+        {stats.map((s) => (
+          <div
+            key={s.slot}
+            className="grid grid-cols-[52px_minmax(0,1fr)_56px] md:grid-cols-[72px_minmax(0,1.3fr)_minmax(0,1fr)_88px] gap-x-3 gap-y-1 items-center px-4 md:px-[22px] py-3 border-b border-[#efefe8] last:border-b-0"
+          >
+            <span className="text-[26px] leading-none text-[#151515]" style={BEBAS}>
+              {s.slot}
+            </span>
+            <div className="flex flex-col gap-1 min-w-0 md:contents">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className="relative h-3 flex-1 bg-[#efefe8] rounded-sm">
+                  <div
+                    className="absolute inset-y-0 left-0 rounded-sm bg-[var(--accent)]"
+                    style={{ width: `${(s.playoffs / Math.max(1, s.seasons)) * 100}%` }}
+                  />
+                  <div
+                    className="absolute -inset-y-[3px] w-[2px] bg-[#151515]"
+                    style={{ left: `${(avgTrips / Math.max(1, s.seasons)) * 100}%` }}
+                    aria-hidden
+                  />
+                </div>
+                <span className="text-[12px] text-[#4a4a44] whitespace-nowrap tabular-nums w-[52px]">
+                  <strong className="text-[#151515]">{s.playoffs}</strong> of {s.seasons}
+                </span>
+              </div>
+              <span className="text-[12px] text-[#4a4a44] min-w-0">
+                {s.titles.length ? (
+                  <>
+                    <strong className="text-[#151515]">
+                      {s.titles.length} title{s.titles.length === 1 ? "" : "s"}
+                    </strong>
+                    <span className="text-[#6b6b63]">
+                      {" "}
+                      · {s.titles.map((t) => `${t.year} ${shortName(t.manager)}`).join(", ")}
+                    </span>
+                  </>
+                ) : (
+                  <span className="text-[#8a8a80]">No titles</span>
+                )}
+              </span>
+            </div>
+            <span
+              className="text-right text-[17px] font-bold tabular-nums"
+              style={{ color: s.avgFinish === best ? "#2D5A3D" : s.avgFinish === worst ? "#a3412f" : "#151515" }}
+            >
+              {f1(s.avgFinish)}
+            </span>
+          </div>
+        ))}
+      </section>
+      <p className="m-0 text-[13px] text-[#6b6b63] max-w-[680px]">
+        Average finish is the final standing, 1st through 12th; green is the best slot, red the worst. Every slot&apos;s
+        manager changes year to year, so this measures the pick position, not the people.
+      </p>
     </main>
   );
 }

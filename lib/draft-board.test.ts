@@ -108,23 +108,40 @@ describe("draft model", () => {
   });
 });
 
-describe("titles by draft slot", () => {
+describe("draft slot stats", () => {
+  // Only seasons with a recorded champion count, so these numbers move when the 2026 title is added.
+  const past = model.slotStats;
+  const slot = (n: number) => past[n - 1];
+
   it("places every champion in the round-1 slot they drafted from", () => {
-    expect(model.titlesBySlot).toHaveLength(12);
-    const all = model.titlesBySlot.flatMap((s) => s.titles);
+    expect(past).toHaveLength(12);
+    const all = past.flatMap((s) => s.titles);
     expect(all).toHaveLength(14);
     expect(new Set(all.map((t) => t.year)).size).toBe(14);
-    for (const s of model.titlesBySlot) {
+    for (const s of past) {
       for (const t of s.titles) expect(season(t.year).slots[s.slot - 1]).toBe(t.manager);
     }
   });
 
   it("matches the known split: slots 7 and 9 have three titles, 4, 8 and 12 none", () => {
-    const count = (slot: number) => model.titlesBySlot[slot - 1].titles.length;
-    expect(count(7)).toBe(3);
-    expect(count(9)).toBe(3);
-    expect([count(4), count(8), count(12)]).toEqual([0, 0, 0]);
-    expect(model.titlesBySlot[0].titles).toEqual([{ year: 2024, manager: "Ryan Jenks" }]);
+    expect(slot(7).titles).toHaveLength(3);
+    expect(slot(9).titles).toHaveLength(3);
+    expect([slot(4), slot(8), slot(12)].map((s) => s.titles.length)).toEqual([0, 0, 0]);
+    expect(slot(1).titles).toEqual([{ year: 2024, manager: "Ryan Jenks" }]);
+  });
+
+  it("counts playoff trips against each season's bracket size (8 teams in 2012-13, 6 since)", () => {
+    // 14 seasons x (8 + 8 + 12 x 6) playoff spots = 88 total.
+    expect(past.reduce((a, s) => a + s.playoffs, 0)).toBe(88);
+    expect(slot(6)).toMatchObject({ playoffs: 11, avgFinish: 4.7 });
+    expect(slot(7)).toMatchObject({ playoffs: 4, avgFinish: 7.6 });
+    expect(slot(12)).toMatchObject({ playoffs: 6, avgFinish: 8.2 });
+  });
+
+  it("averages finishes 1-12 to 6.5 across all slots each season", () => {
+    expect(past.every((s) => s.seasons === 14)).toBe(true);
+    const mean = past.reduce((a, s) => a + s.avgFinish, 0) / 12;
+    expect(mean).toBeCloseTo(6.5, 1);
   });
 });
 
