@@ -2,7 +2,7 @@ import { getDraftPicks } from "@/lib/draft-data";
 import { weeklyStarterMedians } from "@/lib/front-office-data";
 import { CURRENT_OWNERS } from "@/lib/legacy-data";
 import { getSeasonModel, managerLabel } from "@/lib/rosters-data";
-import { standings } from "@/lib/stats-data";
+import { champions, standings } from "@/lib/stats-data";
 import {
   gradeFor,
   positionRuns,
@@ -10,7 +10,9 @@ import {
   type DraftModel,
   type DraftSeason,
   type OutcomeKind,
+  type SlotStats,
 } from "@/lib/draft-board-view";
+import leagueInfo from "@/data/league_info.json";
 
 // Server-only: builds the /draft model from draft picks, lineups and transactions.
 
@@ -129,14 +131,45 @@ function buildSeason(year: number): DraftSeason | null {
   return { year, rounds, n, rated, slots, totals, runs: positionRuns(picks), picks };
 }
 
+/** How each round-1 slot has fared over finished seasons: playoff trips, average finish, titles. */
+function slotStats(seasons: DraftSeason[]): SlotStats[] {
+  const n = Math.max(...seasons.map((s) => s.n));
+  const acc = Array.from({ length: n }, (_, i) => ({ slot: i + 1, finishes: [] as number[], playoffs: 0, titles: [] as SlotStats["titles"] }));
+  const finished = [...champions].sort((a, b) => a.season_year - b.season_year);
+  for (const c of finished) {
+    const s = seasons.find((x) => x.year === c.season_year);
+    const S = getSeasonModel(c.season_year);
+    const playoffTeams = Number(leagueInfo.find((l) => l.season_year === c.season_year)?.num_playoff_teams);
+    if (!s || !S || !playoffTeams) continue;
+    const champion = managerLabel(c.champion_manager, c.champion_team_name);
+    s.slots.forEach((manager, i) => {
+      // Yahoo's final ranks list playoff teams first, by bracket result, then everyone else.
+      const rank = S.standings.get(manager)?.final_rank;
+      if (rank == null) return;
+      acc[i].finishes.push(rank);
+      if (rank <= playoffTeams) acc[i].playoffs++;
+      if (manager === champion) acc[i].titles.push({ year: c.season_year, manager });
+    });
+  }
+  return acc.map((a) => ({
+    slot: a.slot,
+    seasons: a.finishes.length,
+    playoffs: a.playoffs,
+    avgFinish: round1(a.finishes.reduce((x, y) => x + y, 0) / Math.max(1, a.finishes.length)),
+    titles: a.titles,
+  }));
+}
+
 let cache: DraftModel | null = null;
 
 export function getDraftModel(): DraftModel {
   if (cache) return cache;
   const years = [...new Set(getDraftPicks().map((p) => p.season))].sort((a, b) => b - a);
+  const seasons = years.map(buildSeason).filter((s): s is DraftSeason => s != null);
   cache = {
-    seasons: years.map(buildSeason).filter((s): s is DraftSeason => s != null),
+    seasons,
     photos: Object.fromEntries(CURRENT_OWNERS.map((o) => [o.name, o.image])),
+    slotStats: slotStats(seasons),
   };
   return cache;
 }
