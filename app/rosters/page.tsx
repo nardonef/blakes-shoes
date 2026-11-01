@@ -1,5 +1,6 @@
 import Link from "next/link";
 import RostersSelect from "@/components/RostersSelect";
+import { playerHref } from "@/lib/player-slug";
 import {
   defaultManager,
   getAllTrades,
@@ -255,7 +256,12 @@ function RosterGroup({ title, rows, v }: { title: string; rows: RosterRow[]; v: 
             </span>
             <div className="min-w-0 flex flex-col gap-0.5">
               <div className="flex items-center gap-1.5 min-w-0">
-                <span className="text-[15px] font-semibold overflow-hidden text-ellipsis whitespace-nowrap">{r.player}</span>
+                <Link
+                  href={playerHref(r.player)}
+                  className="text-[15px] font-semibold overflow-hidden text-ellipsis whitespace-nowrap text-[#151515] hover:text-[var(--accent)]"
+                >
+                  {r.player}
+                </Link>
                 {r.isNew && (
                   <span className="text-[10px] font-semibold tracking-[.08em] text-[var(--accent)]" style={MONO}>
                     NEW
@@ -465,7 +471,9 @@ function TradeCard({ t, focused }: { t: Trade; focused: boolean }) {
             {s.gets.map((g) => (
               <div key={g.player} className="flex justify-between gap-3 text-[14px]">
                 <span className="min-w-0">
-                  <strong className="font-semibold">{g.player}</strong>{" "}
+                  <Link href={playerHref(g.player)} className="font-semibold text-[#151515] hover:text-[var(--accent)]">
+                    {g.player}
+                  </Link>{" "}
                   <span className="text-[#6b6b63] text-[12px]">
                     {[g.pos, g.nfl ? g.nfl.toUpperCase() : ""].filter(Boolean).join(" · ")}
                   </span>

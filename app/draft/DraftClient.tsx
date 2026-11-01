@@ -17,6 +17,7 @@ import {
   type DraftSeason,
   type SlotStats,
 } from "@/lib/draft-board-view";
+import { playerHref } from "@/lib/player-slug";
 
 const MONO = { fontFamily: "var(--font-geist-mono)" };
 const BEBAS = { fontFamily: "var(--font-bebas-neue)" };
@@ -414,9 +415,19 @@ function PickDetail({ season, pick: p }: { season: DraftSeason; pick: BoardPick 
         <Label>
           {season.year} · ROUND {p.round} · PICK {p.pick} · {p.posFull || "POS UNKNOWN"}
         </Label>
-        <span className="text-[34px] leading-none tracking-[.01em]" style={BEBAS}>
-          {p.player}
-        </span>
+        {p.player.startsWith("Unknown player") ? (
+          <span className="text-[34px] leading-none tracking-[.01em]" style={BEBAS}>
+            {p.player}
+          </span>
+        ) : (
+          <Link
+            href={playerHref(p.player)}
+            className="text-[34px] leading-none tracking-[.01em] text-[#151515] hover:text-[var(--accent)]"
+            style={BEBAS}
+          >
+            {p.player}
+          </Link>
+        )}
         <span className="text-[13px] text-[#4a4a44]">
           Drafted by {plainMgr(p.manager)}
           {p.unknownMgr ? " (manager unknown)" : ""} · {p.team}
