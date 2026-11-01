@@ -530,7 +530,7 @@ function Slots({ stats }: { stats: SlotStats[] }) {
     {
       label: "MOST RELIABLE",
       value: `Slot ${reliable.slot}`,
-      note: `Playoffs ${reliable.playoffs} of ${seasons} years, average finish ${ord(Math.round(reliable.avgFinish))}`,
+      note: `${reliable.playoffs} of ${seasons} playoffs, average finish ${f1(reliable.avgFinish)}`,
     },
     {
       label: "MOST TITLES",
@@ -551,7 +551,7 @@ function Slots({ stats }: { stats: SlotStats[] }) {
         How the team picking from each round-1 slot finished, over the {seasons} completed seasons. A playoff trip is a
         top-8 finish in 2012–13 and top 6 since.
       </p>
-      <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,240px),1fr))] gap-3">
+      <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,240px),1fr))] gap-3 max-w-[820px]">
         {takeaways.map((t) => (
           <div key={t.label} className="bg-white border border-[#e2e2da] px-4 py-3.5 flex flex-col gap-1">
             <Label>{t.label}</Label>
@@ -562,7 +562,7 @@ function Slots({ stats }: { stats: SlotStats[] }) {
           </div>
         ))}
       </div>
-      <section className="bg-white border border-[#e2e2da]">
+      <section className="bg-white border border-[#e2e2da] max-w-[820px]">
         <div
           className="grid grid-cols-[52px_minmax(0,1fr)_56px] md:grid-cols-[72px_140px_minmax(0,1fr)_88px] gap-3 px-4 md:px-[22px] py-2.5 border-b border-[#e2e2da] text-[10px] font-semibold tracking-[.12em] text-[#6b6b63]"
           style={MONO}
