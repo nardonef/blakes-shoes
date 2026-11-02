@@ -1,5 +1,7 @@
 import Image from "next/image";
 import ChampionsBuilt from "@/components/ChampionsBuilt";
+import MyGuys from "@/components/MyGuys";
+import { getMyGuys } from "@/lib/my-guys-data";
 import { getChampionBuilds } from "@/lib/champions-built-data";
 import { getManagerLegacies, slug, type ManagerLegacy } from "@/lib/legacy-data";
 
@@ -161,6 +163,7 @@ function worstMomentBlurb(legacy: ManagerLegacy): string {
 
 export default function LegacyPage() {
   const legacies = getManagerLegacies().sort((a, b) => b.winPct - a.winPct);
+  const guys = getMyGuys();
 
   return (
     <div className="min-h-screen" style={{ background: "var(--background)" }}>
@@ -419,6 +422,7 @@ export default function LegacyPage() {
         })}
           </div>
         </section>
+        <MyGuys managers={legacies.map((l) => guys.find((g) => g.manager === l.owner.name)!)} />
         <ChampionsBuilt builds={getChampionBuilds()} />
       </main>
     </div>
