@@ -26,8 +26,11 @@ logged-in Chrome tab, slowly, and rebuilt into `data/`. A refresh takes about 5 
   shows "In progress", and ShoesGPT is told there's no champion yet.
 
 ## When the season ends
-Add the season's champion, runner-up and third place to `data/champions.json`, set its `final_rank`
-values in `standings.json` to the playoff finish, and add it to `HISTORY` in the browser script.
+Scrape once more after week 17 so the playoff weeks are in, then add the season's champion,
+runner-up and third place to `data/champions.json`, set its `final_rank` values in `standings.json`
+to the playoff finish, and add it to `HISTORY` in the browser script. Once `champions.json` has the
+season, `npm run yahoo:build` leaves its standings, matchups and settings alone, so the hand-set
+finishes survive later rebuilds.
 
 ## A new season
 Find the league id on the Yahoo league page (`/f1/<id>`) and the 3-digit game number in any league

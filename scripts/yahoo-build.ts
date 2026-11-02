@@ -12,6 +12,7 @@
 import { existsSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
+import championsData from "../data/champions.json";
 import draftHistoryData from "../data/draft_history.json";
 import leagueInfoData from "../data/league_info.json";
 import matchupsData from "../data/matchups.json";
@@ -84,6 +85,8 @@ for (const [yearKey, cfg] of Object.entries(LIVE)) {
   const year = Number(yearKey);
   const stFile = join(DIR, `st-${year}.html`);
   if (!existsSync(stFile)) continue;
+  // Once the champion is recorded the season's final standings are hand-edited; don't overwrite them.
+  if (championsData.some((c) => c.season_year === year)) continue;
   const key = (team: number) => `${cfg.game}.l.${cfg.leagueId}.t.${team}`;
 
   // Matchups (one fragment per pairing) also tell us each team's Yahoo manager name.

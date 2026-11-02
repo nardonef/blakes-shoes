@@ -6,7 +6,7 @@
 //
 // Season in progress: set `window.__bsSeasons = [[2026, 65895, 17, true]]` before pasting.
 // A live season always re-fetches transactions (new moves shift the pages), saves standings
-// and draft results, and only fetches matchups for weeks every team has finished.
+// and draft results, and only fetches matchups for finished weeks (playoff weeks included).
 (() => {
   const HISTORY = [
     [2012, 404981, 16], [2013, 578874, 16], [2014, 846936, 16], [2015, 325721, 16],
@@ -84,7 +84,7 @@
     }
   }
 
-  /** Saves standings and draft results; returns how many weeks every team has finished. */
+  /** Saves standings and draft results; returns how many weeks are finished. */
   async function liveSeason(year, lid) {
     bs.current = `st-${year}`;
     const home = await page(`/${year}/f1/${lid}`);
@@ -100,7 +100,12 @@
     const played = [...standings.querySelectorAll("tbody tr")].map((tr) =>
       (tr.children[2]?.textContent || "").trim().split("-").reduce((a, n) => a + Number(n || 0), 0),
     );
-    return Math.min(...played);
+    // Records stop at the regular season, so playoff weeks are counted by date: a week is done
+    // by the Wednesday after it (week 1 starts 6am UTC on Labor Day; stat corrections land Tuesday).
+    const start = new Date(Date.UTC(year, 8, 1, 6));
+    while (start.getUTCDay() !== 1) start.setUTCDate(start.getUTCDate() + 1);
+    const byDate = Math.floor((Date.now() - start.getTime() - 2 * 864e5) / (7 * 864e5));
+    return Math.max(Math.min(...played), byDate);
   }
 
   (async () => {

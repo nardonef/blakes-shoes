@@ -9,6 +9,7 @@ import {
   managerSlug,
   transactionWeek,
 } from "./rosters-data";
+import { getLiveSeason } from "./season-status";
 
 const S2025 = getSeasonModel(2025)!;
 
@@ -138,5 +139,20 @@ describe("trades", () => {
     expect(new Set(trades.map((t) => t.id)).size).toBe(trades.length);
     expect(trades[0].season).toBe(Math.max(...trades.map((t) => t.season)));
     expect(trades.at(-1)!.season).toBe(2012);
+  });
+});
+
+describe("live season transactions", () => {
+  it("dates a move after the last scored week past it instead of clamping", () => {
+    expect(transactionWeek(2026, "2026-10-28 20:38", Infinity)).toBe(8);
+    expect(transactionWeek(2026, "2026-10-28 20:38", 7)).toBe(7);
+  });
+
+  it("leaves out moves from weeks that haven't been scored yet", () => {
+    const live = getLiveSeason();
+    if (!live) return;
+    const S = getSeasonModel(live.season)!;
+    expect(S.txns.length).toBeGreaterThan(0);
+    expect(S.txns.every((t) => transactionWeek(live.season, t.date, Infinity) <= S.maxWeek)).toBe(true);
   });
 });
