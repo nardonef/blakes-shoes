@@ -33,7 +33,7 @@ describe("player history", () => {
   it("keeps team defenses, which have no player id, as one player per team", () => {
     const [pats] = getPlayers("patriots");
     expect(pats.position).toBe("DEF");
-    expect(pats.managers.length).toBe(14);
+    expect(pats.managers.length).toBe(13);
   });
 
   it("returns nothing for an unknown slug", () => {

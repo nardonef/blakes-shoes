@@ -82,8 +82,9 @@ describe("getCareerStats", () => {
 
 describe("getHeadToHead", () => {
   it("returns a single pairing", () => {
-    const r = getHeadToHead("Frankie", "Kaplan") as { opponents: unknown[] };
-    expect(r.opponents).toEqual([{ opponent: "Ryan Kaplan", wins: 9, losses: 9, ties: 0, games: 18 }]);
+    // Chris Zolner left after 2013, so this record is final.
+    const r = getHeadToHead("Frankie", "Chris") as { opponents: unknown[] };
+    expect(r.opponents).toEqual([{ opponent: "Chris Zolner", wins: 0, losses: 2, ties: 0, games: 2 }]);
   });
 
   it("merges an opponent's multiple Yahoo usernames", () => {

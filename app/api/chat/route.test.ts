@@ -20,13 +20,13 @@ const model = new MockLanguageModelV4({
                 type: "tool-call",
                 toolCallId: "call-1",
                 toolName: "getHeadToHead",
-                input: '{"managerA":"Frankie","managerB":"Kaplan"}',
+                input: '{"managerA":"Frankie","managerB":"Chris"}',
               },
               { type: "finish", finishReason: { unified: "tool-calls", raw: undefined }, usage },
             ]
           : [
               { type: "text-start", id: "t1" },
-              { type: "text-delta", id: "t1", delta: "Frankie and Kaplan are 9-9." },
+              { type: "text-delta", id: "t1", delta: "Frankie is 0-2 against Chris." },
               { type: "text-end", id: "t1" },
               { type: "finish", finishReason: { unified: "stop", raw: undefined }, usage },
             ],
@@ -44,7 +44,7 @@ describe("POST /api/chat", () => {
       method: "POST",
       body: JSON.stringify({
         messages: [
-          { id: "u1", role: "user", parts: [{ type: "text", text: "Frankie vs Kaplan all time?" }] },
+          { id: "u1", role: "user", parts: [{ type: "text", text: "Frankie vs Chris all time?" }] },
         ],
       }),
     });
@@ -53,11 +53,11 @@ describe("POST /api/chat", () => {
     expect(res.headers.get("content-type")).toContain("text/event-stream");
     const body = await res.text();
 
-    // Tool output computed from data/h2h_records.json
-    expect(body).toContain('"opponent":"Ryan Kaplan"');
-    expect(body).toContain('"games":18');
+    // Tool output computed from the head-to-head records in lib/stats-data
+    expect(body).toContain('"opponent":"Chris Zolner"');
+    expect(body).toContain('"games":2');
     // Final text from the second step
-    expect(body).toContain("Frankie and Kaplan are 9-9.");
+    expect(body).toContain("Frankie is 0-2 against Chris.");
     expect(step).toBe(2);
   });
 

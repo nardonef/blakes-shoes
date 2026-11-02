@@ -48,7 +48,8 @@ describe("managers", () => {
 
   it("resolves aliases, capitalizes unknown usernames, and names hidden managers by team", () => {
     expect(managerLabel("AB", "x")).toBe("Anthony Bove");
-    expect(managerLabel("john", "x")).toBe("John");
+    expect(managerLabel("john", "x")).toBe("John Cox");
+    expect(managerLabel("newguy", "x")).toBe("Newguy");
     expect(managerLabel("Hidden manager", "MD Celtics")).toBe("MD Celtics (unknown manager)");
     expect(getSeasonModel(2012)!.managers).toContain("MD Celtics (unknown manager)");
     expect(managerSlug("Blake Kozloski")).toBe("blake-kozloski");
