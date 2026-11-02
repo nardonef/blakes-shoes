@@ -10,9 +10,9 @@ describe("buildLeagueTables", () => {
   const t = buildLeagueTables();
 
   it("has one games row per visible side of every matchup", () => {
-    // 2012-2025: 1314 matchups x 2 sides, minus the 236 sides played by hidden managers.
+    // 2012-2025: 1314 matchups x 2 sides, minus the 161 sides played by still-unknown hidden managers.
     // (Pinned to finished seasons; the season in progress keeps adding games.)
-    expect(t.games.filter((g) => g.season <= 2025)).toHaveLength(2392);
+    expect(t.games.filter((g) => g.season <= 2025)).toHaveLength(2467);
     expect(t.games.some((g) => g.manager === "--hidden--")).toBe(false);
   });
 
@@ -46,7 +46,7 @@ describe("buildLeagueTables", () => {
 describe("runSql", () => {
   it("answers aggregate questions across every season", async () => {
     const r = (await runSql("SELECT COUNT(*) AS n FROM games WHERE points >= 150 AND season <= 2025")) as Rows;
-    expect(r.rows).toEqual([{ n: 51 }]);
+    expect(r.rows).toEqual([{ n: 52 }]); // includes Kyle Cost's 156.82 in 2013, once a hidden team
   });
 
   it("finds the most points scored in a loss", async () => {

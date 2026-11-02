@@ -1,41 +1,32 @@
-import championsData from "@/data/champions.json";
-import standingsData from "@/data/standings.json";
-import h2hData from "@/data/h2h_records.json";
-import matchupsData from "@/data/matchups.json";
+import { champions, h2hRecords, matchups, standings } from "@/lib/stats-data";
 
 import type { Champion, Standing, H2HRecord, Matchup } from "@/types/stats";
 
-const champions = championsData as Champion[];
-const standings = standingsData as Standing[];
-const h2hRecords = h2hData as H2HRecord[];
-const matchups = matchupsData as Matchup[];
-
-// Current league members and every manager-name alias they have used in the
-// underlying Yahoo data since 2012 (usernames changed over the years).
+// Current league members. Their Yahoo account names are merged into these full names in
+// lib/managers.ts, so the data from lib/stats-data already uses them.
 export interface Owner {
   name: string;
   team: string;
   image: string;
-  aliases: string[];
 }
 
 export const CURRENT_OWNERS: Owner[] = [
-  { name: "Tyler Falcone", team: "Jone crib", image: "/owners/falcone.jpg", aliases: ["tyler"] },
-  { name: "Blake Kozloski", team: "Wizards of Koz", image: "/owners/blake.jpg", aliases: ["Blake"] },
-  { name: "Eric Rios", team: "The Hullabaloos", image: "/owners/rios.jpg", aliases: ["eric", "efuego93"] },
-  { name: "Ryan Jenks", team: "Brianna's Red Carpet", image: "/owners/jenks.jpg", aliases: ["ryan"] },
-  { name: "Frankie Nardone", team: "Peter is Corrupt", image: "/owners/frankie.jpg", aliases: ["Frankie Nardone"] },
-  { name: "Matt Borba", team: "Not Popular Boys", image: "/owners/borba.jpg", aliases: ["matt"] },
-  { name: "Jake Slagle", team: "POSTGRADAPARTMENTS.COM", image: "/owners/jake.jpg", aliases: ["jake"] },
-  { name: "Bryan Yatsko", team: "Bryan Yatsko's Team", image: "/owners/yatsko.jpg", aliases: ["Bryan Yatsko"] },
-  { name: "Ryan Curran", team: "Loose Cannons", image: "/owners/curran.jpg", aliases: ["Ryan Curran"] },
-  { name: "Peter Klensch", team: "All Business Pete", image: "/owners/peter.jpg", aliases: ["Peter"] },
-  { name: "Anthony Bove", team: "Anthony's Nifty Team", image: "/owners/anthony.jpg", aliases: ["AB"] },
-  { name: "Ryan Kaplan", team: "Jew Crew", image: "/owners/kaplan.jpg", aliases: ["Ryan"] },
+  { name: "Tyler Falcone", team: "Jone crib", image: "/owners/falcone.jpg" },
+  { name: "Blake Kozloski", team: "Wizards of Koz", image: "/owners/blake.jpg" },
+  { name: "Eric Rios", team: "The Hullabaloos", image: "/owners/rios.jpg" },
+  { name: "Ryan Jenks", team: "Brianna's Red Carpet", image: "/owners/jenks.jpg" },
+  { name: "Frankie Nardone", team: "Peter is Corrupt", image: "/owners/frankie.jpg" },
+  { name: "Matt Borba", team: "Not Popular Boys", image: "/owners/borba.jpg" },
+  { name: "Jake Slagle", team: "POSTGRADAPARTMENTS.COM", image: "/owners/jake.jpg" },
+  { name: "Bryan Yatsko", team: "Bryan Yatsko's Team", image: "/owners/yatsko.jpg" },
+  { name: "Ryan Curran", team: "Loose Cannons", image: "/owners/curran.jpg" },
+  { name: "Peter Klensch", team: "All Business Pete", image: "/owners/peter.jpg" },
+  { name: "Anthony Bove", team: "Anthony's Nifty Team", image: "/owners/anthony.jpg" },
+  { name: "Ryan Kaplan", team: "Jew Crew", image: "/owners/kaplan.jpg" },
 ];
 
-function ownerForAlias(alias: string): Owner | undefined {
-  return CURRENT_OWNERS.find((o) => o.aliases.includes(alias));
+function ownerNamed(name: string): Owner | undefined {
+  return CURRENT_OWNERS.find((o) => o.name === name);
 }
 
 // URL-safe anchor slug for a manager's display name, e.g. "Jake Slagle" -> "mgr-jake-slagle".
@@ -131,7 +122,7 @@ export function getManagerLegacies(): ManagerLegacy[] {
   const leagueAvgPPG = leagueTotalPoints / leagueTotalGames;
 
   return CURRENT_OWNERS.map((owner) => {
-    const isOwner = (name: string) => owner.aliases.includes(name);
+    const isOwner = (name: string) => name === owner.name;
 
     // Season-by-season lines from standings.json
     const seasons: SeasonLine[] = standings
@@ -172,7 +163,7 @@ export function getManagerLegacies(): ManagerLegacy[] {
       .filter((c) => isOwner(c.runner_up_manager))
       .map((c) => ({
         year: c.season_year,
-        lostTo: ownerForAlias(c.champion_manager)?.name ?? c.champion_manager,
+        lostTo: c.champion_manager,
       }));
     const thirds = champions.filter((c) => isOwner(c.third_place_manager)).length;
 
@@ -266,8 +257,7 @@ export function getManagerLegacies(): ManagerLegacy[] {
       const m2IsOwner = isOwner(r.manager2);
       if (m1IsOwner === m2IsOwner) return; // skip self-pairs and non-matches
 
-      const opponentAlias = m1IsOwner ? r.manager2 : r.manager1;
-      const opponentOwner = ownerForAlias(opponentAlias);
+      const opponentOwner = ownerNamed(m1IsOwner ? r.manager2 : r.manager1);
       if (!opponentOwner || opponentOwner.name === owner.name) return;
 
       const myWins = m1IsOwner ? r.manager1_wins : r.manager2_wins;

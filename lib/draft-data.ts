@@ -1,6 +1,7 @@
 import draftHistory from "@/data/draft_history.json";
 import transactionsRaw from "@/data/transactions.json";
 import lineupsRaw from "@/data/weekly_lineups.json";
+import { personFor } from "@/lib/managers";
 
 // data/draft_history.json has every pick but no player names: only a Yahoo player_key
 // ("461.p.40055"). Its number is the player_id the scraped lineups/transactions record,
@@ -59,7 +60,7 @@ export function getDraftPicks(): DraftPick[] {
       pick: d.pick_number,
       teamKey: d.team_key,
       team: d.team_name,
-      manager: d.manager_name,
+      manager: personFor(d.season_year, d.team_name, d.manager_name),
       player: name ?? (id ? `Unknown player (Yahoo id ${id})` : "Unknown player"),
       position: d.player_position || (defense ? "DEF" : name ? (position.get(`${d.season_year}|${name}`) ?? "") : ""),
       resolved: name != null,
