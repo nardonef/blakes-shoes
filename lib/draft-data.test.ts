@@ -38,7 +38,7 @@ describe("draft picks", () => {
   it("resolves a known pick: Bijan Robinson to Blake in round 1 of 2025", () => {
     expect(picks.find((p) => p.season === 2025 && p.player === "Bijan Robinson")).toMatchObject({
       round: 1,
-      manager: "Blake",
+      manager: "Blake Kozloski",
       position: "RB",
     });
   });

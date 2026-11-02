@@ -1,8 +1,7 @@
 import championsData from "@/data/champions.json";
 import standingsData from "@/data/standings.json";
-import h2hData from "@/data/h2h_records.json";
 import matchupsData from "@/data/matchups.json";
-import { CURRENT_OWNERS } from "@/lib/legacy-data";
+import { HIDDEN, personFor, personForAccount } from "@/lib/managers";
 
 import type {
   Champion,
@@ -19,23 +18,46 @@ import type {
   PlayoffStats,
 } from "@/types/stats";
 
-// Type assertions for imported JSON
-export const champions = championsData as Champion[];
-export const standings = standingsData as Standing[];
-export const h2hRecords = h2hData as H2HRecord[];
-export const matchups = matchupsData as Matchup[];
+// Every manager is a full name from lib/managers.ts (Yahoo account names merged, known hidden
+// managers filled in); managers who are still unknown stay "--hidden--".
+export const champions: Champion[] = (championsData as Champion[]).map((c) => ({
+  ...c,
+  champion_manager: personFor(c.season_year, c.champion_team_name, c.champion_manager),
+  runner_up_manager: personFor(c.season_year, c.runner_up_team_name, c.runner_up_manager),
+  third_place_manager: personFor(c.season_year, c.third_place_team_name, c.third_place_manager),
+}));
+export const standings: Standing[] = (standingsData as Standing[]).map((s) => ({
+  ...s,
+  manager_name: personFor(s.season_year, s.team_name, s.manager_name),
+}));
+export const matchups: Matchup[] = (matchupsData as Matchup[]).map((m) => ({
+  ...m,
+  team1_manager: personFor(m.season_year, m.team1_name, m.team1_manager),
+  team2_manager: personFor(m.season_year, m.team2_name, m.team2_manager),
+}));
+export const h2hRecords: H2HRecord[] = headToHead(matchups);
+
+/** All-time record between every pair of managers, playoffs included. */
+function headToHead(games: Matchup[]): H2HRecord[] {
+  const pairs = new Map<string, H2HRecord>();
+  for (const m of games) {
+    const [a, b] = [m.team1_manager, m.team2_manager].sort();
+    const r = pairs.get(`${a}|${b}`) ?? { manager1: a, manager2: b, total_matchups: 0, manager1_wins: 0, manager2_wins: 0, ties: 0 };
+    pairs.set(`${a}|${b}`, r);
+    r.total_matchups++;
+    if (m.is_tied) r.ties++;
+    else if ((m.winner === m.team1_name) === (m.team1_manager === a)) r.manager1_wins++;
+    else r.manager2_wins++;
+  }
+  return [...pairs.values()];
+}
 
 // Filter out hidden managers
-const isVisibleManager = (name: string) => name !== "--hidden--";
+const isVisibleManager = (name: string) => name !== HIDDEN;
 
-// The Yahoo export keys managers by raw username, and the same person can
-// have used several different usernames over the years (e.g. "eric" and
-// "efuego93" are both Eric Rios). Resolve every raw name through the current
-// owners' alias table before aggregating so a manager isn't split across
-// multiple rows.
+/** Full name for a raw account name; names from the exports above are already full names. */
 export function resolveManagerName(name: string): string {
-  const owner = CURRENT_OWNERS.find((o) => o.aliases.includes(name));
-  return owner ? owner.name : name;
+  return personForAccount(name);
 }
 
 // Get unique seasons from data
