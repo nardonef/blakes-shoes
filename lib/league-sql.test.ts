@@ -10,8 +10,9 @@ describe("buildLeagueTables", () => {
   const t = buildLeagueTables();
 
   it("has one games row per visible side of every matchup", () => {
-    // 1314 matchups x 2 sides, minus the 236 sides played by hidden managers
-    expect(t.games).toHaveLength(2392);
+    // 2012-2025: 1314 matchups x 2 sides, minus the 236 sides played by hidden managers.
+    // (Pinned to finished seasons; the season in progress keeps adding games.)
+    expect(t.games.filter((g) => g.season <= 2025)).toHaveLength(2392);
     expect(t.games.some((g) => g.manager === "--hidden--")).toBe(false);
   });
 
@@ -44,7 +45,7 @@ describe("buildLeagueTables", () => {
 
 describe("runSql", () => {
   it("answers aggregate questions across every season", async () => {
-    const r = (await runSql("SELECT COUNT(*) AS n FROM games WHERE points >= 150")) as Rows;
+    const r = (await runSql("SELECT COUNT(*) AS n FROM games WHERE points >= 150 AND season <= 2025")) as Rows;
     expect(r.rows).toEqual([{ n: 51 }]);
   });
 
@@ -58,7 +59,7 @@ describe("runSql", () => {
   it("supports grouping by week across all seasons", async () => {
     const r = (await runSql(
       `SELECT SUM(result='W') AS w, SUM(result='L') AS l FROM games
-       WHERE manager = 'Frankie Nardone' AND week = 1 AND game_type = 'regular'`
+       WHERE manager = 'Frankie Nardone' AND week = 1 AND game_type = 'regular' AND season <= 2025`
     )) as Rows;
     expect(r.rows).toEqual([{ w: 10, l: 4 }]);
   });
@@ -75,7 +76,7 @@ describe("runSql", () => {
       "SELECT round, manager, team, position FROM draft WHERE season = 2025 AND player = 'Bijan Robinson'"
     )) as Rows;
     expect(r.rows).toEqual([{ round: 1, manager: "Blake Kozloski", team: "Wizards of Koz", position: "RB" }]);
-    const n = (await runSql("SELECT COUNT(*) AS n FROM draft")) as Rows;
+    const n = (await runSql("SELECT COUNT(*) AS n FROM draft WHERE season <= 2025")) as Rows;
     expect(n.rows).toEqual([{ n: 2676 }]);
   });
 
@@ -104,7 +105,7 @@ describe("runSql", () => {
   it("runs only the first statement", async () => {
     await runSql("SELECT 1; DELETE FROM games");
     const r = (await runSql("SELECT COUNT(*) AS n FROM games")) as Rows;
-    expect(r.rows).toEqual([{ n: 2392 }]);
+    expect(r.rows).toEqual([{ n: buildLeagueTables().games.length }]);
   });
 
   it("returns SQL errors to the caller", async () => {

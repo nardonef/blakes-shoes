@@ -2,6 +2,7 @@ import leagueInfo from "@/data/league_info.json";
 import { getDraftPicks } from "@/lib/draft-data";
 import { buildLeagueTables } from "@/lib/league-sql";
 import { matchups, resolveManagerName, standings } from "@/lib/stats-data";
+import { getLiveSeason } from "@/lib/season-status";
 
 // Roster archive model for /rosters (see the design handoff, HANDOFF-3-rosters.md).
 // Server-only: built from the full lineups/transactions tables, never shipped raw.
@@ -162,8 +163,11 @@ function buildAll(): Map<number, SeasonModel> {
       for (const rows of weeks.values()) rows.sort((a, b) => SLOT_ORDER.indexOf(a.slot) - SLOT_ORDER.indexOf(b.slot));
     }
 
+    // A live season's transactions are scraped up to today but its lineups only through the last
+    // finished week; moves after that wait for their week instead of piling onto the last one.
+    const live = getLiveSeason()?.season === year;
     const txns: Txn[] = tables.transactions
-      .filter((t) => t.season === year)
+      .filter((t) => t.season === year && (!live || transactionWeek(year, t.date, Infinity) <= maxWeek))
       .map((t) => ({
         txn: t.txn, date: t.date, week: transactionWeek(year, t.date, maxWeek),
         type: t.type as Txn["type"], mgr: managerLabel(t.manager, t.team), team: t.team,

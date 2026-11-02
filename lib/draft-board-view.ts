@@ -55,6 +55,8 @@ export interface DraftSeason {
   n: number;
   /** How many picks have a finish rank (drafted QBs, RBs, WRs and TEs). */
   rated: number;
+  /** Set while the season is still being played: points, grades and value are season-to-date. */
+  inProgressThroughWeek: number | null;
   /** Managers in round-1 pick order: the board's columns. */
   slots: string[];
   totals: DraftTotal[];

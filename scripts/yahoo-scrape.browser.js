@@ -3,13 +3,32 @@
 // weekly matchup pages one at a time (2.5-4s apart) and posts the relevant fragments
 // to the receiver. Resumable: pages the receiver already has are skipped.
 // Progress: window.__bs. Stop: window.__bs.stop = true.
-(() => {
-  const SEASONS = [
+//
+// Season in progress: set `window.__bsSeasons = [[2026, 65895, 17, true]]` before pasting.
+// A live season always re-fetches transactions (new moves shift the pages), saves standings
+// and draft results, and only fetches matchups for finished weeks (playoff weeks included).
+
+/**
+ * Finished weeks of a live season, given each team's games played. Records stop at the regular
+ * season, so playoff weeks are counted by date: a week is done by the Wednesday after it (week 1
+ * starts 6am UTC on Labor Day; stat corrections land Tuesday). Tested in lib/yahoo/scrape.test.ts.
+ */
+function finishedWeeks(year, played, now) {
+  const start = new Date(Date.UTC(year, 8, 1, 6));
+  while (start.getUTCDay() !== 1) start.setUTCDate(start.getUTCDate() + 1);
+  const byDate = Math.floor((now - start.getTime() - 2 * 864e5) / (7 * 864e5));
+  return Math.max(Math.min(...played), byDate);
+}
+
+// Only runs in the browser; tests load this file in Node just for finishedWeeks.
+if (typeof window !== "undefined") (() => {
+  const HISTORY = [
     [2012, 404981, 16], [2013, 578874, 16], [2014, 846936, 16], [2015, 325721, 16],
     [2016, 280534, 16], [2017, 764476, 16], [2018, 112596, 16], [2019, 717523, 16],
     [2020, 462412, 16], [2021, 744749, 17], [2022, 92777, 17], [2023, 676326, 17],
     [2024, 133008, 17], [2025, 543958, 17],
   ];
+  const SEASONS = window.__bsSeasons ?? HISTORY;
   const SINK = "http://127.0.0.1:8787";
   const bs = (window.__bs = { status: "running", saved: 0, skipped: 0, current: "", error: null, stop: false });
   const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -79,12 +98,37 @@
     }
   }
 
+  /** Saves standings and draft results; returns how many weeks are finished. */
+  async function liveSeason(year, lid) {
+    bs.current = `st-${year}`;
+    const home = await page(`/${year}/f1/${lid}`);
+    const standings = home.querySelector("#standingstable");
+    if (!standings) throw new Error(`no standings table for ${year}`);
+    await save(`st-${year}`, standings.outerHTML);
+    await pause();
+    bs.current = `dr-${year}`;
+    const draft = await page(`/${year}/f1/${lid}/draftresults`);
+    const rounds = [...draft.querySelectorAll("table")].filter((t) => /Round \d+/.test(t.querySelector("thead")?.textContent || ""));
+    if (rounds.length) await save(`dr-${year}`, rounds.map((t) => t.outerHTML).join(""));
+    await pause();
+    const played = [...standings.querySelectorAll("tbody tr")].map((tr) =>
+      (tr.children[2]?.textContent || "").trim().split("-").reduce((a, n) => a + Number(n || 0), 0),
+    );
+    return finishedWeeks(year, played, Date.now());
+  }
+
   (async () => {
     try {
       const have = new Set(await (await fetch(`${SINK}/have`)).json());
-      for (const [year, lid, weeks] of SEASONS) {
+      for (const [year, lid, weeks, live] of SEASONS) {
+        let lastWeek = weeks;
+        if (live) {
+          for (const n of [...have]) if (n.startsWith(`tx-${year}-`)) have.delete(n);
+          lastWeek = Math.min(weeks, await liveSeason(year, lid));
+          bs.completedWeeks = lastWeek;
+        }
         await transactions(year, lid, have);
-        await matchups(year, lid, weeks, have);
+        await matchups(year, lid, lastWeek, have);
         if (bs.stop) break;
       }
       bs.status = bs.stop ? "stopped" : "done";

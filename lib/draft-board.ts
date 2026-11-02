@@ -1,6 +1,7 @@
 import { getDraftPicks } from "@/lib/draft-data";
 import { weeklyStarterMedians } from "@/lib/front-office-data";
 import { CURRENT_OWNERS } from "@/lib/legacy-data";
+import { getLiveSeason } from "@/lib/season-status";
 import { getSeasonModel, managerLabel } from "@/lib/rosters-data";
 import { champions, standings } from "@/lib/stats-data";
 import {
@@ -128,7 +129,9 @@ function buildSeason(year: number): DraftSeason | null {
   }));
   [...totals].sort((a, b) => b.pts - a.pts).forEach((t, i) => { t.rank = i + 1; t.grade = gradeFor(i + 1, n); });
 
-  return { year, rounds, n, rated, slots, totals, runs: positionRuns(picks), picks };
+  const live = getLiveSeason();
+  const inProgressThroughWeek = live?.season === year ? live.throughWeek : null;
+  return { year, rounds, n, rated, inProgressThroughWeek, slots, totals, runs: positionRuns(picks), picks };
 }
 
 /** How each round-1 slot has fared over finished seasons: playoff trips, average finish, titles. */

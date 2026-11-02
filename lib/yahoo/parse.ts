@@ -137,3 +137,97 @@ export function parseMatchup(html: string, season: number, week: number): Lineup
   }
   return rows;
 }
+
+// Fragments for a season in progress (standings, draft results, matchup scores), so a live season
+// can fill the same data files the 2012-2025 history came in.
+
+export interface MatchupSide {
+  team_id: number;
+  team: string;
+  /** Yahoo nickname as shown on the page, e.g. "Peter" or "efuego93". */
+  manager: string;
+  score: number;
+}
+
+export function parseMatchupHeader(html: string): { left: MatchupSide; right: MatchupSide | null } {
+  const d = doc(html);
+  const sides = [...d.querySelectorAll("#matchup-header .Grid-u-1-3.Ptop-med")].map((side) => {
+    const a = side.querySelector(".Fz-xxl a");
+    return { team_id: teamNumber(a?.getAttribute("href")), team: text(a), manager: text(side.querySelector(".user-id")) };
+  });
+  const scores = [...d.querySelectorAll("#matchup-header table td.Fz-xxl")].map((td) => num(text(td)));
+  const side = (i: number): MatchupSide | null =>
+    sides[i]?.team_id != null && scores[i] != null
+      ? { team_id: sides[i].team_id!, team: sides[i].team, manager: sides[i].manager, score: scores[i]! }
+      : null;
+  const left = side(0);
+  if (!left) throw new Error("Matchup header without a team and score");
+  return { left, right: side(1) };
+}
+
+export interface StandingRow {
+  team_id: number;
+  team: string;
+  rank: number;
+  wins: number;
+  losses: number;
+  ties: number;
+  points_for: number;
+  points_against: number;
+  /** e.g. "W-7" */
+  streak: string;
+}
+
+export function parseStandings(html: string): StandingRow[] {
+  return [...doc(html).querySelectorAll("tbody tr")].map((tr) => {
+    const c = tr.children;
+    const team = [...c[1].querySelectorAll("a")].find((a) => text(a)) ?? null;
+    const [wins, losses, ties] = text(c[2]).split("-").map(Number);
+    const id = teamNumber(team?.getAttribute("href"));
+    if (id == null) throw new Error(`Standings row without a team link: ${text(tr)}`);
+    return {
+      team_id: id,
+      team: text(team),
+      rank: Number(text(c[0])),
+      wins, losses, ties,
+      points_for: Number(text(c[3])),
+      points_against: Number(text(c[4])),
+      streak: text(c[5]),
+    };
+  });
+}
+
+export interface DraftRow {
+  round: number;
+  /** 1-based position within the round. */
+  pick_in_round: number;
+  player: string;
+  player_id: string | null;
+  nfl_team: string;
+  position: string;
+  /** Drafting team's name (the page gives no team id). */
+  team: string;
+}
+
+export function parseDraftResults(html: string): DraftRow[] {
+  const rows: DraftRow[] = [];
+  for (const table of doc(html).querySelectorAll("table")) {
+    const round = Number(text(table.querySelector("thead")).match(/Round (\d+)/)?.[1]);
+    if (!round) continue;
+    for (const tr of table.querySelectorAll("tbody tr")) {
+      const a = tr.querySelector("td.player a");
+      const meta = text(tr.querySelector("td.player .Block")).match(/^\((.+?) - (.+)\)$/);
+      const last = tr.querySelector("td.last");
+      rows.push({
+        round,
+        pick_in_round: Number(text(tr.querySelector("td.first")).replace(".", "")),
+        player: text(a),
+        player_id: playerId(a),
+        nfl_team: meta?.[1] ?? "",
+        position: meta?.[2] ?? "",
+        team: last?.getAttribute("title") || text(last),
+      });
+    }
+  }
+  return rows;
+}

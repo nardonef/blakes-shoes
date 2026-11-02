@@ -224,6 +224,11 @@ function Board({ model, sp, setParams }: { model: DraftModel; sp: URLSearchParam
               ))}
             </div>
           </div>
+          {S.inProgressThroughWeek != null && (
+            <span className="h-11 flex items-center px-3 bg-[#151515] text-white text-[11px] font-semibold tracking-[.12em]" style={MONO}>
+              IN PROGRESS · THROUGH WEEK {S.inProgressThroughWeek}
+            </span>
+          )}
         </div>
         <div className="flex flex-wrap gap-x-3.5 gap-y-1.5 items-center">
           {legend.map((l) => (

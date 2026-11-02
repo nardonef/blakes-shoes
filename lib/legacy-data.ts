@@ -153,13 +153,15 @@ export function getManagerLegacies(): ManagerLegacy[] {
     const pointsFor = seasons.reduce((a, s) => a + s.pointsFor, 0);
     const games = wins + losses + ties;
 
+    // A season still being played has a current rank, not a finish.
+    const finished = seasons.filter((s) => champions.some((c) => c.season_year === s.year));
     const bestSeason =
-      seasons.length > 0
-        ? seasons.reduce((a, b) => (b.finalRank < a.finalRank ? b : a))
+      finished.length > 0
+        ? finished.reduce((a, b) => (b.finalRank < a.finalRank ? b : a))
         : null;
     const worstSeason =
-      seasons.length > 0
-        ? seasons.reduce((a, b) => (b.finalRank > a.finalRank ? b : a))
+      finished.length > 0
+        ? finished.reduce((a, b) => (b.finalRank > a.finalRank ? b : a))
         : null;
 
     // Championship history

@@ -51,7 +51,8 @@ export function getDraftPicks(): DraftPick[] {
   cache = draftHistory.map((d) => {
     const id = Number((d.player_key ?? "").split(".p.")[1]);
     const defense = DEFENSE_BY_ID[id];
-    const name = defense ?? nameById.get(`${d.season_year}|${id}`);
+    // A season pulled from the live draft-results page already has names; older seasons only have keys.
+    const name = d.player_name || defense || nameById.get(`${d.season_year}|${id}`);
     return {
       season: d.season_year,
       round: d.round,
@@ -60,7 +61,7 @@ export function getDraftPicks(): DraftPick[] {
       team: d.team_name,
       manager: d.manager_name,
       player: name ?? (id ? `Unknown player (Yahoo id ${id})` : "Unknown player"),
-      position: defense ? "DEF" : name ? (position.get(`${d.season_year}|${name}`) ?? "") : "",
+      position: d.player_position || (defense ? "DEF" : name ? (position.get(`${d.season_year}|${name}`) ?? "") : ""),
       resolved: name != null,
     };
   });
