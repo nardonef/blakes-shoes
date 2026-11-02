@@ -27,6 +27,7 @@ import {
   type MatchupSide,
   type TransactionRow,
 } from "../lib/yahoo/parse";
+import { seasonsToRebuild } from "../lib/yahoo/live";
 
 /** Seasons pulled while in progress. Settings are from the league's Yahoo settings page. */
 const LIVE: Record<number, { leagueId: string; game: number; endWeek: number; playoffStart: number; playoffTeams: number; tradeEnd: string }> = {
@@ -81,12 +82,10 @@ let matchups = matchupsData as (typeof matchupsData)[number][];
 let leagueInfo = leagueInfoData as (typeof leagueInfoData)[number][];
 let draftHistory = draftHistoryData as (typeof draftHistoryData)[number][];
 
-for (const [yearKey, cfg] of Object.entries(LIVE)) {
-  const year = Number(yearKey);
+for (const year of seasonsToRebuild(Object.keys(LIVE).map(Number), championsData)) {
+  const cfg = LIVE[year];
   const stFile = join(DIR, `st-${year}.html`);
   if (!existsSync(stFile)) continue;
-  // Once the champion is recorded the season's final standings are hand-edited; don't overwrite them.
-  if (championsData.some((c) => c.season_year === year)) continue;
   const key = (team: number) => `${cfg.game}.l.${cfg.leagueId}.t.${team}`;
 
   // Matchups (one fragment per pairing) also tell us each team's Yahoo manager name.
