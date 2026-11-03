@@ -32,11 +32,11 @@ import {
   getPlayoffStats,
   chartColors,
 } from "@/lib/stats-data";
-import type { FrontOffice } from "@/lib/front-office-data";
+import type { FrontOffice, WaiverReport } from "@/lib/front-office-data";
 import type { LuckAndLineups } from "@/lib/luck-lineups-data";
 import type { PerfectSeason } from "@/lib/perfect-lineup-data";
 
-type TabId = "rankings" | "records" | "seasons" | "office" | "luck";
+type TabId = "rankings" | "records" | "seasons" | "office" | "waiver" | "luck";
 
 const TABS: { id: TabId; title: string; description: string }[] = [
   {
@@ -57,7 +57,12 @@ const TABS: { id: TabId; title: string; description: string }[] = [
   {
     id: "office",
     title: "FRONT OFFICE",
-    description: "Who wins trades, works the waiver wire, and beats Yahoo's projections.",
+    description: "Who wins trades and beats Yahoo's projections.",
+  },
+  {
+    id: "waiver",
+    title: "WAIVER WIRE",
+    description: "The best pickups ever, and who spends FAAB well.",
   },
   {
     id: "luck",
@@ -190,6 +195,153 @@ function RankedList({
   );
 }
 
+function WaiverSections({ data }: { data: WaiverReport }) {
+  const [season, setSeason] = useState("all");
+  const [manager, setManager] = useState("all");
+  const mono = { fontFamily: "var(--font-geist-mono)" };
+  const seasons = [...new Set(data.pickups.map((p) => p.season))].sort((a, b) => b - a);
+  const managers = [...new Set(data.pickups.map((p) => p.manager))].sort();
+  const pickups = data.pickups
+    .filter((p) => (season === "all" || p.season === Number(season)) && (manager === "all" || p.manager === manager))
+    .slice(0, 10);
+  const select = "bg-[#151515] text-white border-none px-3.5 py-2.5 text-[11px] font-semibold tracking-[.12em] focus:outline-none";
+  const cols =
+    "grid-cols-[22px_minmax(0,1fr)_52px_64px] md:grid-cols-[36px_200px_76px_96px_56px_84px_minmax(0,1fr)]";
+
+  return (
+    <>
+      <section>
+        <SectionHeading
+          description={
+            <>
+              Every add since 2012, scored by what he did in the adding team&apos;s lineup: each week he started is
+              measured against the median starter at his position league-wide, so a big RB week counts as much as a
+              big QB week.
+            </>
+          }
+        >
+          BEST PICKUPS
+        </SectionHeading>
+        <div className="flex gap-2 flex-wrap mb-4">
+          <select value={season} onChange={(e) => setSeason(e.target.value)} className={select} style={mono} aria-label="Season">
+            <option value="all">ALL SEASONS</option>
+            {seasons.map((y) => (
+              <option key={y} value={y}>
+                {y}
+              </option>
+            ))}
+          </select>
+          <select value={manager} onChange={(e) => setManager(e.target.value)} className={select} style={mono} aria-label="Manager">
+            <option value="all">ALL MANAGERS</option>
+            {managers.map((m) => (
+              <option key={m} value={m}>
+                {m.toUpperCase()}
+              </option>
+            ))}
+          </select>
+        </div>
+        {pickups.length ? (
+          <RankedList
+            title="TOP 10"
+            subtitle="Points above a typical starter at his position"
+            rows={pickups.map((p, i) => ({
+              rank: i + 1,
+              rankColor: i < 3 ? "var(--accent)" : "var(--dim)",
+              primary: `${p.player} · ${p.pos}`,
+              meta: `${p.manager} · ${p.season} WK ${p.week} · ${p.how} · ${p.points.toFixed(1)} PTS IN ${p.starts} STARTS`.toUpperCase(),
+              value: `+${p.aboveAvg.toFixed(1)}`,
+              valueColor: "var(--accent)",
+            }))}
+          />
+        ) : (
+          <p className="text-sm text-[var(--muted-light)]">No pickup beat a typical starter for that season and manager.</p>
+        )}
+      </section>
+
+      <section>
+        <SectionHeading
+          description={
+            <>
+              FAAB bidding started in {data.faabSince}; every team gets $100 a season. <strong>Pts per $</strong> is
+              starting points from FAAB buys (from the week the bid cleared) per dollar spent. Managers who&apos;ve spent
+              at least $50. The current season counts what&apos;s been spent so far.
+            </>
+          }
+        >
+          FAAB SPENDING
+        </SectionHeading>
+        <div
+          className={`grid ${cols} bg-[#151515] text-[#f5f5f0] text-[8px] md:text-[9.5px] font-semibold tracking-[.06em] md:tracking-[.1em]`}
+          style={mono}
+        >
+          <div className="py-[11px] pl-1.5 md:pl-3">#</div>
+          <div className="py-[11px] px-1 md:px-2">MANAGER</div>
+          <div className="py-[11px] px-0.5 md:px-1 text-right">PTS / $</div>
+          <div className="py-[11px] pr-1.5 pl-0.5 md:px-1 text-right">$ / SEASON</div>
+          <div className="hidden md:block py-[11px] px-1 text-right">BIDS</div>
+          <div className="hidden md:block py-[11px] px-1 text-right">AVG BID</div>
+          <div className="hidden md:block py-[11px] pl-5 pr-3">BIGGEST BID</div>
+        </div>
+        <div className="bg-white">
+          {data.spending.map((h, i) => (
+            <div key={h.manager} className={`grid ${cols} border-b border-[var(--hairline)] items-center text-[11px] md:text-[13.5px]`}>
+              <div
+                className="py-[11px] pl-1.5 md:pl-3 text-[15px] md:text-[20px] leading-none"
+                style={{ fontFamily: "var(--font-bebas-neue)", color: i < 3 ? "var(--accent)" : "var(--dim)" }}
+              >
+                {i + 1}
+              </div>
+              <div className="py-[11px] px-1 md:px-2 min-w-0">
+                <div className="font-semibold text-[#151515] truncate">{h.manager}</div>
+                <div className="md:hidden text-[9.5px] text-[var(--muted-light)] truncate" style={mono}>
+                  {h.bids} BIDS · BIGGEST ${h.biggest.faab} {h.biggest.player.toUpperCase()}
+                </div>
+              </div>
+              <div className="py-[11px] px-0.5 md:px-1 text-right font-semibold text-[var(--accent)] tabular-nums">
+                {h.perDollar.toFixed(1)}
+              </div>
+              <div className="py-[11px] pr-1.5 pl-0.5 md:px-1 text-right tabular-nums text-[var(--body-text)]">${Math.round(h.perSeason)}</div>
+              <div className="hidden md:block py-[11px] px-1 text-right tabular-nums text-[var(--body-text)]">{h.bids}</div>
+              <div className="hidden md:block py-[11px] px-1 text-right tabular-nums text-[var(--body-text)]">${h.avgBid.toFixed(1)}</div>
+              <div className="hidden md:block py-[11px] pl-5 pr-3 truncate text-[var(--body-text)]">
+                <span className="font-semibold text-[#151515] tabular-nums">${h.biggest.faab}</span> {h.biggest.player}{" "}
+                <span className="text-[var(--muted-light)] tabular-nums">{h.biggest.season}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-9">
+        <RankedList
+          title="BEST BIDS"
+          subtitle="FAAB buys, by points above a typical starter"
+          rows={data.bestBids.map((p, i) => ({
+            rank: i + 1,
+            rankColor: i < 3 ? "var(--accent)" : "var(--dim)",
+            primary: `${p.player} · ${p.pos}`,
+            meta: `$${p.faab} · ${p.manager} · ${p.season} WK ${p.week} · ${p.starts} STARTS`.toUpperCase(),
+            value: `+${p.aboveAvg.toFixed(1)}`,
+            valueColor: "var(--accent)",
+          }))}
+        />
+        <RankedList
+          title="WORST BIDS"
+          subtitle="Biggest bids on players who never beat a typical starter"
+          rows={data.worstBids.map((p, i) => ({
+            rank: i + 1,
+            rankColor: i < 3 ? "var(--negative)" : "var(--dim)",
+            primary: `${p.player} · ${p.pos}`,
+            meta: `${p.manager} · ${p.season} WK ${p.week} · ${p.starts ? `${p.starts} STARTS, ${p.aboveAvg.toFixed(1)} VS TYPICAL` : "NEVER STARTED"}`.toUpperCase(),
+            value: `$${p.faab}`,
+            valueColor: "var(--negative)",
+          }))}
+        />
+      </div>
+    </>
+  );
+}
+
 function FrontOfficeSections({ data }: { data: FrontOffice }) {
   const projMaxAbs = Math.max(1, ...data.projections.map((p) => Math.abs(p.perWeek)));
   const signed = (n: number) =>
@@ -312,35 +464,6 @@ function FrontOfficeSections({ data }: { data: FrontOffice }) {
           </div>
         </div>
       </section>
-
-      {/* Waiver Wire */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-9">
-        <RankedList
-          title="WAIVER WIRE HALL OF FAME"
-          subtitle="Points above a typical starter at his position"
-          description="Each week a pickup started, he's measured against the median starter at his position league-wide, so a big RB week counts as much as a big QB week."
-          rows={data.pickups.map((p, i) => ({
-            rank: i + 1,
-            rankColor: i < 3 ? "var(--accent)" : "var(--dim)",
-            primary: `${p.player} · ${p.pos}`,
-            meta: `${p.manager} · ${p.season} WK ${p.week} · ${p.how} · ${p.points.toFixed(1)} PTS IN ${p.starts} STARTS`.toUpperCase(),
-            value: `+${p.aboveAvg.toFixed(1)}`,
-            valueColor: "var(--accent)",
-          }))}
-        />
-        <RankedList
-          title="FAAB BANG FOR THE BUCK"
-          subtitle="Starting points per FAAB dollar, min $50 spent"
-          rows={data.faab.map((f, i) => ({
-            rank: i + 1,
-            rankColor: i < 3 ? "var(--accent)" : "var(--dim)",
-            primary: f.manager,
-            meta: `$${f.spent} SPENT · ${f.points.toLocaleString("en-US", { maximumFractionDigits: 0 })} PTS STARTED`,
-            value: f.perDollar.toFixed(1),
-            valueColor: i < 3 ? "var(--accent)" : "var(--muted-dark)",
-          }))}
-        />
-      </div>
     </>
   );
 }
@@ -682,7 +805,11 @@ function StatsContent({
   const searchParams = useSearchParams();
   const tabParam = searchParams.get("tab");
   const activeTab: TabId =
-    tabParam === "records" || tabParam === "seasons" || tabParam === "office" || tabParam === "luck"
+    tabParam === "records" ||
+    tabParam === "seasons" ||
+    tabParam === "office" ||
+    tabParam === "waiver" ||
+    tabParam === "luck"
       ? tabParam
       : "rankings";
 
@@ -804,7 +931,7 @@ function StatsContent({
       {/* Section picker */}
       <div className="bg-[var(--background)] border-b border-[var(--rule)]">
         <div className="max-w-[1160px] mx-auto px-4 md:px-10 pt-5 md:pt-7">
-          <div className="grid grid-cols-[repeat(auto-fit,minmax(210px,1fr))] gap-0.5 bg-[var(--rule)]">
+          <div className="grid grid-cols-[repeat(auto-fit,minmax(210px,1fr))] lg:grid-cols-6 gap-0.5 bg-[var(--rule)]">
             {TABS.map((tab) => {
               const active = activeTab === tab.id;
               return (
@@ -1391,6 +1518,7 @@ function StatsContent({
           </>
         )}
 
+        {activeTab === "waiver" && <WaiverSections data={frontOffice.waiver} />}
         {activeTab === "office" && <FrontOfficeSections data={frontOffice} />}
         {activeTab === "luck" && <LuckSections data={luck} perfect={perfect} />}
 

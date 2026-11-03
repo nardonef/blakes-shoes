@@ -32,18 +32,40 @@ export interface Pickup {
   starts: number;
 }
 
-export interface FaabValue {
+export interface WaiverPickup extends Pickup {
+  /** FAAB dollars paid for him (0 before FAAB or for a free-agent add). */
+  faab: number;
+}
+
+export interface FaabHabit {
   manager: string;
+  /** FAAB-era seasons the manager played. */
+  seasons: number;
   spent: number;
+  perSeason: number;
+  bids: number;
+  avgBid: number;
+  biggest: { player: string; season: number; faab: number };
+  /** Starting points from FAAB buys, from the week the bid was paid. */
   points: number;
   perDollar: number;
+}
+
+export interface WaiverReport {
+  /** Every pickup that beat a typical starter, best first (filterable on the page). */
+  pickups: WaiverPickup[];
+  /** Managers who spent at least $50, best points per dollar first. */
+  spending: FaabHabit[];
+  bestBids: WaiverPickup[];
+  /** The biggest bids on players who never beat a typical starter. */
+  worstBids: WaiverPickup[];
+  faabSince: number;
 }
 
 export interface FrontOffice {
   trades: TradeRecord[];
   projections: ProjectionBeat[];
-  pickups: Pickup[];
-  faab: FaabValue[];
+  waiver: WaiverReport;
 }
 
 const known = (m: string) => !m.endsWith("(unknown manager)");
@@ -166,32 +188,53 @@ function allPickups(): (Pickup & { faab: number; faabWeek: number | null })[] {
   return out;
 }
 
-export function getFrontOffice(): FrontOffice {
+export function getWaiverReport(): WaiverReport {
   const pickups = allPickups();
+  const paid = pickups.filter((p) => p.faab > 0);
+  const faabSince = Math.min(...paid.map((p) => p.season));
+  const slim = (p: (typeof pickups)[number]): WaiverPickup => ({
+    season: p.season, manager: p.manager, player: p.player, pos: p.pos, how: p.how,
+    week: p.week, points: round1(p.points), aboveAvg: round1(p.aboveAvg), starts: p.starts, faab: p.faab,
+  });
 
-  const faab = new Map<string, { spent: number; points: number }>();
-  for (const p of pickups) {
-    if (!p.faab) continue;
-    const S = getSeasonModel(p.season)!;
-    const f = faab.get(p.manager) ?? { spent: 0, points: 0 };
-    f.spent += p.faab;
-    f.points += startedFrom(S, p.manager, p.player, p.faabWeek!).points;
-    faab.set(p.manager, f);
+  const faabSeasons = new Map<string, number>();
+  for (const y of getRosterSeasons().filter((y) => y >= faabSince)) {
+    for (const m of getSeasonModel(y)!.managers) if (known(m)) faabSeasons.set(m, (faabSeasons.get(m) ?? 0) + 1);
+  }
+  const habits = new Map<string, { spent: number; bids: number; points: number; biggest: (typeof paid)[number] }>();
+  for (const p of paid) {
+    const h = habits.get(p.manager) ?? { spent: 0, bids: 0, points: 0, biggest: p };
+    h.spent += p.faab;
+    h.bids++;
+    h.points += startedFrom(getSeasonModel(p.season)!, p.manager, p.player, p.faabWeek!).points;
+    if (p.faab > h.biggest.faab) h.biggest = p;
+    habits.set(p.manager, h);
   }
 
   return {
-    trades: getTradeRecords(),
-    projections: getProjectionBeat(),
-    pickups: pickups
-      .sort((a, b) => b.aboveAvg - a.aboveAvg)
-      .slice(0, 10)
-      .map((p) => ({
-        season: p.season, manager: p.manager, player: p.player, pos: p.pos, how: p.how,
-        week: p.week, points: round1(p.points), aboveAvg: round1(p.aboveAvg), starts: p.starts,
-      })),
-    faab: [...faab]
-      .filter(([, f]) => f.spent >= 50)
-      .map(([manager, f]) => ({ manager, spent: f.spent, points: round1(f.points), perDollar: round1(f.points / f.spent) }))
+    pickups: pickups.sort((a, b) => b.aboveAvg - a.aboveAvg).map(slim).filter((p) => p.aboveAvg > 0),
+    spending: [...habits]
+      .filter(([, h]) => h.spent >= 50)
+      .map(([manager, h]) => {
+        const seasons = faabSeasons.get(manager) ?? 1;
+        return {
+          manager, seasons, spent: h.spent, perSeason: round1(h.spent / seasons), bids: h.bids,
+          avgBid: round1(h.spent / h.bids),
+          biggest: { player: h.biggest.player, season: h.biggest.season, faab: h.biggest.faab },
+          points: round1(h.points), perDollar: round1(h.points / h.spent),
+        };
+      })
       .sort((a, b) => b.perDollar - a.perDollar),
+    bestBids: [...paid].sort((a, b) => b.aboveAvg - a.aboveAvg).slice(0, 10).map(slim),
+    worstBids: paid
+      .filter((p) => p.aboveAvg <= 0)
+      .sort((a, b) => b.faab - a.faab || a.aboveAvg - b.aboveAvg)
+      .slice(0, 10)
+      .map(slim),
+    faabSince,
   };
+}
+
+export function getFrontOffice(): FrontOffice {
+  return { trades: getTradeRecords(), projections: getProjectionBeat(), waiver: getWaiverReport() };
 }
