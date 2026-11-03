@@ -1,6 +1,7 @@
 import Image from "next/image";
 import ChampionsBuilt from "@/components/ChampionsBuilt";
 import MyGuys from "@/components/MyGuys";
+import CountUp from "@/components/CountUp";
 import { getMyGuys } from "@/lib/my-guys-data";
 import { getChampionBuilds } from "@/lib/champions-built-data";
 import { getManagerLegacies, slug, type ManagerLegacy } from "@/lib/legacy-data";
@@ -225,6 +226,7 @@ export default function LegacyPage() {
             <section
               key={legacy.owner.name}
               id={slug(legacy.owner.name)}
+              data-reveal=""
               className="bg-white scroll-mt-[70px]"
             >
               {/* Card header */}
@@ -281,7 +283,7 @@ export default function LegacyPage() {
                       className="text-[22px] md:text-[28px] leading-none text-[var(--accent-light)]"
                       style={{ fontFamily: "var(--font-bebas-neue)" }}
                     >
-                      {(legacy.winPct * 100).toFixed(1)}%
+                      <CountUp text={`${(legacy.winPct * 100).toFixed(1)}%`} />
                     </div>
                   </div>
                   <div>
@@ -292,7 +294,7 @@ export default function LegacyPage() {
                       PPG
                     </div>
                     <div className="text-[22px] md:text-[28px] leading-none" style={{ fontFamily: "var(--font-bebas-neue)" }}>
-                      {legacy.avgPointsPerGame.toFixed(1)}
+                      <CountUp text={legacy.avgPointsPerGame.toFixed(1)} />
                     </div>
                   </div>
                   {legacy.championships > 0 && (

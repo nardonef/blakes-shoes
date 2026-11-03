@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import type { Guy, GuyCategory, MyGuys as MyGuysData } from "@/lib/my-guys-data";
 import { playerHref } from "@/lib/player-slug";
+import CountUp from "./CountUp";
 
 const MONO = { fontFamily: "var(--font-geist-mono)" };
 
@@ -26,8 +27,8 @@ export default function MyGuys({ managers }: { managers: MyGuysData[] }) {
         and defenses count.
       </p>
       <div className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,340px),1fr))] gap-4">
-        {managers.map((m) => (
-          <div key={m.manager} className="bg-white">
+        {managers.map((m, i) => (
+          <div key={m.manager} data-reveal="" style={{ "--i": i % 3 } as React.CSSProperties} className="bg-white">
             <div className="flex items-center gap-3 px-4 py-3 border-b border-[var(--hairline)]">
               <div className="w-9 h-9 rounded-full overflow-hidden bg-[#e2e2da] shrink-0 relative">
                 <Image src={m.image} alt={m.manager} fill sizes="36px" className="object-cover" />
@@ -51,7 +52,9 @@ export default function MyGuys({ managers }: { managers: MyGuysData[] }) {
                         {guy.pos}
                       </span>
                     </span>
-                    <span className="text-[15px] font-bold text-[#151515] tabular-nums whitespace-nowrap">{c.unit(guy)}</span>
+                    <span className="text-[15px] font-bold text-[#151515] tabular-nums whitespace-nowrap">
+                      <CountUp text={c.unit(guy)} />
+                    </span>
                   </div>
                   <div className="text-[12px] text-[var(--muted-light)] mt-0.5">
                     {guy.seasons} season{guy.seasons === 1 ? "" : "s"}

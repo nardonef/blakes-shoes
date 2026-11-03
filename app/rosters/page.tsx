@@ -105,7 +105,7 @@ function TeamsTab({ sp }: { sp: Params }) {
     : [];
 
   return (
-    <main className="max-w-[1160px] mx-auto px-4 md:px-10 pt-7 pb-16 flex flex-col gap-5">
+    <main key="teams" className="tab-fade max-w-[1160px] mx-auto px-4 md:px-10 pt-7 pb-16 flex flex-col gap-5">
       <div className="flex flex-wrap gap-3 items-end">
         <RostersSelect
           label="MANAGER"
@@ -410,7 +410,7 @@ function TradesTab({ sp }: { sp: Params }) {
   );
 
   return (
-    <main className="max-w-[1160px] mx-auto px-4 md:px-10 pt-7 pb-16 flex flex-col gap-4">
+    <main key="trades" className="tab-fade max-w-[1160px] mx-auto px-4 md:px-10 pt-7 pb-16 flex flex-col gap-4">
       <div className="flex flex-wrap gap-3 items-end justify-between">
         <div className="flex flex-wrap gap-3 flex-[1_1_420px] max-w-[520px]">
           <RostersSelect
