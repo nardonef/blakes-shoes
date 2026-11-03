@@ -16,22 +16,8 @@ import {
   ResponsiveContainer,
   Cell,
 } from "recharts";
-import {
-  getSeasons,
-  getSeasonStandings,
-  getManagerStats,
-  getSeasonScoringTrends,
-  getScoreDistribution,
-  getTopPerformances,
-  getLowestPerformances,
-  getVisibleH2HRecords,
-  getChampionsChartData,
-  getBlowouts,
-  getClosestGames,
-  getManagerConsistency,
-  getPlayoffStats,
-  chartColors,
-} from "@/lib/stats-data";
+import type { CoreStats } from "@/lib/stats-data";
+import { chartColors } from "@/lib/chart-colors";
 import type { FrontOffice, WaiverReport } from "@/lib/front-office-data";
 import type { LuckAndLineups } from "@/lib/luck-lineups-data";
 import type { PerfectSeason } from "@/lib/perfect-lineup-data";
@@ -856,26 +842,30 @@ function CustomTooltip({
 }
 
 export default function StatsClient({
+  core,
   frontOffice,
   luck,
   perfect,
 }: {
+  core: CoreStats;
   frontOffice: FrontOffice;
   luck: LuckAndLineups;
   perfect: PerfectSeason[];
 }) {
   return (
     <Suspense fallback={null}>
-      <StatsContent frontOffice={frontOffice} luck={luck} perfect={perfect} />
+      <StatsContent core={core} frontOffice={frontOffice} luck={luck} perfect={perfect} />
     </Suspense>
   );
 }
 
 function StatsContent({
+  core,
   frontOffice,
   luck,
   perfect,
 }: {
+  core: CoreStats;
   frontOffice: FrontOffice;
   luck: LuckAndLineups;
   perfect: PerfectSeason[];
@@ -900,21 +890,22 @@ function StatsContent({
     router.replace(`${pathname}?tab=${tab}`, { scroll: false });
   }
 
-  const seasons = getSeasons();
+  const {
+    seasons,
+    champions: championsData,
+    managerStats,
+    scoringTrends,
+    scoreDistribution,
+    topPerformances,
+    lowestPerformances,
+    h2hRecords,
+    blowouts,
+    closestGames,
+    consistency,
+    playoffStats,
+  } = core;
   const [selectedSeason, setSelectedSeason] = useState(seasons[0]);
-
-  const championsData = getChampionsChartData();
-  const managerStats = getManagerStats();
-  const scoringTrends = getSeasonScoringTrends();
-  const scoreDistribution = getScoreDistribution();
-  const topPerformances = getTopPerformances(10);
-  const lowestPerformances = getLowestPerformances(10);
-  const h2hRecords = getVisibleH2HRecords();
-  const seasonStandings = getSeasonStandings(selectedSeason);
-  const blowouts = getBlowouts(10);
-  const closestGames = getClosestGames(10);
-  const consistency = getManagerConsistency();
-  const playoffStats = getPlayoffStats();
+  const seasonStandings = core.standingsBySeason[selectedSeason] ?? [];
 
   // Summary stats
   const totalGames = scoringTrends.reduce((acc, s) => acc + s.totalGames, 0);
