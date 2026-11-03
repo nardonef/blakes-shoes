@@ -1,6 +1,7 @@
 import leagueInfoData from "@/data/league_info.json";
 import { buildLeagueTables, type GameRow } from "@/lib/league-sql";
 import { CURRENT_OWNERS, getManagerLegacies } from "@/lib/legacy-data";
+import { getAllPlay } from "@/lib/luck-lineups-data";
 import {
   champions,
   h2hRecords,
@@ -13,7 +14,6 @@ import {
   getLowestPerformances,
   getBlowouts,
   getClosestGames,
-  getLuckIndex,
   getManagerConsistency,
   getPlayoffStats,
 } from "@/lib/stats-data";
@@ -193,7 +193,8 @@ export function getRecords(kind: RecordKind, limit = 10) {
       }));
     // The three leaderboards below are already keyed by resolved names.
     case "luck":
-      return getLuckIndex().slice(0, limit);
+      // Real win % minus all-play win % (as if you played every team every week), in percentage points.
+      return getAllPlay().careers.slice(0, limit);
     case "consistency":
       return getManagerConsistency().slice(0, limit);
     case "playoff_performance":

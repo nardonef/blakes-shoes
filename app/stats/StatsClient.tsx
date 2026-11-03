@@ -27,7 +27,6 @@ import {
   getChampionsChartData,
   getBlowouts,
   getClosestGames,
-  getLuckIndex,
   getManagerConsistency,
   getPlayoffStats,
   chartColors,
@@ -35,10 +34,16 @@ import {
 import type { FrontOffice, WaiverReport } from "@/lib/front-office-data";
 import type { LuckAndLineups } from "@/lib/luck-lineups-data";
 import type { PerfectSeason } from "@/lib/perfect-lineup-data";
+import type { MarginGame } from "@/types/stats";
 
-type TabId = "rankings" | "records" | "seasons" | "office" | "waiver" | "luck";
+type TabId = "highlights" | "rankings" | "records" | "seasons" | "office" | "luck";
 
 const TABS: { id: TabId; title: string; description: string }[] = [
+  {
+    id: "highlights",
+    title: "HIGHLIGHTS",
+    description: "The league's best, worst and wildest numbers, all in one place.",
+  },
   {
     id: "rankings",
     title: "ALL-TIME RANKINGS",
@@ -57,17 +62,12 @@ const TABS: { id: TabId; title: string; description: string }[] = [
   {
     id: "office",
     title: "FRONT OFFICE",
-    description: "Who wins trades and beats Yahoo's projections.",
-  },
-  {
-    id: "waiver",
-    title: "WAIVER WIRE",
-    description: "The best pickups ever, and who spends FAAB well.",
+    description: "Every roster move: trades, waiver pickups and FAAB.",
   },
   {
     id: "luck",
     title: "LUCK & LINEUPS",
-    description: "Who got lucky with the schedule, and who keeps starting the wrong guys.",
+    description: "Schedule luck, lineup calls, and who'd have won with perfect lineups.",
   },
 ];
 
@@ -189,6 +189,55 @@ function RankedList({
               {row.value}
             </div>
           </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+interface Highlight {
+  label: string;
+  value: string;
+  tone?: "good" | "bad";
+  who: string;
+  detail: string;
+  tab: TabId;
+}
+
+function Highlights({ cards, onOpen }: { cards: Highlight[]; onOpen: (tab: TabId) => void }) {
+  const mono = { fontFamily: "var(--font-geist-mono)" };
+  const tabTitle = (id: TabId) => TABS.find((t) => t.id === id)!.title;
+  return (
+    <section>
+      <SectionHeading description="One headline from every corner of the stats. Tap a card for the full table.">
+        HIGHLIGHTS
+      </SectionHeading>
+      <div className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,260px),1fr))] gap-4">
+        {cards.map((c) => (
+          <button
+            key={c.label}
+            type="button"
+            onClick={() => onOpen(c.tab)}
+            className="bg-white text-left p-4 md:p-5 flex flex-col gap-1.5 border-b-2 border-transparent hover:border-[var(--accent)]"
+          >
+            <span className="text-[10px] font-semibold tracking-[.12em] text-[var(--muted-light)]" style={mono}>
+              {c.label}
+            </span>
+            <span
+              className="text-[40px] leading-none"
+              style={{
+                fontFamily: "var(--font-bebas-neue)",
+                color: c.tone === "bad" ? "var(--negative)" : c.tone === "good" ? "var(--accent)" : "#151515",
+              }}
+            >
+              {c.value}
+            </span>
+            <span className="text-[15px] font-semibold text-[#151515]">{c.who}</span>
+            <span className="text-[12.5px] text-[var(--body-text)] leading-[1.45]">{c.detail}</span>
+            <span className="mt-auto pt-2 text-[10px] font-semibold tracking-[.12em] text-[var(--accent)]" style={mono}>
+              {tabTitle(c.tab)} →
+            </span>
+          </button>
         ))}
       </div>
     </section>
@@ -343,7 +392,6 @@ function WaiverSections({ data }: { data: WaiverReport }) {
 }
 
 function FrontOfficeSections({ data }: { data: FrontOffice }) {
-  const projMaxAbs = Math.max(1, ...data.projections.map((p) => Math.abs(p.perWeek)));
   const signed = (n: number) =>
     `${n > 0 ? "+" : ""}${n.toLocaleString("en-US", { minimumFractionDigits: 1, maximumFractionDigits: 1 })}`;
   const tradeCols = "grid-cols-[22px_minmax(0,1fr)_48px_52px_64px] md:grid-cols-[36px_minmax(0,1fr)_80px_80px_100px]";
@@ -403,10 +451,18 @@ function FrontOfficeSections({ data }: { data: FrontOffice }) {
           ))}
         </div>
       </section>
+    </>
+  );
+}
 
-      {/* Beating the Projections */}
+function ProjectionsSection({ projections }: { projections: FrontOffice["projections"] }) {
+  const projMaxAbs = Math.max(1, ...projections.map((p) => Math.abs(p.perWeek)));
+  const signed = (n: number) =>
+    `${n > 0 ? "+" : ""}${n.toLocaleString("en-US", { minimumFractionDigits: 1, maximumFractionDigits: 1 })}`;
+
+  return (
       <section>
-        <SubHeading
+        <SectionHeading
           description={
             <>
               Yahoo projects every player before kickoff. This adds up how far each manager&apos;s starters beat (or
@@ -416,10 +472,10 @@ function FrontOfficeSections({ data }: { data: FrontOffice }) {
           }
         >
           BEATING THE PROJECTIONS
-        </SubHeading>
+        </SectionHeading>
         <div className="bg-white p-5 md:p-7">
           <div className="flex flex-col gap-2.5">
-            {data.projections.map((p) => {
+            {projections.map((p) => {
               const pct = (Math.abs(p.perWeek) / projMaxAbs) * 50;
               const positive = p.perWeek >= 0;
               const color = positive ? "var(--accent)" : "var(--negative)";
@@ -464,11 +520,18 @@ function FrontOfficeSections({ data }: { data: FrontOffice }) {
           </div>
         </div>
       </section>
-    </>
   );
 }
 
-function LuckSections({ data, perfect }: { data: LuckAndLineups; perfect: PerfectSeason[] }) {
+function LuckSections({
+  data,
+  projections,
+  perfect,
+}: {
+  data: LuckAndLineups;
+  projections: FrontOffice["projections"];
+  perfect: PerfectSeason[];
+}) {
   const maxAbs = Math.max(1, ...data.careers.map((c) => Math.abs(c.luck)));
   const pct = (n: number) => `${(n * 100).toFixed(1)}%`;
   const signed = (n: number) => `${n > 0 ? "+" : ""}${n.toFixed(1)}`;
@@ -622,6 +685,8 @@ function LuckSections({ data, perfect }: { data: LuckAndLineups; perfect: Perfec
           A few bench players have no known position and can&apos;t be moved, so the best lineup is slightly understated.
         </p>
       </section>
+
+      <ProjectionsSection projections={projections} />
 
       <PerfectLineups seasons={perfect} />
     </>
@@ -804,14 +869,17 @@ function StatsContent({
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const tabParam = searchParams.get("tab");
+  // "waiver" was its own tab briefly; old links land on Front Office, where it lives now.
   const activeTab: TabId =
-    tabParam === "records" ||
-    tabParam === "seasons" ||
-    tabParam === "office" ||
-    tabParam === "waiver" ||
-    tabParam === "luck"
-      ? tabParam
-      : "rankings";
+    tabParam === "waiver"
+      ? "office"
+      : tabParam === "rankings" ||
+          tabParam === "records" ||
+          tabParam === "seasons" ||
+          tabParam === "office" ||
+          tabParam === "luck"
+        ? tabParam
+        : "highlights";
 
   function setTab(tab: TabId) {
     router.replace(`${pathname}?tab=${tab}`, { scroll: false });
@@ -830,7 +898,6 @@ function StatsContent({
   const seasonStandings = getSeasonStandings(selectedSeason);
   const blowouts = getBlowouts(10);
   const closestGames = getClosestGames(10);
-  const luckIndex = getLuckIndex();
   const consistency = getManagerConsistency();
   const playoffStats = getPlayoffStats();
 
@@ -842,8 +909,43 @@ function StatsContent({
 
   const leaderboard = [...managerStats].sort((a, b) => b.totalWins - a.totalWins);
 
-  const luckMaxAbs = Math.max(1, ...luckIndex.map((l) => Math.abs(l.luck)));
   const consistencyMax = Math.max(1, ...consistency.map((c) => c.stdDev));
+
+  const highlights = buildHighlights();
+  function buildHighlights(): Highlight[] {
+    const top = topPerformances[0];
+    const low = lowestPerformances[0];
+    const blow = blowouts[0];
+    const close = closestGames[0];
+    const sides = (g: MarginGame) =>
+      g.winner === g.team1
+        ? { w: g.team1Manager, l: g.team2Manager, ws: g.team1Score, ls: g.team2Score }
+        : { w: g.team2Manager, l: g.team1Manager, ws: g.team2Score, ls: g.team1Score };
+    const mostTitles = Math.max(...managerStats.map((m) => m.championships));
+    const titleHolders = managerStats.filter((m) => m.championships === mostTitles).map((m) => m.manager);
+    const clutch = playoffStats.filter((p) => p.playoffGames >= 6)[0];
+    const trader = frontOffice.trades[0];
+    const pickup = frontOffice.waiver.pickups[0];
+    const worstBid = frontOffice.waiver.worstBids[0];
+    const lucky = luck.careers[0];
+    const lineup = [...luck.lineups].sort((a, b) => b.efficiency - a.efficiency)[0];
+    const flipped = perfect.filter((p) => p.real.champion !== p.perfect.champion);
+    const cards: (Highlight | false | undefined)[] = [
+      top && { label: "TOP SCORE EVER", value: top.score.toFixed(2), tone: "good", who: top.manager, detail: `${top.season} week ${top.week} vs ${top.opponent}`, tab: "records" },
+      low && { label: "LOWEST SCORE EVER", value: low.score.toFixed(2), tone: "bad", who: low.manager, detail: `${low.season} week ${low.week} vs ${low.opponent}`, tab: "records" },
+      blow && { label: "BIGGEST BLOWOUT", value: `+${blow.margin.toFixed(1)}`, who: sides(blow).w, detail: `${sides(blow).ws.toFixed(1)}-${sides(blow).ls.toFixed(1)} over ${sides(blow).l}, ${blow.season} week ${blow.week}`, tab: "records" },
+      close && { label: "CLOSEST GAME", value: close.margin.toFixed(2), who: sides(close).w, detail: `${sides(close).ws.toFixed(2)}-${sides(close).ls.toFixed(2)} over ${sides(close).l}, ${close.season} week ${close.week}`, tab: "records" },
+      { label: "MOST TITLES", value: String(mostTitles), who: titleHolders.join(" & "), detail: `Championships since ${seasons[seasons.length - 1]}`, tab: "rankings" },
+      clutch && { label: "CLUTCH KING", value: `+${clutch.clutchRating.toFixed(1)}`, tone: "good", who: clutch.manager, detail: `${clutch.playoffPPG.toFixed(1)} points per playoff game vs ${clutch.regularPPG.toFixed(1)} in the regular season`, tab: "rankings" },
+      trader && { label: "BEST TRADER", value: `+${Math.round(trader.net).toLocaleString("en-US")}`, tone: "good", who: trader.manager, detail: `Net starting points across ${trader.trades} trades (${trader.wins}-${trader.losses})`, tab: "office" },
+      pickup && { label: "BEST PICKUP EVER", value: `+${pickup.aboveAvg.toFixed(1)}`, tone: "good", who: pickup.player, detail: `${pickup.manager}, ${pickup.season}: points above a typical starter`, tab: "office" },
+      worstBid && { label: "WORST FAAB BID", value: `$${worstBid.faab}`, tone: "bad", who: worstBid.player, detail: `${worstBid.manager}, ${worstBid.season}: ${worstBid.starts ? `${worstBid.starts} starts, never beat a typical starter` : "never started"}`, tab: "office" },
+      lucky && { label: "LUCKIEST CAREER", value: `+${lucky.luck.toFixed(1)}%`, tone: "good", who: lucky.manager, detail: `Real win % above what all-play says his scores earned`, tab: "luck" },
+      lineup && { label: "BEST LINEUP SETTER", value: `${(lineup.efficiency * 100).toFixed(1)}%`, tone: "good", who: lineup.manager, detail: `Share of his best possible lineup's points he actually started`, tab: "luck" },
+      flipped.length > 0 && { label: "TITLES PERFECT LINEUPS FLIP", value: `${flipped.length} of ${perfect.length}`, who: `${flipped[0].season}: ${flipped[0].perfect.champion}`, detail: `would have beaten real champion ${flipped[0].real.champion}`, tab: "luck" },
+    ];
+    return cards.filter((c): c is Highlight => Boolean(c));
+  }
 
   const champBars = [...championsData].reverse();
   const champMin = Math.min(...championsData.map((c) => c.points)) - 100;
@@ -929,7 +1031,7 @@ function StatsContent({
       </header>
 
       {/* Section picker */}
-      <div className="bg-[var(--background)] border-b border-[var(--rule)]">
+      <div id="stats-tabs" className="bg-[var(--background)] border-b border-[var(--rule)] scroll-mt-[70px]">
         <div className="max-w-[1160px] mx-auto px-4 md:px-10 pt-5 md:pt-7">
           <div className="grid grid-cols-[repeat(auto-fit,minmax(210px,1fr))] lg:grid-cols-6 gap-0.5 bg-[var(--rule)]">
             {TABS.map((tab) => {
@@ -962,6 +1064,16 @@ function StatsContent({
       </div>
 
       <main className="max-w-[1160px] mx-auto px-4 md:px-10 py-8 md:py-[52px] pb-14 md:pb-[88px] flex flex-col gap-9 md:gap-14">
+        {activeTab === "highlights" && (
+          <Highlights
+            cards={highlights}
+            onOpen={(tab) => {
+              setTab(tab);
+              document.getElementById("stats-tabs")?.scrollIntoView({ behavior: "smooth" });
+            }}
+          />
+        )}
+
         {activeTab === "rankings" && (
           <>
             {/* Manager Leaderboard */}
@@ -1021,71 +1133,6 @@ function StatsContent({
                     </div>
                   </div>
                 ))}
-              </div>
-            </section>
-
-            {/* Luck Index */}
-            <section>
-              <SubHeading
-                description={
-                  <>
-                    Scoring a lot should win you games. This compares the wins each manager <em>actually</em> got
-                    against the wins their scoring deserved — so a green bar means favourable matchups, and a red
-                    bar means they scored well and lost anyway.
-                  </>
-                }
-              >
-                LUCK INDEX
-              </SubHeading>
-              <div className="bg-white p-5 md:p-7">
-                <div className="flex flex-col gap-2.5">
-                  {luckIndex.map((l) => {
-                    const pct = (Math.abs(l.luck) / luckMaxAbs) * 50;
-                    const positive = l.luck >= 0;
-                    const color = positive ? "var(--accent)" : "var(--negative)";
-                    return (
-                      <div key={l.manager} className="flex items-center gap-2.5">
-                        <div
-                          className="w-[60px] md:w-[86px] text-[10px] text-[var(--body-text)] text-right truncate shrink-0"
-                          style={{ fontFamily: "var(--font-geist-mono)" }}
-                        >
-                          {l.manager}
-                        </div>
-                        <div className="flex-1 relative h-[18px] bg-[var(--background)]">
-                          <div className="absolute inset-y-0 left-1/2 w-px bg-[var(--rule)]" />
-                          <div
-                            className="absolute top-0 h-[18px]"
-                            style={{
-                              left: positive ? "50%" : `${50 - pct}%`,
-                              width: `${pct}%`,
-                              background: color,
-                            }}
-                          />
-                        </div>
-                        <div
-                          className="w-10 text-[10px] font-semibold"
-                          style={{ fontFamily: "var(--font-geist-mono)", color }}
-                        >
-                          {positive ? "+" : ""}
-                          {l.luck.toFixed(1)}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-                <div
-                  className="flex gap-5 mt-[18px] pt-3.5 border-t border-[var(--hairline)] text-[9.5px] tracking-[.1em] text-[var(--muted-light)] flex-wrap"
-                  style={{ fontFamily: "var(--font-geist-mono)" }}
-                >
-                  <span className="flex items-center gap-1.5">
-                    <span className="w-2.5 h-2.5 bg-[var(--accent)]" />
-                    WON MORE THAN EXPECTED
-                  </span>
-                  <span className="flex items-center gap-1.5">
-                    <span className="w-2.5 h-2.5 bg-[var(--negative)]" />
-                    UNLUCKY WITH MATCHUPS
-                  </span>
-                </div>
               </div>
             </section>
 
@@ -1518,9 +1565,13 @@ function StatsContent({
           </>
         )}
 
-        {activeTab === "waiver" && <WaiverSections data={frontOffice.waiver} />}
-        {activeTab === "office" && <FrontOfficeSections data={frontOffice} />}
-        {activeTab === "luck" && <LuckSections data={luck} perfect={perfect} />}
+        {activeTab === "office" && (
+          <>
+            <FrontOfficeSections data={frontOffice} />
+            <WaiverSections data={frontOffice.waiver} />
+          </>
+        )}
+        {activeTab === "luck" && <LuckSections data={luck} projections={frontOffice.projections} perfect={perfect} />}
 
         {/* Footer */}
         <div

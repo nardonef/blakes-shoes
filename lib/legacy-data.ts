@@ -1,6 +1,7 @@
 import { champions, h2hRecords, matchups, standings } from "@/lib/stats-data";
 
 import type { Champion, Standing, H2HRecord, Matchup } from "@/types/stats";
+import { getAllPlaySeasons } from "@/lib/luck-lineups-data";
 
 // Current league members. Their Yahoo account names are merged into these full names in
 // lib/managers.ts, so the data from lib/stats-data already uses them.
@@ -29,10 +30,7 @@ function ownerNamed(name: string): Owner | undefined {
   return CURRENT_OWNERS.find((o) => o.name === name);
 }
 
-// URL-safe anchor slug for a manager's display name, e.g. "Jake Slagle" -> "mgr-jake-slagle".
-export function slug(name: string): string {
-  return "mgr-" + name.toLowerCase().replace(/[^a-z0-9]+/g, "-");
-}
+export { slug } from "@/lib/legacy-slug";
 
 export interface SeasonLine {
   year: number;
@@ -104,22 +102,9 @@ export interface ManagerLegacy {
 }
 
 export function getManagerLegacies(): ManagerLegacy[] {
-  // League-wide average points per regular-season game, used as the
-  // baseline for the luck index (same method as the site-wide stats page).
-  let leagueTotalPoints = 0;
-  let leagueTotalGames = 0;
-  matchups.forEach((m) => {
-    if (m.matchup_type !== "regular") return;
-    if (m.team1_score > 0) {
-      leagueTotalPoints += m.team1_score;
-      leagueTotalGames += 1;
-    }
-    if (m.team2_score > 0) {
-      leagueTotalPoints += m.team2_score;
-      leagueTotalGames += 1;
-    }
-  });
-  const leagueAvgPPG = leagueTotalPoints / leagueTotalGames;
+  // Luck is all-play based, the same measure as Stats > Luck & Lineups: real regular-season wins
+  // minus the wins your weekly scores would have earned against the whole league.
+  const allPlay = getAllPlaySeasons();
 
   return CURRENT_OWNERS.map((owner) => {
     const isOwner = (name: string) => name === owner.name;
@@ -234,10 +219,9 @@ export function getManagerLegacies(): ManagerLegacy[] {
         : 0;
     const clutchRating = playoffGamesList.length > 0 ? playoffPPG - regularPPG : 0;
 
-    // Luck index: actual regular-season wins vs. expected wins given scoring
-    const expectedWinRate = regularPPG / (2 * leagueAvgPPG);
-    const expectedWins = regularGames.length > 0 ? expectedWinRate * regularGames.length : 0;
-    const luck = regularGames.length > 0 ? regularWins - expectedWins : 0;
+    const mine = allPlay.filter((s) => s.manager === owner.name);
+    const expectedWins = mine.reduce((a, s) => a + s.expectedWins, 0);
+    const luck = mine.reduce((a, s) => a + s.wins, 0) - expectedWins;
 
     // Consistency: standard deviation of weekly scores
     const allScores = games_.map((g) => g.score);

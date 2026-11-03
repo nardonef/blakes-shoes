@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { getSeasons, getHallOfChampions } from "@/lib/stats-data";
-import { slug } from "@/lib/legacy-data";
+import { slug } from "@/lib/legacy-slug";
 
 // Data structure matching the mockup
 const owners = [

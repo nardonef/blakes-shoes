@@ -1,7 +1,6 @@
 import { describe, it, expect } from "vitest";
 import {
   getManagerStats,
-  getLuckIndex,
   getManagerConsistency,
   getPlayoffStats,
   getHallOfChampions,
@@ -38,8 +37,8 @@ describe("account merging across stats aggregators", () => {
     for (const account of rawAccounts) expect(stats.find((s) => s.manager === account)).toBeUndefined();
   });
 
-  it("getLuckIndex, getManagerConsistency, and getPlayoffStats never key on a raw account name", () => {
-    for (const list of [getLuckIndex(), getManagerConsistency(), getPlayoffStats()]) {
+  it("getManagerConsistency and getPlayoffStats never key on a raw account name", () => {
+    for (const list of [getManagerConsistency(), getPlayoffStats()]) {
       for (const account of rawAccounts) {
         expect(list.find((r) => r.manager === account)).toBeUndefined();
       }
