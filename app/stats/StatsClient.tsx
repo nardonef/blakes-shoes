@@ -34,6 +34,7 @@ import {
 } from "@/lib/stats-data";
 import type { FrontOffice } from "@/lib/front-office-data";
 import type { LuckAndLineups } from "@/lib/luck-lineups-data";
+import type { PerfectSeason } from "@/lib/perfect-lineup-data";
 
 type TabId = "rankings" | "records" | "seasons" | "office" | "luck";
 
@@ -344,7 +345,7 @@ function FrontOfficeSections({ data }: { data: FrontOffice }) {
   );
 }
 
-function LuckSections({ data }: { data: LuckAndLineups }) {
+function LuckSections({ data, perfect }: { data: LuckAndLineups; perfect: PerfectSeason[] }) {
   const maxAbs = Math.max(1, ...data.careers.map((c) => Math.abs(c.luck)));
   const pct = (n: number) => `${(n * 100).toFixed(1)}%`;
   const signed = (n: number) => `${n > 0 ? "+" : ""}${n.toFixed(1)}`;
@@ -498,7 +499,132 @@ function LuckSections({ data }: { data: LuckAndLineups }) {
           A few bench players have no known position and can&apos;t be moved, so the best lineup is slightly understated.
         </p>
       </section>
+
+      <PerfectLineups seasons={perfect} />
     </>
+  );
+}
+
+function PerfectLineups({ seasons }: { seasons: PerfectSeason[] }) {
+  const [year, setYear] = useState(seasons[0]?.season);
+  const changed = seasons.filter((s) => s.real.champion !== s.perfect.champion).length;
+  const chosen = seasons.find((s) => s.season === year) ?? seasons[0];
+  if (!chosen) return null;
+  const realByManager = new Map(chosen.real.teams.map((t) => [t.manager, t]));
+  const record = (t: { wins: number; losses: number; ties: number }) => `${t.wins}-${t.losses}${t.ties ? `-${t.ties}` : ""}`;
+  const mono = { fontFamily: "var(--font-geist-mono)" };
+  const titleCols = "grid-cols-[52px_minmax(0,1fr)_minmax(0,1fr)] md:grid-cols-[90px_minmax(0,1fr)_minmax(0,1fr)]";
+  const rankCols = "grid-cols-[28px_minmax(0,1fr)_64px_64px] md:grid-cols-[44px_minmax(0,1fr)_150px_150px]";
+
+  return (
+    <section>
+      <SectionHeading
+        description={
+          <>
+            What if every manager had started their best possible lineup every week? We rescored both sides of every
+            game, replayed the real schedule, and ran the playoff bracket the way the league did (no reseeding).{" "}
+            <strong>
+              {changed} of {seasons.length} titles change hands.
+            </strong>
+          </>
+        }
+      >
+        PERFECT LINEUPS
+      </SectionHeading>
+      <div
+        className={`grid ${titleCols} bg-[#151515] text-[#f5f5f0] text-[8px] md:text-[9.5px] font-semibold tracking-[.06em] md:tracking-[.1em]`}
+        style={mono}
+      >
+        <div className="py-[11px] pl-1.5 md:pl-3">SEASON</div>
+        <div className="py-[11px] px-1 md:px-2">REAL CHAMPION</div>
+        <div className="py-[11px] px-1 md:px-2">PERFECT-LINEUP CHAMPION</div>
+      </div>
+      <div className="bg-white">
+        {seasons.map((s) => {
+          const flipped = s.real.champion !== s.perfect.champion;
+          return (
+            <div key={s.season} className={`grid ${titleCols} border-b border-[var(--hairline)] items-center text-[11px] md:text-[13.5px]`}>
+              <div className="py-[11px] pl-1.5 md:pl-3 tabular-nums text-[var(--body-text)]">{s.season}</div>
+              <div className="py-[11px] px-1 md:px-2 text-[#151515] truncate">{s.real.champion}</div>
+              <div
+                className={`py-[11px] px-1 md:px-2 truncate ${flipped ? "font-semibold text-[var(--accent)]" : "text-[var(--muted-light)]"}`}
+              >
+                {flipped ? s.perfect.champion : "Same"}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      <div className="flex items-center gap-3 flex-wrap mt-8 mb-3">
+        <span className="text-[10.5px] tracking-[.08em] text-[var(--muted-light)]" style={mono}>
+          RE-RANKED SEASON
+        </span>
+        <select
+          value={chosen.season}
+          onChange={(e) => setYear(Number(e.target.value))}
+          className="bg-[#151515] text-white border-none px-3.5 py-2.5 text-[11px] font-semibold tracking-[.12em] focus:outline-none"
+          style={mono}
+        >
+          {seasons.map((s) => (
+            <option key={s.season} value={s.season}>
+              {s.season}
+            </option>
+          ))}
+        </select>
+      </div>
+      <div
+        className={`grid ${rankCols} bg-[#151515] text-[#f5f5f0] text-[8px] md:text-[9.5px] font-semibold tracking-[.06em] md:tracking-[.1em]`}
+        style={mono}
+      >
+        <div className="py-[11px] pl-1.5 md:pl-3">SEED</div>
+        <div className="py-[11px] px-1 md:px-2">MANAGER</div>
+        <div className="py-[11px] px-0.5 md:px-1 text-right">PERFECT</div>
+        <div className="py-[11px] pr-1.5 pl-0.5 md:pr-3 md:pl-1 text-right">REAL</div>
+      </div>
+      <div className="bg-white">
+        {chosen.perfect.teams.map((t) => {
+          const real = realByManager.get(t.manager)!;
+          const move = real.seed - t.seed;
+          return (
+            <div key={t.manager} className={`grid ${rankCols} border-b border-[var(--hairline)] items-center text-[11px] md:text-[13.5px]`}>
+              <div
+                className="py-[11px] pl-1.5 md:pl-3 text-[15px] md:text-[20px] leading-none"
+                style={{ fontFamily: "var(--font-bebas-neue)", color: t.seed <= 3 ? "var(--accent)" : "var(--dim)" }}
+              >
+                {t.seed}
+              </div>
+              <div className="py-[11px] px-1 md:px-2 min-w-0">
+                <div className="font-semibold text-[#151515] truncate">{t.manager}</div>
+                <div className="text-[9.5px] md:text-[10px] tracking-[.06em] text-[var(--muted-light)] truncate" style={mono}>
+                  {t.manager === chosen.perfect.champion ? "PERFECT-LINEUP CHAMP" : ""}
+                  {t.manager === chosen.perfect.champion && t.manager === chosen.real.champion ? " · " : ""}
+                  {t.manager === chosen.real.champion ? "REAL CHAMP" : ""}
+                </div>
+              </div>
+              <div className="py-[11px] px-0.5 md:px-1 text-right tabular-nums font-semibold text-[#151515]">
+                {record(t)}
+                <span className="hidden md:inline font-normal text-[var(--muted-light)]"> · {Math.round(t.pointsFor).toLocaleString("en-US")}</span>
+              </div>
+              <div className="py-[11px] pr-1.5 pl-0.5 md:pr-3 md:pl-1 text-right tabular-nums text-[var(--body-text)]">
+                {record(real)} <span className="text-[var(--muted-light)]">#{real.seed}</span>
+                {move !== 0 && (
+                  <span className="hidden md:inline font-semibold" style={{ color: move > 0 ? "var(--accent)" : "var(--negative)" }}>
+                    {" "}
+                    {move > 0 ? "▲" : "▼"}
+                    {Math.abs(move)}
+                  </span>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+      <p className="text-[12px] text-[var(--muted-light)] mt-2.5 max-w-[68ch]">
+        Seeds are by record, then points. Perfect records count every team&apos;s best lineup, so everyone scores more;
+        ▲/▼ is how many seeds a team moved. Replaying the real scores this way reproduces every actual champion.
+      </p>
+    </section>
   );
 }
 
@@ -526,15 +652,31 @@ function CustomTooltip({
   );
 }
 
-export default function StatsClient({ frontOffice, luck }: { frontOffice: FrontOffice; luck: LuckAndLineups }) {
+export default function StatsClient({
+  frontOffice,
+  luck,
+  perfect,
+}: {
+  frontOffice: FrontOffice;
+  luck: LuckAndLineups;
+  perfect: PerfectSeason[];
+}) {
   return (
     <Suspense fallback={null}>
-      <StatsContent frontOffice={frontOffice} luck={luck} />
+      <StatsContent frontOffice={frontOffice} luck={luck} perfect={perfect} />
     </Suspense>
   );
 }
 
-function StatsContent({ frontOffice, luck }: { frontOffice: FrontOffice; luck: LuckAndLineups }) {
+function StatsContent({
+  frontOffice,
+  luck,
+  perfect,
+}: {
+  frontOffice: FrontOffice;
+  luck: LuckAndLineups;
+  perfect: PerfectSeason[];
+}) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -1250,7 +1392,7 @@ function StatsContent({ frontOffice, luck }: { frontOffice: FrontOffice; luck: L
         )}
 
         {activeTab === "office" && <FrontOfficeSections data={frontOffice} />}
-        {activeTab === "luck" && <LuckSections data={luck} />}
+        {activeTab === "luck" && <LuckSections data={luck} perfect={perfect} />}
 
         {/* Footer */}
         <div
