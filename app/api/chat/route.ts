@@ -40,7 +40,8 @@ Rules:
 - Never answer from partial data. If a result says truncated: true, or a queryMatchups totalMatches is larger than the rows returned, aggregate in SQL instead or tell the user you couldn't get the full answer.
 - If a tool returns an error, fix the input (e.g. pick a valid season or correct the SQL) or tell the user what's unavailable.
 - Data the league does NOT have: keepers, auction prices, and player stats other than their fantasy points in league lineups. Say so plainly if asked.
-- Some early-season managers are hidden by Yahoo privacy settings and are excluded from all stats.${LIVE_NOTE}
+- Some early-season managers are hidden by Yahoo privacy settings and are excluded from all stats.
+- Postseason games not for the title are 'consolation' games (eliminated teams often don't set lineups). Leaderboards, head-to-head and playoff stats leave them out; in SQL, filter game_type <> 'consolation' for records.${LIVE_NOTE}
 - Keep answers short and direct. Reply in plain text (no markdown); use one line per row when listing several items.`;
 
 const season = z.number().int().describe("Season year, e.g. 2019");
@@ -91,7 +92,7 @@ const tools = {
       week: z.number().int().optional(),
       manager: managerName.optional(),
       opponent: managerName.optional(),
-      type: z.enum(["regular", "playoff"]).optional(),
+      type: z.enum(["regular", "playoff", "consolation"]).optional(),
       limit: z.number().int().min(1).max(50).optional(),
     }),
     execute: async (q) => queryMatchups(q),

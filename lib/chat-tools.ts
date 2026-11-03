@@ -270,7 +270,7 @@ export interface MatchupQuery {
   week?: number;
   manager?: string;
   opponent?: string;
-  type?: "regular" | "playoff";
+  type?: "regular" | "playoff" | "consolation";
   limit?: number;
 }
 
