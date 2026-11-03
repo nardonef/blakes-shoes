@@ -1,7 +1,9 @@
 import championsData from "@/data/champions.json";
 import standingsData from "@/data/standings.json";
 import matchupsData from "@/data/matchups.json";
+import leagueInfoData from "@/data/league_info.json";
 import { HIDDEN, personFor, personForAccount } from "@/lib/managers";
+import { classifyGames } from "@/lib/postseason";
 
 import type {
   Champion,
@@ -29,12 +31,17 @@ export const standings: Standing[] = (standingsData as Standing[]).map((s) => ({
   ...s,
   manager_name: personFor(s.season_year, s.team_name, s.manager_name),
 }));
-export const matchups: Matchup[] = (matchupsData as Matchup[]).map((m) => ({
+// Postseason games not for the title are "consolation" (lib/postseason.ts).
+const gameTypes = classifyGames(matchupsData, leagueInfoData);
+export const matchups: Matchup[] = (matchupsData as Matchup[]).map((m, i) => ({
   ...m,
+  matchup_type: gameTypes[i],
   team1_manager: personFor(m.season_year, m.team1_name, m.team1_manager),
   team2_manager: personFor(m.season_year, m.team2_name, m.team2_manager),
 }));
-export const h2hRecords: H2HRecord[] = headToHead(matchups);
+/** Games that count in stats: consolation games are left out, since teams often stop setting lineups. */
+export const statGames: Matchup[] = matchups.filter((m) => m.matchup_type !== "consolation");
+export const h2hRecords: H2HRecord[] = headToHead(statGames);
 
 /** All-time record between every pair of managers, playoffs included. */
 function headToHead(games: Matchup[]): H2HRecord[] {
@@ -133,7 +140,7 @@ export function getManagerStats(): ManagerStats[] {
 export function getSeasonScoringTrends(): SeasonScoringTrend[] {
   const seasonMap = new Map<number, { scores: number[] }>();
 
-  matchups.forEach((m) => {
+  statGames.forEach((m) => {
     const existing = seasonMap.get(m.season_year);
     const scores = [m.team1_score, m.team2_score].filter((s) => s > 0);
     if (existing) {
@@ -173,7 +180,7 @@ export function getScoreDistribution(): WeeklyScoreDistribution[] {
   ];
 
   const allScores: number[] = [];
-  matchups.forEach((m) => {
+  statGames.forEach((m) => {
     if (m.team1_score > 0) allScores.push(m.team1_score);
     if (m.team2_score > 0) allScores.push(m.team2_score);
   });
@@ -196,7 +203,7 @@ export function getScoreDistribution(): WeeklyScoreDistribution[] {
 export function getTopPerformances(limit = 10): TopPerformance[] {
   const performances: TopPerformance[] = [];
 
-  matchups.forEach((m) => {
+  statGames.forEach((m) => {
     performances.push({
       season: m.season_year,
       week: m.week,
@@ -220,7 +227,7 @@ export function getTopPerformances(limit = 10): TopPerformance[] {
   });
 
   return performances
-    .filter((p) => p.score > 0)
+    .filter((p) => p.score > 0 && isVisibleManager(p.manager))
     .sort((a, b) => b.score - a.score)
     .slice(0, limit);
 }
@@ -229,7 +236,7 @@ export function getTopPerformances(limit = 10): TopPerformance[] {
 export function getLowestPerformances(limit = 10): TopPerformance[] {
   const performances: TopPerformance[] = [];
 
-  matchups.forEach((m) => {
+  statGames.forEach((m) => {
     performances.push({
       season: m.season_year,
       week: m.week,
@@ -253,7 +260,7 @@ export function getLowestPerformances(limit = 10): TopPerformance[] {
   });
 
   return performances
-    .filter((p) => p.score > 0)
+    .filter((p) => p.score > 0 && isVisibleManager(p.manager))
     .sort((a, b) => a.score - b.score)
     .slice(0, limit);
 }
@@ -292,7 +299,7 @@ export function getChampionsChartData() {
 
 // Get blowout games (largest margins)
 export function getBlowouts(limit = 10): MarginGame[] {
-  return matchups
+  return statGames
     .filter(
       (m) =>
         m.team1_score > 0 &&
@@ -319,7 +326,7 @@ export function getBlowouts(limit = 10): MarginGame[] {
 
 // Get closest games (smallest margins, excluding ties)
 export function getClosestGames(limit = 10): MarginGame[] {
-  return matchups
+  return statGames
     .filter(
       (m) =>
         m.team1_score > 0 &&
@@ -349,7 +356,7 @@ export function getClosestGames(limit = 10): MarginGame[] {
 export function getManagerConsistency(): ManagerConsistency[] {
   const managerScores = new Map<string, number[]>();
 
-  matchups.forEach((m) => {
+  statGames.forEach((m) => {
     if (m.team1_score > 0 && isVisibleManager(m.team1_manager)) {
       const manager = resolveManagerName(m.team1_manager);
       const scores = managerScores.get(manager) || [];
@@ -393,7 +400,7 @@ export function getPlayoffStats(): PlayoffStats[] {
     { wins: number; losses: number; points: number; games: number }
   >();
 
-  matchups.forEach((m) => {
+  statGames.forEach((m) => {
     const isPlayoff = m.matchup_type === "playoff";
 
     // Team 1

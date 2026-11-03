@@ -1,4 +1,4 @@
-import { champions, h2hRecords, matchups, standings } from "@/lib/stats-data";
+import { champions, h2hRecords, standings, statGames } from "@/lib/stats-data";
 
 import type { Champion, Standing, H2HRecord, Matchup } from "@/types/stats";
 import { getAllPlaySeasons } from "@/lib/luck-lineups-data";
@@ -152,9 +152,9 @@ export function getManagerLegacies(): ManagerLegacy[] {
       }));
     const thirds = champions.filter((c) => isOwner(c.third_place_manager)).length;
 
-    // Game log across all matchups (regular + playoff)
+    // Game log across regular-season and title-bracket games (consolation games don't count)
     const games_: GameResult[] = [];
-    matchups.forEach((m: Matchup) => {
+    statGames.forEach((m: Matchup) => {
       if (isOwner(m.team1_manager) && m.team1_score > 0) {
         games_.push({
           season: m.season_year,

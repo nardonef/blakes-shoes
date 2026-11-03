@@ -22,7 +22,7 @@ const HIDDEN_LABEL = "Hidden manager";
 export interface GameRow {
   season: number;
   week: number;
-  game_type: "regular" | "playoff";
+  game_type: "regular" | "playoff" | "consolation";
   manager: string;
   team: string;
   points: number;
@@ -103,7 +103,7 @@ export function buildLeagueTables(): LeagueTables {
       games.push({
         season: m.season_year,
         week: m.week,
-        game_type: m.matchup_type === "playoff" ? "playoff" : "regular",
+        game_type: m.matchup_type,
         manager: displayName(mgr),
         team,
         points: pts,
@@ -191,7 +191,7 @@ export function buildLeagueTables(): LeagueTables {
 
 // Shown to the model in the runSql tool description.
 export const SQL_SCHEMA = `games: one row per team per game (both sides of every matchup)
-  season INTEGER, week INTEGER, game_type TEXT ('regular'|'playoff'),
+  season INTEGER, week INTEGER, game_type TEXT ('regular'|'playoff'|'consolation'; playoff = title bracket incl. 3rd-place game),
   manager TEXT, team TEXT, points REAL,
   opponent TEXT, opponent_team TEXT, opponent_points REAL,
   result TEXT ('W'|'L'|'T', from manager's side), margin REAL (points - opponent_points)
