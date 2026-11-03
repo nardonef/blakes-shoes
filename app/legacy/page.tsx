@@ -162,6 +162,8 @@ function worstMomentBlurb(legacy: ManagerLegacy): string {
   return parts.join(" ");
 }
 
+export const metadata = { title: "League Legacy | Blake's Shoes" };
+
 export default function LegacyPage() {
   const legacies = getManagerLegacies().sort((a, b) => b.winPct - a.winPct);
   const guys = getMyGuys();

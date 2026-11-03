@@ -20,9 +20,15 @@ const bebasNeue = Bebas_Neue({
   weight: "400",
 });
 
+const description = "Blake's Shoes fantasy football league: every season since 2012, stats, rosters, drafts and legacies.";
+
 export const metadata: Metadata = {
+  metadataBase: new URL("https://blakesshoes.org"),
   title: "Blake's Shoes - Fantasy Football League",
-  description: "Blake's Shoes fantasy football league official website - Established 2012",
+  description,
+  // Link previews (group chats, iMessage, Slack); the image is app/opengraph-image.tsx.
+  openGraph: { siteName: "Blake's Shoes", type: "website", description },
+  twitter: { card: "summary_large_image" },
 };
 
 export default function RootLayout({
