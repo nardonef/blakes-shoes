@@ -76,7 +76,7 @@ const tools = {
   }),
   getRecords: tool({
     description:
-      "League-wide leaderboards: highest/lowest single-week scores, biggest blowouts, closest games, luck index (wins vs expected), scoring consistency (lowest std dev first), playoff performance (clutch rating), winless season starts (games without a win from week 1, ties count as winless), and longest win/losing streaks within a regular season.",
+      "League-wide leaderboards: highest/lowest single-week scores, biggest blowouts, closest games, schedule luck (real win % minus all-play win %, i.e. vs every team every week; regular season), scoring consistency (lowest std dev first), playoff performance (clutch rating), winless season starts (games without a win from week 1, ties count as winless), and longest win/losing streaks within a regular season.",
     inputSchema: z.object({
       kind: z.enum(RECORD_KINDS),
       limit: z.number().int().min(1).max(25).default(10),

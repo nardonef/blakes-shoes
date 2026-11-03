@@ -13,7 +13,6 @@ import type {
   WeeklyScoreDistribution,
   TopPerformance,
   MarginGame,
-  LuckIndex,
   ManagerConsistency,
   PlayoffStats,
 } from "@/types/stats";
@@ -344,76 +343,6 @@ export function getClosestGames(limit = 10): MarginGame[] {
     }))
     .sort((a, b) => a.margin - b.margin)
     .slice(0, limit);
-}
-
-// Get luck index for all managers
-export function getLuckIndex(): LuckIndex[] {
-  const managerData = new Map<
-    string,
-    { wins: number; games: number; pointsFor: number }
-  >();
-
-  // Calculate league average points per game
-  let totalPoints = 0;
-  let totalGames = 0;
-
-  matchups.forEach((m) => {
-    if (
-      m.team1_score > 0 &&
-      m.matchup_type === "regular" &&
-      isVisibleManager(m.team1_manager)
-    ) {
-      const manager = resolveManagerName(m.team1_manager);
-      const data = managerData.get(manager) || {
-        wins: 0,
-        games: 0,
-        pointsFor: 0,
-      };
-      data.games += 1;
-      data.pointsFor += m.team1_score;
-      if (m.winner === m.team1_name) data.wins += 1;
-      managerData.set(manager, data);
-      totalPoints += m.team1_score;
-      totalGames += 1;
-    }
-    if (
-      m.team2_score > 0 &&
-      m.matchup_type === "regular" &&
-      isVisibleManager(m.team2_manager)
-    ) {
-      const manager = resolveManagerName(m.team2_manager);
-      const data = managerData.get(manager) || {
-        wins: 0,
-        games: 0,
-        pointsFor: 0,
-      };
-      data.games += 1;
-      data.pointsFor += m.team2_score;
-      if (m.winner === m.team2_name) data.wins += 1;
-      managerData.set(manager, data);
-      totalPoints += m.team2_score;
-      totalGames += 1;
-    }
-  });
-
-  const leagueAvgPPG = totalPoints / totalGames;
-
-  return Array.from(managerData.entries())
-    .filter(([, data]) => data.games >= 10) // Minimum 10 games
-    .map(([manager, data]) => {
-      const managerAvgPPG = data.pointsFor / data.games;
-      const expectedWinRate = managerAvgPPG / (2 * leagueAvgPPG);
-      const expectedWins = expectedWinRate * data.games;
-      return {
-        manager,
-        luck: data.wins - expectedWins,
-        actualWins: data.wins,
-        expectedWins: Math.round(expectedWins * 10) / 10,
-        gamesPlayed: data.games,
-        pointsFor: data.pointsFor,
-      };
-    })
-    .sort((a, b) => b.luck - a.luck);
 }
 
 // Get scoring consistency (standard deviation of scores)

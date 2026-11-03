@@ -108,16 +108,6 @@ export interface MarginGame {
   winner: string;
 }
 
-// Luck index data
-export interface LuckIndex {
-  manager: string;
-  luck: number;
-  actualWins: number;
-  expectedWins: number;
-  gamesPlayed: number;
-  pointsFor: number;
-}
-
 // Manager consistency data
 export interface ManagerConsistency {
   manager: string;
