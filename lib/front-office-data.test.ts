@@ -6,6 +6,7 @@ import { getAllTrades } from "./rosters-data";
 afterAll(() => stopSqlProcess());
 
 const fo = getFrontOffice();
+const top10 = fo.waiver.pickups.slice(0, 10);
 
 describe("trade records", () => {
   it("are zero-sum across the league and count every side", () => {
@@ -51,19 +52,20 @@ describe("projection beat", () => {
 
 describe("pickups and FAAB", () => {
   it("ranks the top 10 pickups by points above a typical starter at their position", () => {
-    expect(fo.pickups).toHaveLength(10);
-    expect(fo.pickups[0]).toMatchObject({ season: 2018, manager: "Blake Kozloski", player: "Patrick Mahomes", pos: "QB" });
-    expect(fo.pickups.map((p) => p.aboveAvg)).toEqual([...fo.pickups.map((p) => p.aboveAvg)].sort((a, b) => b - a));
-    for (const p of fo.pickups) {
+    expect(top10).toHaveLength(10);
+    expect(top10[0]).toMatchObject({ season: 2018, manager: "Blake Kozloski", player: "Patrick Mahomes", pos: "QB" });
+    expect(fo.waiver.pickups.map((p) => p.aboveAvg)).toEqual([...fo.waiver.pickups.map((p) => p.aboveAvg)].sort((a, b) => b - a));
+    for (const p of fo.waiver.pickups) {
+      expect(p.aboveAvg).toBeGreaterThan(0);
       expect(p.starts).toBeGreaterThan(0);
       expect(p.pos).not.toBe("");
     }
   });
 
   it("no longer lets quarterbacks crowd out every other position", () => {
-    const qbs = fo.pickups.filter((p) => p.pos === "QB").length;
+    const qbs = top10.filter((p) => p.pos === "QB").length;
     expect(qbs).toBeLessThanOrEqual(3);
-    expect(new Set(fo.pickups.map((p) => p.pos)).size).toBeGreaterThanOrEqual(3);
+    expect(new Set(top10.map((p) => p.pos)).size).toBeGreaterThanOrEqual(3);
   });
 
   it("matches Mahomes' 2018 value computed straight from the SQL tables", async () => {
@@ -84,7 +86,7 @@ describe("pickups and FAAB", () => {
       const s = [...xs].sort((a, b) => a - b);
       return s.length % 2 ? s[(s.length - 1) / 2] : (s[s.length / 2 - 1] + s[s.length / 2]) / 2;
     };
-    const mahomes = fo.pickups[0];
+    const mahomes = top10[0];
     const expected = r.rows
       .filter((row) => row.player === "Patrick Mahomes" && row.manager === "Blake Kozloski" && (row.week as number) >= mahomes.week)
       .reduce((a, row) => a + (row.pts as number) - median(byWeek.get(row.week as number)!), 0);
@@ -92,10 +94,34 @@ describe("pickups and FAAB", () => {
   });
 
   it("only rates managers who spent at least $50 of FAAB", () => {
-    expect(fo.faab.length).toBeGreaterThan(5);
-    for (const f of fo.faab) {
+    expect(fo.waiver.spending.length).toBeGreaterThan(5);
+    for (const f of fo.waiver.spending) {
       expect(f.spent).toBeGreaterThanOrEqual(50);
       expect(f.perDollar).toBeCloseTo(f.points / f.spent, 1);
     }
+  });
+});
+
+describe("waiver wire report", () => {
+  const w = fo.waiver;
+
+  it("starts FAAB in 2022 and never shows a bid over the $100 budget", () => {
+    expect(w.faabSince).toBe(2022);
+    for (const h of w.spending) {
+      expect(h.biggest.faab).toBeLessThanOrEqual(100);
+      expect(h.perSeason).toBeLessThanOrEqual(100);
+      expect(h.avgBid).toBe(Math.round((h.spent / h.bids) * 10) / 10);
+    }
+  });
+
+  it("ranks best bids by value and only includes paid bids", () => {
+    expect(w.bestBids[0]).toMatchObject({ season: 2023, manager: "Ryan Curran", player: "Kyren Williams", faab: 12 });
+    for (const b of w.bestBids) expect(b.faab).toBeGreaterThan(0);
+  });
+
+  it("lists the biggest bids on players who never beat a typical starter", () => {
+    expect(w.worstBids[0]).toMatchObject({ season: 2023, manager: "Eric Rios", player: "Khalil Shakir", faab: 100, starts: 0 });
+    for (const b of w.worstBids) expect(b.aboveAvg).toBeLessThanOrEqual(0);
+    expect(w.worstBids.map((b) => b.faab)).toEqual([...w.worstBids.map((b) => b.faab)].sort((a, b) => b - a));
   });
 });
