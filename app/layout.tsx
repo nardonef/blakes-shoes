@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Bebas_Neue } from "next/font/google";
+import Motion from "@/components/Motion";
 import NavBar from "@/components/NavBar";
 import "./globals.css";
 
@@ -30,11 +31,16 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        {/* Opt in to scroll animations before first paint, so animated content never flashes in. */}
+        <script dangerouslySetInnerHTML={{ __html: "document.documentElement.classList.add('motion')" }} />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${bebasNeue.variable} antialiased`}
       >
         <NavBar />
+        <Motion />
         {children}
       </body>
     </html>

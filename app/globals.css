@@ -30,3 +30,32 @@ body {
   color: var(--foreground);
   font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
 }
+
+/* Motion. Elements opt in: data-reveal (fades up; set --i on siblings to stagger), data-bar (grows
+   from its transform-origin) and data-count (CountUp). They start hidden here, but only once JS has
+   run (html.motion, set in the layout) and never with reduced motion; components/Motion.tsx and
+   CountUp play the entrance when they scroll into view. */
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  html.motion [data-reveal],
+  html.motion [data-count]:not([data-shown]) {
+    opacity: 0;
+  }
+  html.motion [data-bar] {
+    transform: scaleX(0);
+  }
+  .tab-fade {
+    animation: fade-in 0.25s ease-out both;
+  }
+  /* translate, not transform: the finished reveal animation holds transform. */
+  .lift {
+    transition: translate 0.2s ease, box-shadow 0.2s ease;
+  }
+  .lift:hover {
+    translate: 0 -3px;
+    box-shadow: 0 10px 24px rgb(0 0 0 / 0.08);
+  }
+}

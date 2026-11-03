@@ -3,6 +3,7 @@
 import { Suspense, useState } from "react";
 import Link from "next/link";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
+import CountUp from "@/components/CountUp";
 import {
   BarChart,
   Bar,
@@ -213,12 +214,14 @@ function Highlights({ cards, onOpen }: { cards: Highlight[]; onOpen: (tab: TabId
         HIGHLIGHTS
       </SectionHeading>
       <div className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,260px),1fr))] gap-4">
-        {cards.map((c) => (
+        {cards.map((c, i) => (
           <button
             key={c.label}
             type="button"
             onClick={() => onOpen(c.tab)}
-            className="bg-white text-left p-4 md:p-5 flex flex-col gap-1.5 border-b-2 border-transparent hover:border-[var(--accent)]"
+            data-reveal=""
+            style={{ "--i": i } as React.CSSProperties}
+            className="lift bg-white text-left p-4 md:p-5 flex flex-col gap-1.5 border-b-2 border-transparent hover:border-[var(--accent)]"
           >
             <span className="text-[10px] font-semibold tracking-[.12em] text-[var(--muted-light)]" style={mono}>
               {c.label}
@@ -230,7 +233,7 @@ function Highlights({ cards, onOpen }: { cards: Highlight[]; onOpen: (tab: TabId
                 color: c.tone === "bad" ? "var(--negative)" : c.tone === "good" ? "var(--accent)" : "#151515",
               }}
             >
-              {c.value}
+              <CountUp text={c.value} />
             </span>
             <span className="text-[15px] font-semibold text-[#151515]">{c.who}</span>
             <span className="text-[12.5px] text-[var(--body-text)] leading-[1.45]">{c.detail}</span>
@@ -490,8 +493,14 @@ function ProjectionsSection({ projections }: { projections: FrontOffice["project
                   <div className="flex-1 relative h-[18px] bg-[var(--background)]">
                     <div className="absolute inset-y-0 left-1/2 w-px bg-[var(--rule)]" />
                     <div
+                      data-bar=""
                       className="absolute top-0 h-[18px]"
-                      style={{ left: positive ? "50%" : `${50 - pct}%`, width: `${pct}%`, background: color }}
+                      style={{
+                        left: positive ? "50%" : `${50 - pct}%`,
+                        width: `${pct}%`,
+                        background: color,
+                        transformOrigin: positive ? "left" : "right",
+                      }}
                     />
                   </div>
                   <div
@@ -574,8 +583,14 @@ function LuckSections({
                   <div className="flex-1 relative h-[18px] bg-[var(--background)]">
                     <div className="absolute inset-y-0 left-1/2 w-px bg-[var(--rule)]" />
                     <div
+                      data-bar=""
                       className="absolute top-0 h-[18px]"
-                      style={{ left: positive ? "50%" : `${50 - w}%`, width: `${w}%`, background: color }}
+                      style={{
+                        left: positive ? "50%" : `${50 - w}%`,
+                        width: `${w}%`,
+                        background: color,
+                        transformOrigin: positive ? "left" : "right",
+                      }}
                     />
                   </div>
                   <div
@@ -978,7 +993,7 @@ function StatsContent({
                 SEASONS
               </div>
               <div className="text-[34px] md:text-[48px] leading-none text-[var(--accent-light)]" style={{ fontFamily: "var(--font-bebas-neue)" }}>
-                {seasons.length}
+                <CountUp text={String(seasons.length)} />
               </div>
             </div>
             <div className="bg-[var(--panel)] p-4 md:p-[22px]">
@@ -989,7 +1004,7 @@ function StatsContent({
                 TOTAL GAMES
               </div>
               <div className="text-[34px] md:text-[48px] leading-none text-[var(--accent-light)]" style={{ fontFamily: "var(--font-bebas-neue)" }}>
-                {Math.round(totalGames)}
+                <CountUp text={String(Math.round(totalGames))} />
               </div>
             </div>
             <div className="bg-[var(--panel)] p-4 md:p-[22px]">
@@ -1000,7 +1015,7 @@ function StatsContent({
                 ALL-TIME HIGH
               </div>
               <div className="text-[34px] md:text-[48px] leading-none text-[var(--accent-light)]" style={{ fontFamily: "var(--font-bebas-neue)" }}>
-                {allTimeHighScore.toFixed(1)}
+                <CountUp text={allTimeHighScore.toFixed(1)} />
               </div>
               <div
                 className="text-[9.5px] text-[var(--muted-light)] mt-1"
@@ -1017,7 +1032,7 @@ function StatsContent({
                 AVG PPG
               </div>
               <div className="text-[34px] md:text-[48px] leading-none text-[var(--accent-light)]" style={{ fontFamily: "var(--font-bebas-neue)" }}>
-                {avgPointsPerGame.toFixed(1)}
+                <CountUp text={avgPointsPerGame.toFixed(1)} />
               </div>
               <div
                 className="text-[9.5px] text-[var(--muted-light)] mt-1"
@@ -1063,7 +1078,10 @@ function StatsContent({
         </div>
       </div>
 
-      <main className="max-w-[1160px] mx-auto px-4 md:px-10 py-8 md:py-[52px] pb-14 md:pb-[88px] flex flex-col gap-9 md:gap-14">
+      <main
+        key={activeTab}
+        className="tab-fade max-w-[1160px] mx-auto px-4 md:px-10 py-8 md:py-[52px] pb-14 md:pb-[88px] flex flex-col gap-9 md:gap-14"
+      >
         {activeTab === "highlights" && (
           <Highlights
             cards={highlights}
@@ -1153,7 +1171,8 @@ function StatsContent({
                       </div>
                       <div className="flex-1 h-[18px] bg-[var(--background)]">
                         <div
-                          className="h-[18px]"
+                          data-bar=""
+                          className="h-[18px] origin-left"
                           style={{
                             width: `${(c.stdDev / consistencyMax) * 100}%`,
                             background: i < 3 ? "var(--accent)" : "#151515",
@@ -1445,7 +1464,8 @@ function StatsContent({
                       </div>
                       <div className="flex-1 h-[22px] bg-[var(--background)]">
                         <div
-                          className="h-[22px] bg-[var(--accent)]"
+                          data-bar=""
+                          className="h-[22px] bg-[var(--accent)] origin-left"
                           style={{ width: `${((c.points - champMin) / champRange) * 100}%` }}
                         />
                       </div>

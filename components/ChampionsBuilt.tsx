@@ -44,7 +44,7 @@ export default function ChampionsBuilt({ builds }: { builds: ChampionBuild[] }) 
               </div>
             </div>
             <div className="min-w-0 flex flex-col gap-1.5">
-              <div className="flex h-[22px] gap-[2px]" role="img" aria-label={breakdown(b)}>
+              <div data-bar="" className="flex h-[22px] gap-[2px] origin-left" role="img" aria-label={breakdown(b)}>
                 {SOURCES.filter((s) => b.points[s.kind] > 0).map((s, i, arr) => {
                   const share = pct(b.points[s.kind], b.total);
                   return (

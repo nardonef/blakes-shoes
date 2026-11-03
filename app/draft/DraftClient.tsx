@@ -191,7 +191,7 @@ function Board({ model, sp, setParams }: { model: DraftModel; sp: URLSearchParam
         ].map((l) => ({ ...l, border: "#d6d6cc" }));
 
   return (
-    <main className="max-w-[1520px] mx-auto px-4 md:px-10 pt-7 pb-16 flex flex-col gap-4">
+    <main className="tab-fade max-w-[1520px] mx-auto px-4 md:px-10 pt-7 pb-16 flex flex-col gap-4">
       <div className="flex flex-wrap gap-x-5 gap-y-3 items-end justify-between">
         <div className="flex flex-wrap gap-x-5 gap-y-3 items-end">
           <label className="flex flex-col gap-1.5 w-[130px]">
@@ -472,7 +472,7 @@ function Steals({
     { title: "Busts", sub: "EARLY PICKS THAT MISSED", fg: "#a3412f", rows: topBusts(pool) },
   ];
   return (
-    <main className="max-w-[1160px] mx-auto px-4 md:px-10 pt-7 pb-16 flex flex-col gap-5">
+    <main className="tab-fade max-w-[1160px] mx-auto px-4 md:px-10 pt-7 pb-16 flex flex-col gap-5">
       <div className="flex flex-wrap gap-3 items-end">
         <label className="flex flex-col gap-1.5 w-40">
           <Label>SEASON</Label>
@@ -562,7 +562,7 @@ function Slots({ stats }: { stats: SlotStats[] }) {
     },
   ];
   return (
-    <main className="max-w-[1160px] mx-auto px-4 md:px-10 pt-7 pb-16 flex flex-col gap-5">
+    <main className="tab-fade max-w-[1160px] mx-auto px-4 md:px-10 pt-7 pb-16 flex flex-col gap-5">
       <p className="m-0 text-[13px] text-[#6b6b63] max-w-[680px]">
         How the team picking from each round-1 slot finished, over the {seasons} completed seasons. A playoff trip is a
         top-8 finish in 2012–13 and top 6 since.
@@ -679,7 +679,7 @@ function History({
   ];
 
   return (
-    <main className="max-w-[1160px] mx-auto px-4 md:px-10 pt-7 pb-16 flex flex-col gap-5">
+    <main className="tab-fade max-w-[1160px] mx-auto px-4 md:px-10 pt-7 pb-16 flex flex-col gap-5">
       <label className="flex flex-col gap-1.5 max-w-[320px]">
         <Label>MANAGER</Label>
         <Select
