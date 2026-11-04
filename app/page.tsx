@@ -1,10 +1,9 @@
-"use client";
-
-import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { getSeasons, getHallOfChampions } from "@/lib/stats-data";
 import { slug } from "@/lib/legacy-slug";
+import Countdown from "@/components/Countdown";
+import { deadlineLabel, getTradeDeadline } from "@/lib/trade-deadline";
 
 // Data structure matching the mockup
 const owners = [
@@ -33,36 +32,7 @@ const currentChampion = {
 };
 
 export default function Home() {
-  const [countdown, setCountdown] = useState({
-    days: 0,
-    hours: 0,
-    minutes: 0,
-    seconds: 0,
-  });
-
-  useEffect(() => {
-    const targetDate = new Date("November 22, 2026").getTime();
-
-    const updateCountdown = () => {
-      const now = new Date().getTime();
-      const distance = targetDate - now;
-
-      if (distance > 0) {
-        setCountdown({
-          days: Math.floor(distance / (1000 * 60 * 60 * 24)),
-          hours: Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
-          minutes: Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60)),
-          seconds: Math.floor((distance % (1000 * 60)) / 1000),
-        });
-      } else {
-        setCountdown({ days: 0, hours: 0, minutes: 0, seconds: 0 });
-      }
-    };
-
-    updateCountdown();
-    const interval = setInterval(updateCountdown, 1000);
-    return () => clearInterval(interval);
-  }, []);
+  const deadline = getTradeDeadline();
 
   const seasonCount = getSeasons().length;
   const champions = getHallOfChampions();
@@ -196,32 +166,10 @@ export default function Home() {
                 className="text-[11px] tracking-[.14em] text-[var(--muted-dark)]"
                 style={{ fontFamily: "var(--font-geist-mono)" }}
               >
-                NOV 22, 2026
+                {deadlineLabel(deadline.date)}
               </span>
             </div>
-            <div className="grid grid-cols-4 gap-1.5 md:gap-2.5">
-              {[
-                { value: countdown.days, label: "DAYS" },
-                { value: countdown.hours, label: "HRS" },
-                { value: countdown.minutes, label: "MIN" },
-                { value: countdown.seconds, label: "SEC" },
-              ].map((item) => (
-                <div key={item.label} className="bg-[var(--panel)] text-center py-2.5 md:py-[15px]">
-                  <div
-                    className="text-[32px] md:text-[52px] leading-none text-[var(--accent-light)]"
-                    style={{ fontFamily: "var(--font-bebas-neue)" }}
-                  >
-                    {String(item.value).padStart(2, "0")}
-                  </div>
-                  <div
-                    className="text-[9.5px] tracking-[.18em] text-[var(--muted-dark)] mt-1"
-                    style={{ fontFamily: "var(--font-geist-mono)" }}
-                  >
-                    {item.label}
-                  </div>
-                </div>
-              ))}
-            </div>
+            <Countdown at={deadline.at} />
           </section>
 
           <section className="bg-white p-[22px] md:p-[30px] border-l-[3px] border-[var(--accent)]">

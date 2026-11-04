@@ -130,6 +130,8 @@ function MarkerList({ items }: { items: string[] }) {
   );
 }
 
+export const metadata = { title: "Rules | Blake's Shoes" };
+
 export default function RulesPage() {
   return (
     <div className="min-h-screen" style={{ background: "var(--background)" }}>
