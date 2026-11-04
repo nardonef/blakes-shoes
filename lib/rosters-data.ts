@@ -188,14 +188,31 @@ function buildAll(): Map<number, SeasonModel> {
       if (!info.has(r.player) && !NON_POSITION_SLOTS.has(r.slot)) info.set(r.player, { pos: r.slot, nfl: "" });
     }
 
-    const startedPts = (mgr: string, player: string, fromWeek: number) => {
+    const startedPts = (mgr: string, player: string, fromWeek: number, untilWeek = Infinity) => {
       let pts = 0;
       let starts = 0;
       for (const [w, rows] of by.get(mgr) ?? []) {
-        if (w < fromWeek) continue;
+        if (w < fromWeek || w >= untilWeek) continue;
         for (const r of rows) if (r.player === player && r.started) { pts += r.points ?? 0; starts++; }
       }
       return { pts, starts };
+    };
+
+    // Week a traded player stops counting for the manager who got him: his next move off that roster,
+    // or the manager getting him again (which means he left in between, e.g. a reversed trade: Arian
+    // Foster went to Ryan Curran twice in 2014). Without this, a return was credited to both trades.
+    const untilWeek = (mgr: string, player: string, after: string) => {
+      const next = txns
+        .filter(
+          (t) =>
+            t.player === player &&
+            t.date > after &&
+            ((t.type === "drop" && t.mgr === mgr) ||
+              (t.type === "trade" && t.mgr !== mgr) ||
+              ((t.type === "trade" || t.type === "add") && t.mgr === mgr)),
+        )
+        .sort((a, b) => a.date.localeCompare(b.date))[0];
+      return next ? next.week : Infinity;
     };
 
     const grouped = new Map<number, Txn[]>();
@@ -206,7 +223,10 @@ function buildAll(): Map<number, SeasonModel> {
       for (const r of rows) {
         const side = sideMap.get(r.mgr) ?? { mgr: r.mgr, team: r.team, from: [], gets: [], total: 0, won: false };
         sideMap.set(r.mgr, side);
-        side.gets.push({ player: r.player, pos: r.pos, nfl: r.nfl, ...startedPts(r.mgr, r.player, first.week) });
+        side.gets.push({
+          player: r.player, pos: r.pos, nfl: r.nfl,
+          ...startedPts(r.mgr, r.player, first.week, untilWeek(r.mgr, r.player, first.date)),
+        });
       }
       const sides = [...sideMap.values()];
       for (const s of sides) {
