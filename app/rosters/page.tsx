@@ -1,6 +1,8 @@
 import Link from "next/link";
 import RostersSelect from "@/components/RostersSelect";
+import ScrollToId from "@/components/ScrollToId";
 import { playerHref } from "@/lib/player-slug";
+import { tradeHref } from "@/lib/trade-href";
 import {
   defaultManager,
   getAllTrades,
@@ -31,7 +33,6 @@ const ord = (n: number) => {
 const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? "" : "s"}`;
 const acqColor = (k: AcqKind) => (k === "trade" ? "#8a5a14" : k === "draft" ? "#6b6b63" : "var(--accent)");
 const acqText = (r: RosterRow) => r.acq.label + (r.acq.week ? ` · wk ${r.acq.week}` : "");
-const tradeHref = (id: string) => `/rosters?tab=trades&trade=${id}#${id}`;
 const teamHref = (season: number, mgr: string, week?: number) =>
   `/rosters?season=${season}&mgr=${managerSlug(mgr)}${week ? `&week=${week}` : ""}`;
 
@@ -441,6 +442,7 @@ function TradesTab({ sp }: { sp: Params }) {
       {list.map((t) => (
         <TradeCard key={t.id} t={t} focused={t.id === focus} />
       ))}
+      {focus && list.some((t) => t.id === focus) && <ScrollToId id={focus} />}
       {!list.length && <p className="m-0 py-8 text-[14px] text-[#6b6b63]">No trades match these filters.</p>}
     </main>
   );
