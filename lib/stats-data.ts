@@ -467,12 +467,24 @@ export function getPlayoffStats(): PlayoffStats[] {
   return results.sort((a, b) => b.clutchRating - a.clutchRating);
 }
 
-// Chart theme colors matching the site design
-export const chartColors = {
-  primary: "#2D5A3D", // accent
-  secondary: "#151515", // foreground
-  tertiary: "#b0b0aa", // muted line on dark
-  background: "#f5f5f0",
-  card: "#ffffff",
-  grid: "#e6e6e0", // hairline
-};
+/** Everything the Stats page shows, computed on the server so the raw league data never ships to the browser. */
+export function getCoreStats() {
+  const seasons = getSeasons();
+  return {
+    seasons,
+    standingsBySeason: Object.fromEntries(seasons.map((y) => [y, getSeasonStandings(y)])) as Record<number, Standing[]>,
+    champions: getChampionsChartData(),
+    managerStats: getManagerStats(),
+    scoringTrends: getSeasonScoringTrends(),
+    scoreDistribution: getScoreDistribution(),
+    topPerformances: getTopPerformances(10),
+    lowestPerformances: getLowestPerformances(10),
+    h2hRecords: getVisibleH2HRecords(),
+    blowouts: getBlowouts(10),
+    closestGames: getClosestGames(10),
+    consistency: getManagerConsistency(),
+    playoffStats: getPlayoffStats(),
+  };
+}
+
+export type CoreStats = ReturnType<typeof getCoreStats>;
