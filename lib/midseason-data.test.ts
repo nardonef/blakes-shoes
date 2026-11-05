@@ -42,6 +42,30 @@ describe.runIf(m)("midseason report", () => {
     expect(r.historyByWins.find((h) => h.wins === 7)).toEqual({ wins: 7, teams: 3, playoffs: 3, titles: 0 });
   });
 
+  it("keeps every past half: 7-0 starts were Peter 2016-17 and Curran 2014, all 11-2", () => {
+    expect(r.pastHalves).toHaveLength(168);
+    if (r.week !== 7) return;
+    const unbeaten = r.pastHalves.filter((x) => x.wins === 7).map((x) => `${x.manager} ${x.year} ${x.regWins}-${x.regLosses}`);
+    expect(unbeaten.sort()).toEqual(["Peter Klensch 2016 11-2", "Peter Klensch 2017 11-2", "Ryan Curran 2014 11-2"]);
+  });
+
+  it("knows champions' halfway records: 8 of 14 at 5-2, none at 7-0, worst 3-4", () => {
+    if (r.week !== 7) return;
+    const champs = r.pastHalves.filter((x) => x.finalRank === 1);
+    expect(champs).toHaveLength(14);
+    expect(champs.filter((c) => c.wins === 5)).toHaveLength(8);
+    expect(champs.filter((c) => c.wins === 7)).toHaveLength(0);
+    expect(Math.min(...champs.map((c) => c.wins))).toBe(3);
+  });
+
+  it("names the earlier teams with the leader's record when there are only a few", () => {
+    const leader = r.teams[0];
+    const same = r.pastHalves.filter((x) => x.wins === leader.wins);
+    if (!same.length || same.length > 5) return;
+    const line = r.storylines[0];
+    for (const x of same) expect(line).toContain(x.manager);
+  });
+
   it("writes storylines and picks real games for the game records", () => {
     expect(r.storylines.length).toBeGreaterThanOrEqual(5);
     expect(r.topScore.points).toBeGreaterThanOrEqual(r.lowScore.points);
