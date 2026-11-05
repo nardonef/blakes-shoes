@@ -1,4 +1,4 @@
-export type Job = { holder: string; job: string };
+export type Job = { holder: string; job: string; href?: string };
 
 export const JOBS: Job[] = [
   { holder: "Quick with Ric", job: "Head of the complaints department" },
@@ -10,7 +10,7 @@ export const JOBS: Job[] = [
   { holder: "yatty", job: "Pickem czar" },
   { holder: "Kennedy and Lil Ant", job: "Leather working" },
   { holder: "Jenk", job: "Award Show czar" },
-  { holder: "Borba", job: "Tier list czar" },
+  { holder: "Borba", job: "Tier list czar", href: "/tier-lists" },
   { holder: "Kap", job: "Penny for your thoughts czar" },
 ];
 

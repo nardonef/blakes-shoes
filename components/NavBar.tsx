@@ -12,6 +12,7 @@ const links = [
   { href: "/rosters", label: "ROSTERS" },
   { href: "/draft", label: "DRAFT" },
   { href: "/jobs", label: "JOBS" },
+  { href: "/tier-lists", label: "TIER LISTS" },
   { href: "/shoesgpt", label: "SHOESGPT" },
   { href: "/feedback", label: "FEEDBACK" },
 ];
@@ -32,14 +33,14 @@ export default function NavBar() {
       <div className="max-w-[1160px] mx-auto px-4 md:px-10 flex items-center justify-between">
         <Link
           href="/"
-          className="py-3.5 text-[19px] md:text-[24px] tracking-[.02em] text-white"
+          className="py-3.5 whitespace-nowrap text-[19px] md:text-[24px] tracking-[.02em] text-white"
           style={{ fontFamily: "var(--font-bebas-neue)" }}
         >
           BLAKE&apos;S SHOES
           <span className="text-[var(--accent-light)]">.</span>
         </Link>
 
-        <div className="hidden md:flex items-stretch flex-1 justify-end">
+        <div className="hidden lg:flex items-stretch flex-1 justify-end">
           {links.map((link) => {
             const isActive = pathname === link.href;
             return (
@@ -61,7 +62,7 @@ export default function NavBar() {
 
         <button
           type="button"
-          className="md:hidden flex items-center gap-2 -mr-2 px-2 min-h-11 text-[12px] font-semibold tracking-[.12em] text-white"
+          className="lg:hidden flex items-center gap-2 -mr-2 px-2 min-h-11 text-[12px] font-semibold tracking-[.12em] text-white"
           style={MONO}
           aria-expanded={menuOpen}
           aria-controls="mobile-nav"
@@ -75,7 +76,7 @@ export default function NavBar() {
       </div>
 
       {menuOpen && (
-        <div id="mobile-nav" className="md:hidden border-t border-[#262624]">
+        <div id="mobile-nav" className="lg:hidden border-t border-[#262624]">
           {links.map((link) => {
             const isActive = pathname === link.href;
             return (

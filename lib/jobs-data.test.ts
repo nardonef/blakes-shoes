@@ -12,7 +12,7 @@ describe("jobs data", () => {
   });
 
   it("makes Borba the Tier list czar", () => {
-    expect(JOBS).toContainEqual({ holder: "Borba", job: "Tier list czar" });
+    expect(JOBS).toContainEqual({ holder: "Borba", job: "Tier list czar", href: "/tier-lists" });
   });
 
   it("makes Kap the Penny for your thoughts czar", () => {
