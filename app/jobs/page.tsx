@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { JOBS, PENDING } from "@/lib/jobs-data";
 
 export const metadata = { title: "Jobs | Blake's Shoes" };
@@ -44,7 +45,13 @@ export default function JobsPage() {
                   {j.holder}
                 </div>
                 <div className="px-4 md:px-6 py-4 text-sm md:text-base font-medium leading-[1.45]">
-                  {j.job || "—"}
+                  {j.href ? (
+                    <Link href={j.href} className="underline decoration-[var(--accent)] decoration-2 underline-offset-4">
+                      {j.job}
+                    </Link>
+                  ) : (
+                    j.job || "—"
+                  )}
                 </div>
               </div>
             ))}
