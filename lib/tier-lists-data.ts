@@ -85,6 +85,37 @@ export const ARCHIVE_TIER_LISTS: TierList[] = [
   },
 ];
 
+// Team names that changed between images, mapped to the latest name.
+const TEAM_ALIASES: Record<string, string> = { "Jones Crew": "Jones Crib" };
+
+export type TeamPath = { team: string; ranks: number[]; tiers: string[] };
+export type Movement = { weeks: string[]; tierNames: string[]; teams: TeamPath[] };
+
+// Rank = position on the image: tier order, then left to right within the tier.
+// Weeks run oldest to newest; teams are sorted by their latest rank.
+export function tierMovement(lists: TierList[] = LEAGUE_TIER_LISTS): Movement {
+  const ordered = [...lists].reverse();
+  const paths = new Map<string, TeamPath>();
+  ordered.forEach((list, w) => {
+    let rank = 0;
+    for (const tier of list.tiers ?? []) {
+      for (const raw of tier.teams) {
+        const team = TEAM_ALIASES[raw] ?? raw;
+        const path = paths.get(team) ?? { team, ranks: [], tiers: [] };
+        path.ranks[w] = ++rank;
+        path.tiers[w] = tier.name;
+        paths.set(team, path);
+      }
+    }
+  });
+  const last = ordered.length - 1;
+  return {
+    weeks: ordered.map((l) => l.title),
+    tierNames: ordered[last]?.tiers?.map((t) => t.name) ?? [],
+    teams: [...paths.values()].sort((a, b) => a.ranks[last] - b.ranks[last]),
+  };
+}
+
 export function formatPostedOn(iso: string): string {
   return new Date(`${iso}T12:00:00Z`).toLocaleDateString("en-US", {
     month: "short",

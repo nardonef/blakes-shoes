@@ -4,8 +4,10 @@ import {
   ARCHIVE_TIER_LISTS,
   altText,
   formatPostedOn,
+  tierMovement,
   type TierList,
 } from "@/lib/tier-lists-data";
+import TierMovement from "@/components/TierMovement";
 
 export const metadata = {
   title: "Tier Lists | Blake's Shoes",
@@ -73,6 +75,7 @@ function Card({ list, priority, sizes }: { list: TierList; priority?: boolean; s
 
 export default function TierListsPage() {
   const [latest, ...older] = LEAGUE_TIER_LISTS;
+  const movement = tierMovement();
   return (
     <div className="min-h-screen" style={{ background: "var(--background)" }}>
       <header className="bg-[#151515] text-[#f5f5f0] px-4 md:px-10 py-8 md:py-[52px]">
@@ -94,6 +97,19 @@ export default function TierListsPage() {
           <Kicker className="text-[var(--accent)] mb-3">LATEST · 2026</Kicker>
           <div className="max-w-[560px]">
             <Card list={latest} priority sizes="(min-width: 768px) 560px, 100vw" />
+          </div>
+        </section>
+
+        <section>
+          <Kicker className="text-[var(--accent)] mb-1">MOVEMENT · 2026</Kicker>
+          <h2 className="text-[30px] md:text-[42px] leading-none mb-1" style={BEBAS}>
+            Who&apos;s climbing, who&apos;s sliding
+          </h2>
+          <p className="text-sm text-[var(--muted-light)] mb-3">
+            Rank is each team&apos;s spot on the image: tier first, then left to right. Change is since {movement.weeks[0]}.
+          </p>
+          <div className="max-w-[760px]">
+            <TierMovement data={movement} />
           </div>
         </section>
 
