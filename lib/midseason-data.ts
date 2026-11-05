@@ -42,6 +42,18 @@ export interface GameNote {
   opponentPoints: number;
 }
 
+export interface PastHalf {
+  year: number;
+  manager: string;
+  wins: number;
+  pointsFor: number;
+  finalRank: number;
+  playoffs: boolean;
+  /** Full regular-season record. */
+  regWins: number;
+  regLosses: number;
+}
+
 export interface Midseason {
   season: number;
   week: number;
@@ -50,6 +62,8 @@ export interface Midseason {
   teams: TeamRow[];
   /** Since 2012: by wins after `week` games, how many teams made the playoffs and won it all. */
   historyByWins: { wins: number; teams: number; playoffs: number; titles: number }[];
+  /** Every finished season's team after the same number of games, with how it finished. */
+  pastHalves: PastHalf[];
   topScore: GameNote;
   lowScore: GameNote;
   blowout: GameNote;
@@ -73,31 +87,51 @@ function gamesFor(S: SeasonModel, mgr: string, through: number) {
 }
 
 /** Every finished season's team records after `week` games, with how each team finished. */
-function historyAt(week: number) {
+function pastHalvesAt(week: number): PastHalf[] {
   const finished = getRosterSeasons().filter((y) => y !== getLiveSeason()?.season);
-  const rows: { wins: number; playoffs: boolean; title: boolean }[] = [];
+  const rows: PastHalf[] = [];
   for (const y of finished) {
     const S = getSeasonModel(y)!;
     const n = Number(leagueInfo.find((l) => l.season_year === y)!.num_playoff_teams);
     for (const [mgr, st] of S.standings) {
       const g = gamesFor(S, mgr, week);
       if (g.length < week) continue;
+      const reg = gamesFor(S, mgr, S.playoffStart - 1);
       rows.push({
+        year: y,
+        manager: mgr,
         wins: g.reduce((a, x) => a + (x.result === "W" ? 1 : x.result === "T" ? 0.5 : 0), 0),
+        pointsFor: round1(g.reduce((a, x) => a + x.points, 0)),
+        finalRank: st.final_rank,
         playoffs: st.final_rank <= n,
-        title: st.final_rank === 1,
+        regWins: reg.filter((x) => x.result === "W").length,
+        regLosses: reg.filter((x) => x.result === "L").length,
       });
     }
   }
+  return rows;
+}
+
+function historyByRecord(rows: PastHalf[]) {
   const byWins = new Map<number, { wins: number; teams: number; playoffs: number; titles: number }>();
   for (const r of rows) {
     const b = byWins.get(r.wins) ?? { wins: r.wins, teams: 0, playoffs: 0, titles: 0 };
     b.teams++;
     if (r.playoffs) b.playoffs++;
-    if (r.title) b.titles++;
+    if (r.finalRank === 1) b.titles++;
     byWins.set(r.wins, b);
   }
   return [...byWins.values()].sort((a, b) => b.wins - a.wins);
+}
+
+/** A manager's record over their last `n` regular-season games, reaching back into last season. */
+function recentRecord(manager: string, season: number, week: number, n: number) {
+  const prev = getSeasonModel(season - 1);
+  const games = [
+    ...(prev ? gamesFor(prev, manager, prev.playoffStart - 1) : []),
+    ...gamesFor(getSeasonModel(season)!, manager, week),
+  ].slice(-n);
+  return { games: games.length, wins: games.filter((g) => g.result === "W").length, losses: games.filter((g) => g.result === "L").length };
 }
 
 const ord = (n: number) => {
@@ -117,7 +151,8 @@ export function getMidseason(): Midseason | null {
   const li = leagueInfo.find((l) => l.season_year === season)!;
   const regularWeeks = Number(li.playoff_start_week) - 1;
   const playoffTeams = Number(li.num_playoff_teams);
-  const historyByWins = historyAt(week);
+  const pastHalves = pastHalvesAt(week);
+  const historyByWins = historyByRecord(pastHalves);
   // All-play: each week's score against every other team's that week.
   const weekScores = new Map<number, number[]>();
   for (const [mgr] of S.standings) {
@@ -213,6 +248,7 @@ export function getMidseason(): Midseason | null {
     playoffTeams,
     teams,
     historyByWins,
+    pastHalves,
     topScore,
     lowScore,
     blowout,
@@ -234,9 +270,52 @@ function storylines(m: Midseason): string[] {
   const out: string[] = [];
   const leader = m.teams[0];
   const h = leader.history;
-  if (h.teams) {
+  const rec = (w: number) => `${w}-${m.week - w}`;
+  const same = m.pastHalves.filter((x) => x.wins === leader.wins).sort((a, b) => a.year - b.year);
+  if (same.length && same.length <= 5) {
+    // Name them: "Peter Klensch (2016, 2017) and Ryan Curran (2014)".
+    const who = [...new Set(same.map((x) => x.manager))].map(
+      (mgr) => `${mgr} (${same.filter((x) => x.manager === mgr).map((x) => x.year).join(", ")})`,
+    );
+    const times = same.filter((x) => x.manager === leader.manager).length + 1;
+    const again = times > 1 ? ` for the ${["", "", "second", "third", "fourth"][times] ?? ord(times)} time` : "";
+    const regs = same.map((x) => `${x.regWins}-${x.regLosses}`);
+    const allSame = regs.every((r) => r === regs[0]);
     out.push(
-      `${leader.manager} is ${leader.wins}-${leader.losses} at the halfway mark. Since 2012, ${h.teams} team${h.teams === 1 ? "" : "s"} started ${leader.wins}-${m.week - leader.wins}: ${h.playoffs} made the playoffs and ${h.titles} won the title.`,
+      `${leader.manager} is ${rec(leader.wins)} at the halfway mark${again}. Before this year, only ${who.join(" and ")} started ${rec(leader.wins)}. ${
+        h.playoffs === h.teams ? "All made the playoffs" : `${h.playoffs} of ${h.teams} made the playoffs`
+      }${allSame ? `, all finished ${regs[0]}` : ""}, and ${h.titles ? `${h.titles} won the title` : "none won the title"}.`,
+    );
+  } else if (h.teams) {
+    out.push(
+      `${leader.manager} is ${rec(leader.wins)} at the halfway mark. Since 2012, ${h.teams} teams started ${rec(leader.wins)}: ${h.playoffs} made the playoffs and ${h.titles} won the title.`,
+    );
+  }
+  // How the leader's scoring compares with every half since 2012.
+  const allPf = [...m.pastHalves.map((x) => ({ who: x.manager, year: x.year, pf: x.pointsFor })), ...m.teams.map((t) => ({ who: t.manager, year: m.season, pf: t.pointsFor }))].sort(
+    (a, b) => b.pf - a.pf,
+  );
+  const leaderPfRank = allPf.findIndex((x) => x.who === leader.manager && x.year === m.season) + 1;
+  if (leaderPfRank > 10) {
+    const best = allPf[0];
+    out.push(
+      `${leader.manager}'s ${Math.round(leader.pointsFor)} points rank only ${ord(leaderPfRank)} of ${allPf.length} halves since 2012. The most ever: ${best.who}'s ${Math.round(best.pf)} in ${best.year}.`,
+    );
+  }
+  // Champions at the halfway mark.
+  const champs = m.pastHalves.filter((x) => x.finalRank === 1);
+  if (champs.length) {
+    const counts = new Map<number, number>();
+    for (const c of champs) counts.set(c.wins, (counts.get(c.wins) ?? 0) + 1);
+    const [common, commonN] = [...counts].sort((a, b) => b[1] - a[1] || b[0] - a[0])[0];
+    const worst = Math.min(...champs.map((c) => c.wins));
+    const worstChamps = champs.filter((c) => c.wins === worst).sort((a, b) => a.year - b.year);
+    const nowCommon = m.teams.filter((t) => t.wins === common).map((t) => t.manager);
+    const atLeader = counts.get(leader.wins) ?? 0;
+    out.push(
+      `${commonN} of ${champs.length} champions were ${rec(common)} at the halfway mark${atLeader ? "" : `, none ${rec(leader.wins)}`}. The worst halfway record to win it all: ${rec(worst)} (${worstChamps.map((c) => `${c.manager} ${c.year}`).join(", ")}).${
+        nowCommon.length ? ` At ${rec(common)} now: ${nowCommon.join(", ")}.` : ""
+      }`,
     );
   }
   const line = m.teams[m.playoffTeams - 1];
@@ -276,6 +355,22 @@ function storylines(m: Midseason): string[] {
   const hot = m.teams.filter((t) => t.streak.startsWith("W")).sort((a, b) => streakLen(b) - streakLen(a))[0];
   const cold = m.teams.filter((t) => t.streak.startsWith("L")).sort((a, b) => streakLen(b) - streakLen(a))[0];
   if (hot && cold) out.push(`Hottest: ${hot.manager}, ${streakLen(hot)} straight wins. Coldest: ${cold.manager}, ${streakLen(cold)} straight losses.`);
+  // Cold spells that started last season.
+  const slump = m.teams
+    .map((t) => ({ t, r: recentRecord(t.manager, m.season, m.week, m.regularWeeks) }))
+    .filter((x) => x.r.games === m.regularWeeks)
+    .sort((a, b) => a.r.wins - b.r.wins)[0];
+  if (slump && slump.r.wins <= 2) {
+    out.push(`${slump.t.manager} is ${slump.r.wins}-${slump.r.losses} over the last ${slump.r.games} regular-season games, going back to last season.`);
+  }
+  // Best finish ever from a bad halfway record, for teams sitting there now.
+  for (const wins of [...new Set(m.teams.filter((x) => x.wins <= 2).map((x) => x.wins))].sort((a, b) => b - a)) {
+    const from = m.pastHalves.filter((x) => x.wins === wins && x.playoffs).sort((a, b) => a.finalRank - b.finalRank || b.year - a.year)[0];
+    if (!from) continue;
+    const now = m.teams.filter((x) => x.wins === wins).map((x) => x.manager);
+    const finish = from.finalRank === 1 ? "won the title" : from.finalRank === 2 ? "reached the championship game" : `made the playoffs (finished ${ord(from.finalRank)})`;
+    out.push(`Hope from ${rec(wins)}: ${from.manager} was ${rec(wins)} in ${from.year}, finished ${from.regWins}-${from.regLosses} and ${finish}. At ${rec(wins)} now: ${now.join(", ")}.`);
+  }
   const grade = new Map(m.draftGrades.map((g) => [g.manager, g.grade]));
   const worstDraft = m.draftGrades[m.draftGrades.length - 1];
   const worstDraftTeam = worstDraft && m.teams.find((t) => t.manager === worstDraft.manager);
