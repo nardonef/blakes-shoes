@@ -4,8 +4,10 @@ import { join } from "node:path";
 import { PETER_VIDEOS, videoSrc, posterSrc, formatDuration } from "./peter-videos-data";
 
 describe("peter videos data", () => {
-  it("lists the 10 recoverable videos", () => {
-    expect(PETER_VIDEOS).toHaveLength(10);
+  it("lists the 10 recoverable GroupMe videos plus the Aug 8, 2026 video", () => {
+    expect(PETER_VIDEOS).toHaveLength(11);
+    expect(PETER_VIDEOS[0]).toMatchObject({ slug: "2026-08-08", postedOn: "2026-08-08" });
+    expect(PETER_VIDEOS[0].likes).toBeUndefined();
   });
 
   it("has a video and poster file in public/ for every entry", () => {

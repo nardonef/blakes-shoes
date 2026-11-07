@@ -49,7 +49,8 @@ export default function PeterVideosPage() {
                   {v.part && <span className="text-[var(--muted-light)]"> · {v.part}</span>}
                 </h2>
                 <div className="text-[10.5px] font-semibold tracking-[.14em] text-[var(--muted-light)] shrink-0" style={MONO}>
-                  {formatDuration(v.seconds)} · {v.likes} {v.likes === 1 ? "LIKE" : "LIKES"}
+                  {formatDuration(v.seconds)}
+                  {v.likes !== undefined && ` · ${v.likes} ${v.likes === 1 ? "LIKE" : "LIKES"}`}
                 </div>
               </div>
               {v.caption && <p className="mt-1.5 text-sm italic text-[#55554f]">&ldquo;{v.caption}&rdquo;</p>}
