@@ -1,13 +1,13 @@
-// Videos Peter Klensch, Esq. posted to the league GroupMe, newest first.
-// Files live in public/peter-videos/ (re-encoded H.264, all metadata stripped, poster frame alongside).
-// Videos without likes came from files Frank supplied rather than the GroupMe pull; their dates
-// come from the phone's recording timestamp. 2016-07-22, 2017-07-17 and 2019-07-01 are Frank's
-// originals of videos that were also posted to GroupMe (the first two were purged there).
+// Big Pete's draft order announcements, one per draft season (2025 came in two parts), newest first.
+// Files live in public/big-pete/ (re-encoded H.264, all metadata stripped, poster frame alongside).
+// Found by scanning Peter Klensch's GroupMe videos and confirmed from the chat's replies; videos
+// without likes are originals Frank supplied, dated by the phone's recording timestamp.
 
-export type PeterVideo = {
-  slug: string;
-  postedOn: string; // ISO date, US Eastern: when posted, or recorded for supplied files
-  part?: string; // when several are from the same day
+export type DraftOrderVideo = {
+  slug: string; // file name in public/big-pete/
+  season: number;
+  date: string; // ISO date, US Eastern: when posted to GroupMe, or recorded for supplied files
+  part?: string;
   caption?: string; // Peter's message text, links removed
   likes?: number; // GroupMe likes; absent for videos never posted to the chat
   width: number;
@@ -15,33 +15,22 @@ export type PeterVideo = {
   seconds: number;
 };
 
-export const PETER_VIDEOS: PeterVideo[] = [
-  { slug: "2026-08-08", postedOn: "2026-08-08", width: 320, height: 568, seconds: 142 },
-  { slug: "2026-03-29", postedOn: "2026-03-29", likes: 8, width: 540, height: 960, seconds: 23 },
-  { slug: "2025-08-18-b", postedOn: "2025-08-18", part: "2 of 2", likes: 5, width: 540, height: 960, seconds: 159 },
-  { slug: "2025-08-18-a", postedOn: "2025-08-18", part: "1 of 2", likes: 5, width: 540, height: 960, seconds: 130 },
-  { slug: "2024-09-27", postedOn: "2024-09-27", likes: 6, width: 320, height: 568, seconds: 8.5 },
-  { slug: "2024-08-19", postedOn: "2024-08-19", likes: 7, width: 320, height: 568, seconds: 171 },
-  { slug: "2023-08-24", postedOn: "2023-08-24", likes: 3, width: 320, height: 568, seconds: 160 },
-  { slug: "2022-08-15", postedOn: "2022-08-15", width: 540, height: 960, seconds: 107 },
-  { slug: "2021-08-01", postedOn: "2021-08-01", width: 540, height: 960, seconds: 103 },
-  { slug: "2020-07-27", postedOn: "2020-07-27", likes: 3, width: 320, height: 568, seconds: 52 },
-  { slug: "2019-07-01", postedOn: "2019-07-01", likes: 3, width: 960, height: 540, seconds: 47 },
-  {
-    slug: "2018-06-08",
-    postedOn: "2018-06-08",
-    caption: "By the way don’t give a fuck about the caps but was still pretty wild",
-    likes: 3,
-    width: 320,
-    height: 568,
-    seconds: 12,
-  },
-  { slug: "2018-05-27-b", postedOn: "2018-05-27", part: "2 of 2", likes: 1, width: 320, height: 568, seconds: 14 },
-  { slug: "2018-05-27-a", postedOn: "2018-05-27", part: "1 of 2", width: 540, height: 960, seconds: 49 },
-  { slug: "2017-07-17", postedOn: "2017-07-17", likes: 5, width: 540, height: 960, seconds: 36 },
+export const DRAFT_ORDER_VIDEOS: DraftOrderVideo[] = [
+  { slug: "2026-08-08", season: 2026, date: "2026-08-08", width: 320, height: 568, seconds: 142 },
+  { slug: "2025-08-18-b", season: 2025, date: "2025-08-18", part: "Part 2", likes: 5, width: 540, height: 960, seconds: 159 },
+  { slug: "2025-08-18-a", season: 2025, date: "2025-08-18", part: "Part 1", likes: 5, width: 540, height: 960, seconds: 130 },
+  { slug: "2024-08-19", season: 2024, date: "2024-08-19", likes: 7, width: 320, height: 568, seconds: 171 },
+  { slug: "2023-08-24", season: 2023, date: "2023-08-24", likes: 3, width: 320, height: 568, seconds: 160 },
+  { slug: "2022-08-15", season: 2022, date: "2022-08-15", width: 540, height: 960, seconds: 107 },
+  { slug: "2021-08-01", season: 2021, date: "2021-08-01", width: 540, height: 960, seconds: 103 },
+  { slug: "2020-07-27", season: 2020, date: "2020-07-27", likes: 3, width: 320, height: 568, seconds: 52 },
+  { slug: "2019-07-01", season: 2019, date: "2019-07-01", likes: 3, width: 960, height: 540, seconds: 47 },
+  { slug: "2018-05-27", season: 2018, date: "2018-05-27", width: 540, height: 960, seconds: 49 },
+  { slug: "2017-07-17", season: 2017, date: "2017-07-17", likes: 5, width: 540, height: 960, seconds: 36 },
   {
     slug: "2016-07-22",
-    postedOn: "2016-07-22",
+    season: 2016,
+    date: "2016-07-22",
     caption: "Happy fantasy football season fellas. Get mocking",
     likes: 0,
     width: 540,
@@ -50,8 +39,8 @@ export const PETER_VIDEOS: PeterVideo[] = [
   },
 ];
 
-export const videoSrc = (v: PeterVideo) => `/peter-videos/${v.slug}.mp4`;
-export const posterSrc = (v: PeterVideo) => `/peter-videos/${v.slug}.jpg`;
+export const videoSrc = (v: DraftOrderVideo) => `/big-pete/${v.slug}.mp4`;
+export const posterSrc = (v: DraftOrderVideo) => `/big-pete/${v.slug}.jpg`;
 
 export function formatDuration(seconds: number): string {
   const s = Math.round(seconds);

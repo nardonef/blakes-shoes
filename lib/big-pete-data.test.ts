@@ -1,47 +1,39 @@
 import { describe, it, expect } from "vitest";
 import { existsSync, readdirSync } from "node:fs";
 import { join } from "node:path";
-import { PETER_VIDEOS, videoSrc, posterSrc, formatDuration } from "./peter-videos-data";
+import { DRAFT_ORDER_VIDEOS, videoSrc, posterSrc, formatDuration } from "./big-pete-data";
 
-const DIR = join(process.cwd(), "public", "peter-videos");
+const DIR = join(process.cwd(), "public", "big-pete");
 
-describe("peter videos data", () => {
-  it("lists 16 videos from Jul 2016 to Aug 2026", () => {
-    expect(PETER_VIDEOS).toHaveLength(16);
-    expect(PETER_VIDEOS[0].postedOn).toBe("2026-08-08");
-    expect(PETER_VIDEOS.at(-1)!.postedOn).toBe("2016-07-22");
+describe("big pete draft order data", () => {
+  it("has an announcement for every draft season 2016-2026", () => {
+    const seasons = [...new Set(DRAFT_ORDER_VIDEOS.map((v) => v.season))];
+    expect(seasons).toEqual(Array.from({ length: 11 }, (_, i) => 2026 - i));
+    expect(DRAFT_ORDER_VIDEOS).toHaveLength(12);
   });
 
-  it("dates each slug by its Eastern-time day", () => {
-    for (const v of PETER_VIDEOS) expect(v.slug.startsWith(v.postedOn)).toBe(true);
-  });
-
-  it("numbers same-day videos as parts, with the later part first", () => {
-    const sameDay = PETER_VIDEOS.filter((v) => PETER_VIDEOS.filter((w) => w.postedOn === v.postedOn).length > 1);
-    expect(sameDay.map((v) => [v.slug, v.part])).toEqual([
-      ["2025-08-18-b", "2 of 2"],
-      ["2025-08-18-a", "1 of 2"],
-      ["2018-05-27-b", "2 of 2"],
-      ["2018-05-27-a", "1 of 2"],
-    ]);
-  });
-
-  it("has no video files in public/ that the page doesn't list", () => {
-    const files = readdirSync(DIR).filter((f) => f.endsWith(".mp4")).sort();
-    expect(files).toEqual(PETER_VIDEOS.map((v) => `${v.slug}.mp4`).sort());
-  });
-
-  it("has a video and poster file in public/ for every entry", () => {
-    for (const v of PETER_VIDEOS) {
-      expect(existsSync(join(process.cwd(), "public", videoSrc(v)))).toBe(true);
-      expect(existsSync(join(process.cwd(), "public", posterSrc(v)))).toBe(true);
+  it("dates each video within its season and names files by that date", () => {
+    for (const v of DRAFT_ORDER_VIDEOS) {
+      expect(v.date.startsWith(String(v.season))).toBe(true);
+      expect(v.slug.startsWith(v.date)).toBe(true);
     }
   });
 
-  it("uses unique slugs, newest first", () => {
-    expect(new Set(PETER_VIDEOS.map((v) => v.slug)).size).toBe(PETER_VIDEOS.length);
-    const dates = PETER_VIDEOS.map((v) => v.postedOn);
-    expect(dates).toEqual([...dates].sort().reverse());
+  it("labels 2025's two-parter, later part first", () => {
+    const parts = DRAFT_ORDER_VIDEOS.filter((v) => v.part).map((v) => [v.season, v.part]);
+    expect(parts).toEqual([
+      [2025, "Part 2"],
+      [2025, "Part 1"],
+    ]);
+  });
+
+  it("has a video and poster for every entry and no unlisted videos", () => {
+    for (const v of DRAFT_ORDER_VIDEOS) {
+      expect(existsSync(join(process.cwd(), "public", videoSrc(v)))).toBe(true);
+      expect(existsSync(join(process.cwd(), "public", posterSrc(v)))).toBe(true);
+    }
+    const files = readdirSync(DIR).filter((f) => f.endsWith(".mp4")).sort();
+    expect(files).toEqual(DRAFT_ORDER_VIDEOS.map((v) => `${v.slug}.mp4`).sort());
   });
 
   it("formats durations as m:ss", () => {
