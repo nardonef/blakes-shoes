@@ -14,19 +14,19 @@ describe("tierMovement", () => {
   const path = (team: string) => m.teams.find((t) => t.team === team)!;
 
   it("runs weeks oldest to newest", () => {
-    expect(m.weeks).toEqual(["Week 6", "Week 7", "Week 8"]);
+    expect(m.weeks).toEqual(["Week 6", "Week 7", "Week 8", "Week 9"]);
   });
 
   it("tracks 12 teams with a rank and tier every week", () => {
     expect(m.teams).toHaveLength(12);
     for (const t of m.teams) {
-      expect(t.ranks).toHaveLength(3);
-      expect(t.tiers).toHaveLength(3);
+      expect(t.ranks).toHaveLength(m.weeks.length);
+      expect(t.tiers).toHaveLength(m.weeks.length);
     }
   });
 
   it("uses each rank 1-12 once per week", () => {
-    for (let w = 0; w < 3; w++) {
+    for (let w = 0; w < m.weeks.length; w++) {
       expect(m.teams.map((t) => t.ranks[w]).sort((a, b) => a - b)).toEqual(
         Array.from({ length: 12 }, (_, i) => i + 1),
       );
@@ -34,14 +34,23 @@ describe("tierMovement", () => {
   });
 
   it("ranks by position on the image", () => {
-    expect(path("The Loose Cannons").ranks).toEqual([3, 1, 1]);
-    expect(path("The Hullabaloos").ranks).toEqual([2, 6, 7]);
-    expect(path("The Hullabaloos").tiers).toEqual(["Big Dogs", "Watch Out!", "Hopes and Prayers"]);
+    expect(path("The Loose Cannons").ranks).toEqual([3, 1, 1, 1]);
+    expect(path("The Hullabaloos").ranks).toEqual([2, 6, 7, 10]);
+    expect(path("The Hullabaloos").tiers).toEqual(["Big Dogs", "Watch Out!", "Hopes and Prayers", "GMR's"]);
   });
 
   it("merges the Jones Crew rename into Jones Crib", () => {
-    expect(path("Jones Crib").ranks).toEqual([8, 9, 8]);
+    expect(path("Jones Crib").ranks).toEqual([8, 9, 8, 5]);
     expect(m.teams.some((t) => t.team === "Jones Crew")).toBe(false);
+  });
+
+  it("matches Week 9's printed ranks", () => {
+    expect(m.teams.map((t) => t.team)).toEqual([
+      "The Loose Cannons", "Bryan Yatskos Team", "Wizards of Koz",
+      "Post Grad Apartments", "Jones Crib", "Not Popular Boys",
+      "Anthony's Nifty Team", "New Crew", "Peter is Corrupt",
+      "The Hullabaloos", "All Business Pete", "Brianna Red Carpet",
+    ]);
   });
 
   it("sorts teams by latest rank and lists the latest tier names", () => {
