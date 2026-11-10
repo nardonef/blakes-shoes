@@ -39,12 +39,23 @@ export const DRAFT_ORDER_VIDEOS: DraftOrderVideo[] = [
   },
 ];
 
-// Other Big Pete clips Peter posted to GroupMe, shown below the archive. Newest first.
+// Peter's other GroupMe videos that aren't draft order announcements, shown below the archive. Newest first.
 export type BonusVideo = Omit<DraftOrderVideo, "season" | "part"> & { title: string };
 
 export const BONUS_VIDEOS: BonusVideo[] = [
   { slug: "bonus-2026-03-29", title: "Big Pete pours one", date: "2026-03-29", likes: 8, width: 540, height: 960, seconds: 23 },
   { slug: "bonus-2024-09-27", title: "Big Pete congratulates 🆎", date: "2024-09-27", likes: 6, width: 320, height: 568, seconds: 8.5 },
+  {
+    slug: "bonus-2018-06-08",
+    title: "The Caps crowd",
+    date: "2018-06-08",
+    caption: "By the way don’t give a fuck about the caps but was still pretty wild",
+    likes: 3,
+    width: 320,
+    height: 568,
+    seconds: 12,
+  },
+  { slug: "bonus-2018-05-27", title: "Blake in the sombrero", date: "2018-05-27", likes: 1, width: 320, height: 568, seconds: 14 },
 ];
 
 export const videoSrc = (v: { slug: string }) => `/big-pete/${v.slug}.mp4`;

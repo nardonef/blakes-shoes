@@ -38,8 +38,9 @@ describe("big pete draft order data", () => {
     expect(files).toEqual(ALL.map((v) => `${v.slug}.mp4`).sort());
   });
 
-  it("keeps two bonus clips, newest first, separate from the season list", () => {
-    expect(BONUS_VIDEOS.map((v) => v.date)).toEqual(["2026-03-29", "2024-09-27"]);
+  it("keeps four bonus clips, newest first, separate from the season list", () => {
+    expect(BONUS_VIDEOS.map((v) => v.date)).toEqual(["2026-03-29", "2024-09-27", "2018-06-08", "2018-05-27"]);
+    expect(BONUS_VIDEOS.map((v) => v.title)).toContain("Blake in the sombrero");
     expect(new Set(ALL.map((v) => v.slug)).size).toBe(ALL.length);
   });
 
