@@ -11,6 +11,7 @@ const links = [
   { href: "/stats", label: "STATS" },
   { href: "/rosters", label: "ROSTERS" },
   { href: "/draft", label: "DRAFT" },
+  { href: "/big-pete", label: "BIG PETE" },
   { href: "/jobs", label: "JOBS" },
   { href: "/tier-lists", label: "TIER LISTS" },
   { href: "/shoesgpt", label: "SHOESGPT" },
