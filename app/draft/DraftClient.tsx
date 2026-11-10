@@ -96,7 +96,11 @@ function DraftContent({ model }: { model: DraftModel }) {
           </h1>
           <p className="mb-7 max-w-[580px] text-[15px] leading-normal text-[#b5b5ad]">
             Every pick from {years.length} snake drafts: who went where, what they scored for the team that took them,
-            and which picks aged well.
+            and which picks aged well. The order itself comes from Big Pete:{" "}
+            <Link href="/big-pete" className="text-[var(--accent-light)] underline underline-offset-4 hover:text-white">
+              watch every draft order reveal
+            </Link>
+            .
           </p>
           <div className="flex gap-1 flex-wrap">
             {[

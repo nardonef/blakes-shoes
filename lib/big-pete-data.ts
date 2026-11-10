@@ -39,8 +39,16 @@ export const DRAFT_ORDER_VIDEOS: DraftOrderVideo[] = [
   },
 ];
 
-export const videoSrc = (v: DraftOrderVideo) => `/big-pete/${v.slug}.mp4`;
-export const posterSrc = (v: DraftOrderVideo) => `/big-pete/${v.slug}.jpg`;
+// Other Big Pete clips Peter posted to GroupMe, shown below the archive. Newest first.
+export type BonusVideo = Omit<DraftOrderVideo, "season" | "part"> & { title: string };
+
+export const BONUS_VIDEOS: BonusVideo[] = [
+  { slug: "bonus-2026-03-29", title: "Big Pete pours one", date: "2026-03-29", likes: 8, width: 540, height: 960, seconds: 23 },
+  { slug: "bonus-2024-09-27", title: "Big Pete congratulates 🆎", date: "2024-09-27", likes: 6, width: 320, height: 568, seconds: 8.5 },
+];
+
+export const videoSrc = (v: { slug: string }) => `/big-pete/${v.slug}.mp4`;
+export const posterSrc = (v: { slug: string }) => `/big-pete/${v.slug}.jpg`;
 
 export function formatDuration(seconds: number): string {
   const s = Math.round(seconds);
