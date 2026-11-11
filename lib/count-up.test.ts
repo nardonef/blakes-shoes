@@ -11,6 +11,8 @@ describe("parseNumber / formatAt", () => {
     ["7 of 14", "0 of 14"],
     ["74 starts", "0 starts"],
     ["15", "0"],
+    ["01", "00"],
+    ["007", "000"],
   ])("keeps the format of %s while counting from %s", (text, zero) => {
     const p = parseNumber(text)!;
     expect(formatAt(p, 0)).toBe(zero);
@@ -21,6 +23,13 @@ describe("parseNumber / formatAt", () => {
     const p = parseNumber("1,762 pts")!;
     expect(formatAt(p, 1234.4)).toBe("1,234 pts");
     expect(formatAt(parseNumber("+102.1")!, 51.06)).toBe("+51.1");
+  });
+
+  it("keeps a zero-padded number's width on the way up", () => {
+    const p = parseNumber("01")!;
+    expect(formatAt(p, 0.4)).toBe("00");
+    expect(formatAt(p, 0.6)).toBe("01");
+    expect(formatAt(parseNumber("12")!, 3)).toBe("3"); // no padding unless the text had it
   });
 
   it("leaves text with no number alone", () => {
