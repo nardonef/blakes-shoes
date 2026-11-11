@@ -3,6 +3,9 @@ import Link from "next/link";
 import { getSeasons, getHallOfChampions } from "@/lib/stats-data";
 import { slug } from "@/lib/legacy-slug";
 import Countdown from "@/components/Countdown";
+import CountUp from "@/components/CountUp";
+import Masthead from "@/components/Masthead";
+import ChampionsReel from "@/components/ChampionsReel";
 import { deadlineLabel, getTradeDeadline } from "@/lib/trade-deadline";
 
 // Data structure matching the mockup
@@ -41,45 +44,27 @@ export default function Home() {
 
   return (
     <div className="min-h-screen" style={{ background: "var(--background)" }}>
-      {/* Masthead */}
-      <header className="bg-[#151515] text-[#f5f5f0] text-center px-4 md:px-10 pt-10 md:pt-[60px] pb-9 md:pb-12">
-        <div className="flex items-center justify-center gap-3.5 mb-4 flex-wrap">
-          <span className="w-4 md:w-8 h-0.5 bg-[var(--accent-light)]" />
-          <span
-            className="text-[9.5px] md:text-[11px] font-semibold tracking-[.26em] text-[var(--accent-light)]"
-            style={{ fontFamily: "var(--font-geist-mono)" }}
-          >
-            FANTASY FOOTBALL LEAGUE
-          </span>
-          <span className="w-4 md:w-8 h-0.5 bg-[var(--accent-light)]" />
-        </div>
-        <h1
-          className="text-[58px] md:text-[124px] leading-[.86] tracking-[-.01em] mb-5"
-          style={{ fontFamily: "var(--font-bebas-neue)" }}
-        >
-          BLAKE&apos;S SHOES
-        </h1>
-        <div
-          className="flex justify-center flex-wrap text-[10px] md:text-[12px] tracking-[.1em] text-[#d4d4d0]"
-          style={{ fontFamily: "var(--font-geist-mono)" }}
-        >
-          <span className="px-3 md:px-[22px] py-1 border-r border-[#3a3a38]">
-            <b className="text-white">12</b> TEAMS
-          </span>
-          <span className="px-3 md:px-[22px] py-1 border-r border-[#3a3a38]">
-            <b className="text-white">{seasonCount}</b> SEASONS
-          </span>
-          <span className="px-3 md:px-[22px] py-1">
-            EST. <b className="text-white">2012</b>
-          </span>
-        </div>
-      </header>
+      {/* Masthead, with the champions reel along its bottom */}
+      <Masthead seasonCount={seasonCount}>
+        <ChampionsReel
+          champions={champions.map((c) => ({
+            year: c.year,
+            manager: c.manager,
+            image: owners.find((o) => o.name === c.manager)?.image ?? null,
+          }))}
+        />
+      </Masthead>
 
       <main className="max-w-[1160px] mx-auto px-4 md:px-10 py-7 md:py-11 pb-14 md:pb-[88px] flex flex-col gap-8 md:gap-12">
         {/* Champion band */}
-        <section className="bg-[var(--accent)] text-[#f5f5f0] grid grid-cols-1 sm:grid-cols-2">
+        <section data-reveal="" className="relative overflow-hidden bg-[var(--accent)] text-[#f5f5f0] grid grid-cols-1 sm:grid-cols-2">
+          <div
+            data-sweep=""
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-y-0 left-0 w-[40%] bg-[linear-gradient(100deg,transparent,rgb(255_255_255/0.10),transparent)]"
+          />
           <div className="p-[26px] md:p-[34px] flex flex-col items-center gap-4 border-b sm:border-b-0 sm:border-r border-white/[.18]">
-            <div className="w-[118px] h-[118px] md:w-[152px] md:h-[152px] rounded-full overflow-hidden border-[3px] border-[#f5f5f0] relative">
+            <div data-pop="" className="w-[118px] h-[118px] md:w-[152px] md:h-[152px] rounded-full overflow-hidden border-[3px] border-[#f5f5f0] relative">
               <Image
                 src={currentChampion.avatar}
                 alt={currentChampion.name}
@@ -137,7 +122,7 @@ export default function Home() {
                   AVG POINTS
                 </div>
                 <div className="text-[32px] md:text-[44px] leading-none" style={{ fontFamily: "var(--font-bebas-neue)" }}>
-                  {currentChampion.avgPoints}
+                  <CountUp text={currentChampion.avgPoints} delay={400} duration={1000} />
                 </div>
               </div>
               <div className="pt-[18px] border-l border-white/[.22] pl-3 md:pl-6">
@@ -148,7 +133,7 @@ export default function Home() {
                   TITLE NO.
                 </div>
                 <div className="text-[32px] md:text-[44px] leading-none" style={{ fontFamily: "var(--font-bebas-neue)" }}>
-                  {currentChampion.titleNo}
+                  <CountUp text={currentChampion.titleNo} delay={400} duration={1000} />
                 </div>
               </div>
             </div>
@@ -157,7 +142,7 @@ export default function Home() {
 
         {/* Trade deadline + Next up */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-[26px]">
-          <section className="bg-[#151515] text-[#f5f5f0] p-[22px] md:p-[30px]">
+          <section data-reveal="" style={{ "--i": 0 } as React.CSSProperties} className="bg-[#151515] text-[#f5f5f0] p-[22px] md:p-[30px]">
             <div className="flex items-baseline justify-between gap-3 mb-5 flex-wrap">
               <h3 className="text-[26px] md:text-[36px]" style={{ fontFamily: "var(--font-bebas-neue)" }}>
                 TRADE DEADLINE
@@ -172,7 +157,7 @@ export default function Home() {
             <Countdown at={deadline.at} />
           </section>
 
-          <section className="bg-white p-[22px] md:p-[30px] border-l-[3px] border-[var(--accent)]">
+          <section data-reveal="" style={{ "--i": 1 } as React.CSSProperties} className="bg-white p-[22px] md:p-[30px] border-l-[3px] border-[var(--accent)]">
             <div className="flex items-baseline justify-between gap-3 mb-5 flex-wrap">
               <h3 className="text-[26px] md:text-[36px] text-[#151515]" style={{ fontFamily: "var(--font-bebas-neue)" }}>
                 NEXT UP
@@ -211,17 +196,19 @@ export default function Home() {
         {/* Hall of Champions */}
         <section>
           <div className="flex items-center gap-4 mb-5">
-            <h2 className="text-[32px] md:text-[46px] text-[#151515]" style={{ fontFamily: "var(--font-bebas-neue)" }}>
+            <h2 data-reveal="" className="text-[32px] md:text-[46px] text-[#151515]" style={{ fontFamily: "var(--font-bebas-neue)" }}>
               HALL OF CHAMPIONS
             </h2>
-            <span className="flex-1 h-0.5 bg-[#151515]" />
+            <span data-bar="" className="flex-1 h-0.5 bg-[#151515] origin-left" />
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 md:gap-x-11">
-            {champions.map((c) => {
+            {champions.map((c, index) => {
               const champOwner = owners.find((o) => o.name === c.manager);
               return (
                 <div
                   key={c.year}
+                  data-reveal=""
+                  style={{ "--i": Math.floor(index / 2) } as React.CSSProperties}
                   className="flex items-center gap-3 md:gap-4 py-2.5 border-b border-[var(--rule)]"
                 >
                   <div className="w-[44px] h-[44px] md:w-[50px] md:h-[50px] rounded-full overflow-hidden shrink-0 relative bg-[var(--accent)]">
@@ -268,10 +255,10 @@ export default function Home() {
         {/* The Owners */}
         <section>
           <div className="flex items-center gap-4 mb-6 flex-wrap">
-            <h2 className="text-[32px] md:text-[46px] text-[#151515]" style={{ fontFamily: "var(--font-bebas-neue)" }}>
+            <h2 data-reveal="" className="text-[32px] md:text-[46px] text-[#151515]" style={{ fontFamily: "var(--font-bebas-neue)" }}>
               THE OWNERS
             </h2>
-            <span className="flex-1 min-w-[20px] h-0.5 bg-[#151515]" />
+            <span data-bar="" className="flex-1 min-w-[20px] h-0.5 bg-[#151515] origin-left" />
             <span
               className="text-[11px] tracking-[.14em] text-[var(--muted-light)]"
               style={{ fontFamily: "var(--font-geist-mono)" }}
@@ -280,9 +267,11 @@ export default function Home() {
             </span>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-0.5 bg-[var(--rule)]">
-            {owners.map((owner) => (
+            {owners.map((owner, index) => (
               <Link
                 key={owner.name}
+                data-reveal=""
+                style={{ "--i": index % 3 } as React.CSSProperties}
                 href={`/legacy#${slug(owner.name)}`}
                 className="bg-[var(--background)] hover:bg-white transition-colors duration-150 p-5 md:p-6 min-h-12 flex items-center gap-4 md:gap-5"
               >
@@ -310,7 +299,7 @@ export default function Home() {
         </section>
 
         {/* Feedback CTA */}
-        <section>
+        <section data-reveal="">
           <Link
             href="/feedback"
             className="bg-[var(--accent)] text-[#f5f5f0] p-6 md:p-9 min-h-12 flex items-center justify-between gap-4 hover:opacity-90 transition-opacity duration-150"

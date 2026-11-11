@@ -6,6 +6,7 @@ export interface ParsedNumber {
   value: number;
   decimals: number;
   grouped: boolean;
+  pad: number; // minimum integer digits, for zero-padded text like "01"
   suffix: string;
 }
 
@@ -13,11 +14,13 @@ export function parseNumber(text: string): ParsedNumber | null {
   const m = /^(.*?)(\d[\d,]*(?:\.\d+)?)([\s\S]*)$/.exec(text);
   if (!m) return null;
   const digits = m[2];
+  const whole = digits.split(".")[0];
   return {
     prefix: m[1],
     value: Number(digits.replace(/,/g, "")),
     decimals: digits.includes(".") ? digits.split(".")[1].length : 0,
     grouped: digits.includes(","),
+    pad: whole.length > 1 && whole.startsWith("0") ? whole.length : 1,
     suffix: m[3],
   };
 }
@@ -28,6 +31,7 @@ export function formatAt(p: ParsedNumber, value: number): string {
     minimumFractionDigits: p.decimals,
     maximumFractionDigits: p.decimals,
     useGrouping: p.grouped,
+    minimumIntegerDigits: p.pad,
   });
   return `${p.prefix}${n}${p.suffix}`;
 }
