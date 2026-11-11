@@ -39,6 +39,11 @@ body {
   from { opacity: 0; }
   to { opacity: 1; }
 }
+/* Light sweep across the home champion band (data-sweep, played by Motion.tsx). Parked off to the
+   left by default so it never shows when motion is off. */
+[data-sweep] {
+  transform: translateX(-120%);
+}
 @media (prefers-reduced-motion: no-preference) {
   html.motion [data-reveal],
   html.motion [data-count]:not([data-shown]) {
@@ -49,6 +54,36 @@ body {
   }
   .tab-fade {
     animation: fade-in 0.25s ease-out both;
+  }
+  /* Home masthead (components/Masthead.tsx, ChampionsReel.tsx): start states for the load-in. */
+  html.motion [data-hero="rule"] {
+    transform: scaleX(0);
+  }
+  html.motion [data-hero="label"],
+  html.motion [data-hero="stat"],
+  html.motion [data-hero="reel"],
+  html.motion [data-pop] {
+    opacity: 0;
+  }
+  html.motion .hero-char {
+    transform: translateY(105%);
+  }
+  /* translate, not transform: the entrance animation holds transform. */
+  .hero-char {
+    transition: translate 0.25s cubic-bezier(0.2, 0.7, 0.2, 1), color 0.25s ease;
+  }
+  .hero-char:hover {
+    translate: 0 -0.08em;
+    color: #6ba57e;
+  }
+  .hero-title {
+    translate: calc(var(--px, 0) * 14px) calc(var(--py, 0) * 8px);
+    transition: translate 0.6s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  .hero-spot {
+    background: radial-gradient(520px circle at var(--mx, 50%) var(--my, 45%), rgb(107 165 126 / 0.22), transparent 62%);
+    opacity: var(--spot, 0);
+    transition: opacity 0.5s ease;
   }
   /* translate, not transform: the finished reveal animation holds transform. */
   .lift {

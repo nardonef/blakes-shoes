@@ -4,6 +4,7 @@ import { useEffect } from "react";
 
 const SELECTOR = "[data-reveal], [data-bar]";
 const EASE = "cubic-bezier(0.2, 0.7, 0.2, 1)";
+const POP = "cubic-bezier(0.34, 1.56, 0.64, 1)";
 
 /**
  * Site-wide scroll reveals. globals.css holds [data-reveal] and [data-bar] elements in their start
@@ -27,6 +28,25 @@ export default function Motion() {
           { opacity: 1, transform: "none" },
         ],
         { duration: 500, delay: i * 60, easing: EASE, fill: "both" },
+      );
+      // Extras that play with their revealed parent: data-pop (overshoot pop) and data-sweep
+      // (a light sweeping across once).
+      el.querySelectorAll("[data-pop]").forEach((p) =>
+        p.animate(
+          [
+            { opacity: 0, transform: "scale(.6) rotate(-8deg)" },
+            { opacity: 1, transform: "none" },
+          ],
+          { duration: 750, delay: 200, easing: POP, fill: "both" },
+        ),
+      );
+      el.querySelectorAll("[data-sweep]").forEach((s) =>
+        s.animate([{ transform: "translateX(-120%)" }, { transform: "translateX(320%)" }], {
+          duration: 1400,
+          delay: 500,
+          easing: EASE,
+          fill: "both",
+        }),
       );
     };
 
