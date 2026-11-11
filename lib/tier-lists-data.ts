@@ -20,6 +20,20 @@ const tiers = (...rows: [string, string[]][]): Tier[] =>
 // League power rankings, newest first.
 export const LEAGUE_TIER_LISTS: TierList[] = [
   {
+    slug: "2026-week-9",
+    postedOn: "2026-11-10",
+    title: "Week 9",
+    src: "/tier-lists/2026-11-10.jpeg",
+    width: 667,
+    height: 1000,
+    tiers: tiers(
+      ["Big Dogs", ["The Loose Cannons", "Bryan Yatskos Team", "Wizards of Koz"]],
+      ["Watch Out!", ["Post Grad Apartments", "Jones Crib", "Not Popular Boys"]],
+      ["Hopes and Prayers", ["Anthony's Nifty Team", "New Crew", "Peter is Corrupt"]],
+      ["GMR's", ["The Hullabaloos", "All Business Pete", "Brianna Red Carpet"]],
+    ),
+  },
+  {
     slug: "2026-week-8",
     postedOn: "2026-11-03",
     title: "Week 8",
