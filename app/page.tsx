@@ -3,6 +3,8 @@ import Link from "next/link";
 import { getSeasons, getHallOfChampions } from "@/lib/stats-data";
 import { slug } from "@/lib/legacy-slug";
 import Countdown from "@/components/Countdown";
+import LeagueRace from "@/components/LeagueRace";
+import { getLeagueRace } from "@/lib/league-race-data";
 import { deadlineLabel, getTradeDeadline } from "@/lib/trade-deadline";
 
 // Data structure matching the mockup
@@ -74,6 +76,8 @@ export default function Home() {
           </span>
         </div>
       </header>
+
+      <LeagueRace race={getLeagueRace()} />
 
       <main className="max-w-[1160px] mx-auto px-4 md:px-10 py-7 md:py-11 pb-14 md:pb-[88px] flex flex-col gap-8 md:gap-12">
         {/* Champion band */}
