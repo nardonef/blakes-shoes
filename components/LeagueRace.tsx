@@ -104,7 +104,7 @@ export default function LeagueRace({ race }: { race: Race }) {
     <section
       ref={root}
       aria-labelledby="race-title"
-      className="relative overflow-hidden bg-[#151515] text-[#f5f5f0] px-4 md:px-10 pt-2 pb-10 md:pb-14 border-t border-[#262624]"
+      className="relative overflow-hidden bg-[#151515] text-[#f5f5f0] px-4 md:px-10 pt-2 md:pt-5 pb-10 md:pb-14"
     >
       {/* The year, huge and faint, behind the race */}
       <div
@@ -118,12 +118,12 @@ export default function LeagueRace({ race }: { race: Race }) {
       <div className="relative max-w-[1160px] mx-auto">
         <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-2 pt-6 md:pt-8">
           <div>
-            <div className="text-[10.5px] font-semibold tracking-[.22em] text-[var(--accent-light)]" style={MONO}>
+            <div className="text-[11px] font-semibold tracking-[.26em] text-[var(--accent-light)] mb-2.5" style={MONO}>
               {race.seasons.length} SEASONS · ALL-TIME WINS
             </div>
-            <h2 id="race-title" className="text-[36px] md:text-[56px] leading-[.95] mt-1" style={BEBAS}>
-              The race for the most wins ever
-            </h2>
+            <h1 id="race-title" className="text-[48px] md:text-[88px] leading-[.86]" style={BEBAS}>
+              THE WINS RACE
+            </h1>
           </div>
           <p className="text-[13px] leading-snug text-[#a3a3a0] max-w-[340px] md:text-right">{raceHeadline(race)}</p>
         </div>

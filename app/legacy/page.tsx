@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 import ChampionsBuilt from "@/components/ChampionsBuilt";
 import MyGuys from "@/components/MyGuys";
 import CountUp from "@/components/CountUp";
@@ -186,7 +187,11 @@ export default function LegacyPage() {
           </h1>
           <p className="text-base text-[#b0b0aa] leading-[1.6] max-w-[62ch]">
             Every manager currently in Blake&apos;s Shoes, graded on every game the league has
-            played since 2012. Ranked by all-time win percentage.
+            played since 2012. Ranked by all-time win percentage.{" "}
+            <Link href="/race" className="text-[var(--accent-light)] underline underline-offset-4 hover:text-white">
+              Watch the all-time wins race
+            </Link>
+            .
           </p>
         </div>
       </header>
