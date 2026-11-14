@@ -12,6 +12,7 @@ export const JOBS: Job[] = [
   { holder: "Jenk", job: "Award Show czar" },
   { holder: "Borba", job: "Tier list czar", href: "/tier-lists" },
   { holder: "Kap", job: "Penny for your thoughts czar" },
+  { holder: "Slagle", job: "Slate czar" },
 ];
 
-export const PENDING: string[] = ["Jone", "Slagle"];
+export const PENDING: string[] = ["Jone"];
