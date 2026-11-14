@@ -2,7 +2,39 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { isFinalHour, tabLabel, withCountdown } from "@/lib/tab-countdown";
+
+// The site icon (app/icon.svg) in red, for the final hour before the trade deadline.
+const RED_ICON = `data:image/svg+xml,${encodeURIComponent(
+  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="12" fill="#a33a2f"/><text x="7" y="49" font-family="Impact, 'Arial Narrow Bold', 'Arial Black', sans-serif" font-size="42" font-weight="700" fill="#f5f5f0" letter-spacing="-1">BS</text><circle cx="54" cy="46" r="4.5" fill="#f5f5f0"/></svg>`,
+)}`;
+
+/** During deadline week, counts down in the tab title; in the final hour the tab icon turns red. */
+function useTabCountdown(deadlineAt?: number) {
+  useEffect(() => {
+    if (!deadlineAt) return;
+    const icons = [...document.querySelectorAll<HTMLLinkElement>("link[rel~='icon']")];
+    const original = icons.map((l) => l.href);
+    const tick = () => {
+      const left = deadlineAt - Date.now();
+      const next = withCountdown(document.title, tabLabel(left));
+      if (next !== document.title) document.title = next;
+      const red = isFinalHour(left);
+      icons.forEach((l, i) => {
+        const want = red ? RED_ICON : original[i];
+        if (l.href !== want) l.href = want;
+      });
+    };
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => {
+      clearInterval(id);
+      document.title = withCountdown(document.title, null);
+      icons.forEach((l, i) => (l.href = original[i]));
+    };
+  }, [deadlineAt]);
+}
 
 const links = [
   { href: "/", label: "HOME" },
@@ -20,8 +52,9 @@ const links = [
 
 const MONO = { fontFamily: "var(--font-geist-mono)" };
 
-export default function NavBar() {
+export default function NavBar({ deadlineAt }: { deadlineAt?: number }) {
   const pathname = usePathname();
+  useTabCountdown(deadlineAt);
   // The menu remembers the page it was opened on, so navigating closes it.
   const [openOn, setOpenOn] = useState<string | null>(null);
   const menuOpen = openOn === pathname;
