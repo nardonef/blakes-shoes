@@ -31,6 +31,32 @@ body {
   font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
 }
 
+/* Sneaker cursor (public/cursor-shoe*.svg): the shoe everywhere, a tilted "kick" over anything
+   clickable, and the normal text cursor in text fields. Unlayered, so it overrides Tailwind's
+   cursor-pointer / cursor-default utilities. Touch screens have no cursor and are unaffected. */
+html,
+.cursor-default {
+  cursor: url("/cursor-shoe.svg") 3 11, auto;
+}
+a,
+button,
+summary,
+select,
+label[for],
+[role="button"],
+input[type="range"],
+input[type="checkbox"],
+input[type="radio"],
+input[type="submit"],
+.cursor-pointer {
+  cursor: url("/cursor-shoe-kick.svg") 4 8, pointer;
+}
+input:not([type="range"], [type="checkbox"], [type="radio"], [type="submit"], [type="button"]),
+textarea,
+[contenteditable="true"] {
+  cursor: text;
+}
+
 /* Motion. Elements opt in: data-reveal (fades up; set --i on siblings to stagger), data-bar (grows
    from its transform-origin) and data-count (CountUp). They start hidden here, but only once JS has
    run (html.motion, set in the layout) and never with reduced motion; components/Motion.tsx and
