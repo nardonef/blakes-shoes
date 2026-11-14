@@ -1,5 +1,6 @@
 import { DRAFT_ORDER_VIDEOS, BONUS_VIDEOS, videoSrc, posterSrc, formatDuration } from "@/lib/big-pete-data";
 import { formatPostedOn } from "@/lib/tier-lists-data";
+import VhsVideo from "@/components/VhsVideo";
 
 export const metadata = {
   title: "Big Pete Draft Order Announcement Archives | Blake's Shoes",
@@ -15,17 +16,14 @@ function VideoCard({ v, title }: { v: Clip; title: React.ReactNode }) {
   return (
     <article id={v.slug} className="bg-white p-3 md:p-4 scroll-mt-20">
       <div className="bg-[#151515] flex justify-center">
-        <video
-          controls
-          playsInline
-          preload="none"
+        <VhsVideo
+          src={videoSrc(v)}
           poster={posterSrc(v)}
           width={v.width}
           height={v.height}
-          className={`h-auto ${v.width > v.height ? "w-full" : "w-full max-w-[340px]"}`}
-        >
-          <source src={videoSrc(v)} type="video/mp4" />
-        </video>
+          date={v.date}
+          className={v.width > v.height ? "w-full" : "w-full max-w-[340px]"}
+        />
       </div>
       <h3 className="mt-3 text-[28px] md:text-[32px] leading-none" style={BEBAS}>
         {title}
