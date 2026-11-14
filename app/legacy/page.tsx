@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 import ChampionsBuilt from "@/components/ChampionsBuilt";
 import MyGuys from "@/components/MyGuys";
 import CountUp from "@/components/CountUp";
@@ -428,6 +429,25 @@ export default function LegacyPage() {
         </section>
         <MyGuys managers={legacies.map((l) => guys.find((g) => g.manager === l.owner.name)!)} />
         <ChampionsBuilt builds={getChampionBuilds()} />
+        <Link
+          href="/cards"
+          className="bg-[#151515] text-[#f5f5f0] p-6 md:p-9 min-h-12 flex items-center justify-between gap-4 hover:opacity-90 transition-opacity duration-150"
+        >
+          <div>
+            <div
+              className="text-[11px] font-semibold tracking-[.26em] text-[var(--accent-light)] mb-2"
+              style={{ fontFamily: "var(--font-geist-mono)" }}
+            >
+              SERIES 2026
+            </div>
+            <div className="text-[30px] md:text-[44px] leading-none" style={{ fontFamily: "var(--font-bebas-neue)" }}>
+              COLLECT THE TRADING CARDS
+            </div>
+          </div>
+          <span className="text-[22px] shrink-0" style={{ fontFamily: "var(--font-geist-mono)" }}>
+            ›
+          </span>
+        </Link>
       </main>
     </div>
   );
