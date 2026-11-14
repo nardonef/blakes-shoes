@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono, Bebas_Neue } from "next/font/google";
 import Motion from "@/components/Motion";
 import NavBar from "@/components/NavBar";
+import { getTradeDeadline } from "@/lib/trade-deadline";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -45,7 +46,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${bebasNeue.variable} antialiased`}
       >
-        <NavBar />
+        <NavBar deadlineAt={getTradeDeadline().at} />
         <Motion />
         {children}
       </body>
