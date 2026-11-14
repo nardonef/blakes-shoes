@@ -84,12 +84,30 @@ function DraftContent({ model }: { model: DraftModel }) {
       { push: true },
     );
 
+  const bit = sp.get("bit") === "1";
+
   return (
-    <div className="min-h-screen" style={{ background: "var(--background)" }}>
+    <div className={`min-h-screen ${bit ? "bit16" : ""}`} style={{ background: "var(--background)" }}>
       <header className="bg-[#151515] text-[#f5f5f0] px-4 md:px-10 pt-8 md:pt-[52px]">
         <div className="max-w-[1160px] mx-auto">
-          <div className="text-[11px] tracking-[.14em] text-[var(--accent-light)] mb-2.5" style={MONO}>
-            DRAFT ARCHIVE · {years[years.length - 1]}–{years[0]}
+          <div className="flex items-center justify-between gap-3 mb-2.5">
+            <div className="text-[11px] tracking-[.14em] text-[var(--accent-light)]" style={MONO}>
+              DRAFT ARCHIVE · {years[years.length - 1]}–{years[0]}
+            </div>
+            {/* 16-bit mode: a pixel-font, hard-edged retro skin for the whole page (in the URL, so it's shareable). */}
+            <button
+              type="button"
+              onClick={() => setParams({ bit: bit ? null : "1" })}
+              aria-pressed={bit}
+              className={`shrink-0 min-h-11 px-3 text-[10.5px] font-bold tracking-[.14em] border-2 ${
+                bit
+                  ? "bg-[var(--accent-light)] text-[#151515] border-[var(--accent-light)] shadow-[3px_3px_0_#f5f5f0]"
+                  : "text-[#d6d6cc] border-[#3a3a38] hover:text-white hover:border-[var(--accent-light)]"
+              }`}
+              style={MONO}
+            >
+              ▶ 16-BIT {bit ? "ON" : "OFF"}
+            </button>
           </div>
           <h1 className="text-[clamp(44px,7vw,76px)] leading-[.92] mb-3 tracking-[.01em]" style={BEBAS}>
             The draft
@@ -111,7 +129,7 @@ function DraftContent({ model }: { model: DraftModel }) {
             ].map((t) => (
               <Link
                 key={t.id}
-                href={t.id === "board" ? "/draft" : `/draft?tab=${t.id}`}
+                href={t.id === "board" ? `/draft${bit ? "?bit=1" : ""}` : `/draft?tab=${t.id}${bit ? "&bit=1" : ""}`}
                 scroll={false}
                 className={`flex flex-col gap-[3px] px-5 pt-3.5 pb-[13px] min-w-[150px] flex-[1_1_150px] max-w-[260px] ${
                   tab === t.id ? "bg-[#f5f5f0] text-[#151515]" : "bg-[#262624] text-[#d6d6cc] hover:text-white"

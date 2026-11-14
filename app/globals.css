@@ -39,6 +39,23 @@ body {
   from { opacity: 0; }
   to { opacity: 1; }
 }
+/* Draft page 16-bit mode (?bit=1, app/draft): pixel font, square corners, hard pixel shadows.
+   !important because the page sets fonts inline. */
+.bit16,
+.bit16 * {
+  font-family: var(--font-pixel), ui-monospace, monospace !important;
+  border-radius: 0 !important;
+}
+.bit16 img {
+  image-rendering: pixelated;
+}
+.bit16 h1 {
+  text-shadow: 4px 4px 0 var(--accent);
+}
+.bit16 main section,
+.bit16 .bg-white {
+  box-shadow: 4px 4px 0 #151515;
+}
 /* Light sweep across the home champion band (data-sweep, played by Motion.tsx). Parked off to the
    left by default so it never shows when motion is off. */
 [data-sweep] {
