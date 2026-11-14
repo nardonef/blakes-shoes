@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import ArcadeMode from "@/components/ArcadeMode";
 
 const SELECTOR = "[data-reveal], [data-bar]";
 const EASE = "cubic-bezier(0.2, 0.7, 0.2, 1)";
@@ -77,5 +78,6 @@ export default function Motion() {
       mo.disconnect();
     };
   }, []);
-  return null;
+  // The hidden Konami-code Arcade mode rides along with the site-wide motion layer.
+  return <ArcadeMode />;
 }
