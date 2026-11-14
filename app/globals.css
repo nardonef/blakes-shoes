@@ -39,6 +39,10 @@ body {
   from { opacity: 0; }
   to { opacity: 1; }
 }
+@keyframes vhs-blink {
+  0%, 55% { opacity: 1; }
+  56%, 100% { opacity: 0; }
+}
 /* Light sweep across the home champion band (data-sweep, played by Motion.tsx). Parked off to the
    left by default so it never shows when motion is off. */
 [data-sweep] {
@@ -54,6 +58,10 @@ body {
   }
   .tab-fade {
     animation: fade-in 0.25s ease-out both;
+  }
+  /* Big Pete tapes (components/VhsVideo.tsx): the VCR blinks STOP / PAUSE. */
+  .vhs-blink {
+    animation: vhs-blink 1.1s steps(1) infinite;
   }
   /* Home masthead (components/Masthead.tsx, ChampionsReel.tsx): start states for the load-in. */
   html.motion [data-hero="rule"] {
