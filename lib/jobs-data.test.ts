@@ -2,13 +2,17 @@ import { describe, it, expect } from "vitest";
 import { JOBS, PENDING } from "./jobs-data";
 
 describe("jobs data", () => {
-  it("lists the 11 current jobs, each with a holder", () => {
-    expect(JOBS).toHaveLength(11);
+  it("lists the 12 current jobs, each with a holder", () => {
+    expect(JOBS).toHaveLength(12);
     for (const j of JOBS) expect(j.holder.trim()).not.toBe("");
   });
 
-  it("lists the 2 pending managers", () => {
-    expect(PENDING).toEqual(["Jone", "Slagle"]);
+  it("lists Jone as the only pending manager", () => {
+    expect(PENDING).toEqual(["Jone"]);
+  });
+
+  it("makes Slagle the Slate czar", () => {
+    expect(JOBS).toContainEqual({ holder: "Slagle", job: "Slate czar" });
   });
 
   it("makes Borba the Tier list czar", () => {
