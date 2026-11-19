@@ -898,6 +898,7 @@ function StatsContent({
     scoreDistribution,
     topPerformances,
     lowestPerformances,
+    lowestSeasons,
     h2hRecords,
     blowouts,
     closestGames,
@@ -1288,6 +1289,20 @@ function StatsContent({
                 }))}
               />
             </div>
+
+            {/* Lowest-scoring seasons */}
+            <RankedList
+              title="LOWEST-SCORING SEASONS"
+              subtitle="Fewest regular-season points for"
+              rows={lowestSeasons.map((s, i) => ({
+                rank: i + 1,
+                rankColor: "var(--dim)",
+                primary: s.team,
+                meta: `${s.season} · ${s.manager.toUpperCase()} · ${s.wins}-${s.losses}${s.ties ? `-${s.ties}` : ""} · ${(s.pointsFor / s.games).toFixed(1)} PPG`,
+                value: s.pointsFor.toFixed(1),
+                valueColor: "var(--muted-dark)",
+              }))}
+            />
 
             {/* Nail Biters / Blowouts */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-9">

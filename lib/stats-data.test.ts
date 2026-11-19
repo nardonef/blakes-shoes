@@ -5,7 +5,32 @@ import {
   getPlayoffStats,
   getHallOfChampions,
   resolveManagerName,
+  getLowestScoringSeasons,
 } from "./stats-data";
+
+describe("getLowestScoringSeasons", () => {
+  const low = getLowestScoringSeasons(10);
+
+  it("lists 10 finished team-seasons, fewest regular-season points first", () => {
+    expect(low).toHaveLength(10);
+    const pts = low.map((s) => s.pointsFor);
+    expect(pts).toEqual([...pts].sort((a, b) => a - b));
+    expect(low.some((s) => s.season === 2026)).toBe(false);
+  });
+
+  it("starts with Eric Rios's 2018 season (954.9 points, 1-12)", () => {
+    expect(low[0]).toMatchObject({ season: 2018, manager: "Eric Rios", team: "The good guys", wins: 1, losses: 12, games: 13 });
+    expect(low[0].pointsFor).toBeCloseTo(954.9, 1);
+  });
+
+  it("leaves out unidentified managers, like the other leaderboards", () => {
+    expect(low.every((s) => s.manager !== "--hidden--")).toBe(true);
+  });
+
+  it("counts every regular-season game once per team", () => {
+    for (const s of low) expect(s.wins + s.losses + s.ties).toBe(s.games);
+  });
+});
 import { CURRENT_OWNERS } from "./legacy-data";
 import championsData from "@/data/champions.json";
 import standingsData from "@/data/standings.json";
