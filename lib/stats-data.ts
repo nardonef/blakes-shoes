@@ -468,6 +468,48 @@ export function getPlayoffStats(): PlayoffStats[] {
 }
 
 /** Everything the Stats page shows, computed on the server so the raw league data never ships to the browser. */
+export interface ScoringSeason {
+  season: number;
+  team: string;
+  manager: string;
+  pointsFor: number;
+  games: number;
+  wins: number;
+  losses: number;
+  ties: number;
+}
+
+/**
+ * Team-seasons with the fewest regular-season points for. Finished seasons only (a season in
+ * progress would top the list just for having fewer games); unidentified managers are left out,
+ * like every other leaderboard.
+ */
+export function getLowestScoringSeasons(limit = 10): ScoringSeason[] {
+  const finished = new Set(champions.map((c) => c.season_year));
+  const byTeam = new Map<string, ScoringSeason>();
+  for (const m of matchups) {
+    if (m.matchup_type !== "regular" || !finished.has(m.season_year)) continue;
+    const sides: [string, string, number, number][] = [
+      [m.team1_name, m.team1_manager, m.team1_score, m.team2_score],
+      [m.team2_name, m.team2_manager, m.team2_score, m.team1_score],
+    ];
+    for (const [team, manager, pf, pa] of sides) {
+      const key = `${m.season_year}|${team}`;
+      const s = byTeam.get(key) ?? { season: m.season_year, team, manager, pointsFor: 0, games: 0, wins: 0, losses: 0, ties: 0 };
+      s.pointsFor += pf;
+      s.games++;
+      if (pf > pa) s.wins++;
+      else if (pf < pa) s.losses++;
+      else s.ties++;
+      byTeam.set(key, s);
+    }
+  }
+  return [...byTeam.values()]
+    .filter((s) => isVisibleManager(s.manager))
+    .sort((a, b) => a.pointsFor - b.pointsFor)
+    .slice(0, limit);
+}
+
 export function getCoreStats() {
   const seasons = getSeasons();
   return {
@@ -479,6 +521,7 @@ export function getCoreStats() {
     scoreDistribution: getScoreDistribution(),
     topPerformances: getTopPerformances(10),
     lowestPerformances: getLowestPerformances(10),
+    lowestSeasons: getLowestScoringSeasons(10),
     h2hRecords: getVisibleH2HRecords(),
     blowouts: getBlowouts(10),
     closestGames: getClosestGames(10),
