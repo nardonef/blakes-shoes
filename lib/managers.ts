@@ -26,7 +26,7 @@ const PEOPLE: Person[] = [
   { name: "Anthony Bove", accounts: ["AB"], hidden: [[2013, "anthony's Nifty Team"]] },
   { name: "Ryan Kaplan", accounts: ["Ryan"] },
   { name: "Chris Zolner", accounts: ["Chris"] },
-  { name: "Kyle Cost", accounts: ["Kyle"], hidden: [[2013, "Riley Coopers Niggas"]] },
+  { name: "Kyle Cost", accounts: ["Kyle"], hidden: [[2013, "Riley Coopers N*****"]] },
   { name: "John Cox", accounts: ["John", "john"], hidden: [[2017, "Cam Shoopton"]] },
   { name: "Fusco", accounts: [], hidden: [[2017, "Fusco x 12"]] },
 ];

@@ -49,7 +49,7 @@ export const BONUS_VIDEOS: BonusVideo[] = [
     slug: "bonus-2018-06-08",
     title: "The Caps crowd",
     date: "2018-06-08",
-    caption: "By the way don’t give a fuck about the caps but was still pretty wild",
+    caption: "By the way don’t give a f*** about the caps but was still pretty wild",
     likes: 3,
     width: 320,
     height: 568,
