@@ -20,6 +20,7 @@ const current = seasons[seasons.length - 1];
 
 const officialRules = [
   "All draft pick trades must include keepers.",
+  "All managers are subject to random drug tests.",
 ];
 
 const draftLotteryOrder = [
