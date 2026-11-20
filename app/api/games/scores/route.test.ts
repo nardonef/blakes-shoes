@@ -26,7 +26,7 @@ describe("/api/games/scores", () => {
     expect(res.status).toBe(200);
     const body = await res.json();
     expect(body.kicker).toEqual([{ manager: "Peter Klensch", score: 52 }]);
-    expect(Object.keys(body).sort()).toEqual(["coach", "kicker", "qb", "run"]);
+    expect(Object.keys(body).sort()).toEqual(["coach", "kicker", "qb", "rivalry", "run"]);
     expect(await (await GET()).json()).toEqual(body);
   });
 

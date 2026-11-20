@@ -7,6 +7,7 @@ export const GAMES = {
   qb: { label: "QB", unit: "YDS", min: 0, max: 500 },
   run: { label: "RUN", unit: "PTS", min: 0, max: 999 },
   coach: { label: "COACH", unit: "MARGIN", min: -99, max: 99 },
+  rivalry: { label: "RIVALRY", unit: "SEC LEFT", min: 0, max: 120 },
 } as const;
 
 export type GameId = keyof typeof GAMES;

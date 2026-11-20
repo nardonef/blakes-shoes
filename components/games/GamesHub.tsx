@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { GAMES, GAME_IDS, formatScore, type GameId, type ScoreEntry } from "@/lib/games/scores";
 import type { GameRosters } from "@/lib/games/rosters";
@@ -13,7 +14,9 @@ const MONO = { fontFamily: "var(--font-geist-mono)" };
 const BEBAS = { fontFamily: "var(--font-bebas-neue)" };
 const MANAGER_KEY = "games-manager";
 
-const BLURBS: Record<GameId, string> = {
+type HubGame = Exclude<GameId, "rivalry">;
+
+const BLURBS: Record<HubGame, string> = {
   kicker: "Your kicker, your leg: better kickers have more range. Tap to set aim, tap to set power. Every make backs you up 5 yards. Three misses and you're done.",
   qb: "Your QB throws to your WRs and TE. Better receivers get open more often, and a better QB buys more time. Ten dropbacks; a pick ends it.",
   run: "You're your RB1, and better backs are faster. Drag (or use arrow keys) to run through their defense. Four downs to make 10. Every touchdown brings more defenders.",
@@ -21,6 +24,9 @@ const BLURBS: Record<GameId, string> = {
 };
 
 type Boards = Record<GameId, ScoreEntry[]>;
+
+/** The 2D games on this page; RIVALRY has its own page. */
+const HUB_GAMES = GAME_IDS.filter((g): g is HubGame => g !== "rivalry");
 
 /** A random other manager to play against. */
 function rollOpponent(managers: string[], me: string): string {
@@ -31,7 +37,7 @@ function rollOpponent(managers: string[], me: string): string {
 export default function GamesHub({ managers, rosters }: { managers: string[]; rosters: GameRosters }) {
   const [manager, setManager] = useState("");
   const [oppName, setOppName] = useState("");
-  const [game, setGame] = useState<GameId>("kicker");
+  const [game, setGame] = useState<HubGame>("kicker");
   const [boards, setBoards] = useState<Boards | null>(null);
   const [status, setStatus] = useState<"loading" | "ok" | "offline">("loading");
   const [saved, setSaved] = useState<string | null>(null);
@@ -83,6 +89,19 @@ export default function GamesHub({ managers, rosters }: { managers: string[]; ro
 
   return (
     <div className="max-w-[1160px] mx-auto px-4 md:px-10 py-6 md:py-10">
+      <Link
+        href="/games/rivalry"
+        className="group block mb-6 bg-[#151515] text-white p-4 md:p-6 border-l-4 border-[var(--accent)] hover:bg-[#1d1d1c]"
+      >
+        <div className="text-[10.5px] font-semibold tracking-[.2em] text-[var(--accent-light)]" style={MONO}>
+          NEW · 3D
+        </div>
+        <div className="text-[36px] md:text-[48px] leading-none mt-1" style={BEBAS}>
+          RIVALRY DRIVE <span className="text-[var(--accent-light)] group-hover:translate-x-1 inline-block transition-transform">→</span>
+        </div>
+        <p className="text-sm text-[#c9c9c2] mt-1">Two minutes, down to your nemesis, your real roster against theirs. Score to win.</p>
+      </Link>
+
       <section aria-labelledby="pick-label" className="mb-6">
         <label id="pick-label" htmlFor="manager" className="block text-[11px] font-semibold tracking-[.2em] text-[var(--muted-light)] mb-2" style={MONO}>
           YOU ARE
@@ -106,7 +125,7 @@ export default function GamesHub({ managers, rosters }: { managers: string[]; ro
       </section>
 
       <div role="tablist" aria-label="Games" className="grid grid-cols-4 border-b-[3px] border-[var(--accent)]">
-        {GAME_IDS.map((g) => (
+        {HUB_GAMES.map((g) => (
           <button
             key={g}
             role="tab"
