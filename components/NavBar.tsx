@@ -14,6 +14,7 @@ const links = [
   { href: "/big-pete", label: "BIG PETE" },
   { href: "/jobs", label: "JOBS" },
   { href: "/tier-lists", label: "TIER LISTS" },
+  { href: "/games", label: "GAMES" },
   { href: "/shoesgpt", label: "SHOESGPT" },
   { href: "/feedback", label: "FEEDBACK" },
 ];
@@ -48,7 +49,7 @@ export default function NavBar() {
               <Link
                 key={link.href}
                 href={link.href}
-                className={`flex items-center justify-center px-2 xl:px-[18px] py-4 text-[11px] font-semibold tracking-[.06em] xl:tracking-[.12em] whitespace-nowrap transition-colors duration-150 ${
+                className={`flex items-center justify-center px-2 xl:px-[14px] py-4 text-[11px] font-semibold tracking-[.06em] xl:tracking-[.12em] whitespace-nowrap transition-colors duration-150 ${
                   isActive
                     ? "bg-[var(--accent)] text-white"
                     : "text-[#a3a3a0] hover:text-white"

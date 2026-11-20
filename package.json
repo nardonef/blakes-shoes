@@ -14,6 +14,7 @@
   "dependencies": {
     "@ai-sdk/anthropic": "^4.0.81",
     "@ai-sdk/react": "^4.0.146",
+    "@upstash/redis": "^1.41.0",
     "ai": "^7.0.142",
     "next": "16.0.8",
     "react": "19.2.1",
