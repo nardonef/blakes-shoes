@@ -4,8 +4,8 @@ import { z } from "zod";
 
 export const GAMES = {
   kicker: { label: "KICKER", unit: "YD", min: 0, max: 70 },
-  qb: { label: "QB", unit: "YDS", min: 0, max: 2000 },
-  run: { label: "RUN", unit: "PTS", min: 0, max: 9999 },
+  qb: { label: "QB", unit: "YDS", min: 0, max: 500 },
+  run: { label: "RUN", unit: "PTS", min: 0, max: 999 },
   coach: { label: "COACH", unit: "MARGIN", min: -99, max: 99 },
 } as const;
 
