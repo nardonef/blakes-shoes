@@ -8,6 +8,11 @@ export const KICK_STEP = 5;
 export const KICK_MAX_RANGE = 70;
 export const KICK_STRIKES = 3;
 
+/** Leg range from the kicker's rating (0..1): 62 yards for the league's worst, 72 for its best. */
+export function legRange(rating: number): number {
+  return 62 + 10 * rating;
+}
+
 /** Triangle wave 0 -> 1 -> 0 over `period` seconds. */
 export function meter(t: number, period: number): number {
   const x = (((t % period) + period) % period) / period;
@@ -37,11 +42,11 @@ export interface KickResult {
 }
 
 /**
- * aim: aim-meter reading 0..1 (0.5 = straight). power: power-meter reading 0..1.
+ * aim: aim-meter reading 0..1 (0.5 = straight). power: power-meter reading 0..1. maxRange: the kicker's leg.
  * Wind pushes the ball more the farther it travels; the uprights look narrower from deeper.
  */
-export function kickResult(distance: number, aim: number, power: number, windMph: number): KickResult {
-  const range = KICK_MAX_RANGE * power;
+export function kickResult(distance: number, aim: number, power: number, windMph: number, maxRange = KICK_MAX_RANGE): KickResult {
+  const range = maxRange * power;
   const lateral = (aim * 2 - 1) + (windMph / 15) * (distance / 100);
   const tolerance = 4.5 / distance;
   let miss: KickMiss | undefined;

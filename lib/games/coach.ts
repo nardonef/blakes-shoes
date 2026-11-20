@@ -112,10 +112,11 @@ function addPoints(g: CoachGame, pts: number): CoachGame {
   return g.possession === "you" ? { ...g, you: g.you + pts } : { ...g, cpu: g.cpu + pts };
 }
 
-export function runPlay(g: CoachGame, off: OffCall, def: DefCall, rng: Rng): CoachGame {
+/** `who`: the ball carrier or target, shown in the play-by-play. */
+export function runPlay(g: CoachGame, off: OffCall, def: DefCall, rng: Rng, who?: string): CoachGame {
   if (g.over) return g;
   const r = resolvePlay(off, def, rng);
-  const tag = `${off} vs ${def}`;
+  const tag = `${who ? `${who} · ` : ""}${off} vs ${def}`;
   if (r.turnover) return changePossession(g, 100 - g.drive.yardLine, `${tag}: TURNOVER`);
   const { state, event } = advance(g.drive, r.yards);
   const desc = r.incomplete ? "incomplete" : `${r.yards >= 0 ? "+" : ""}${r.yards}`;

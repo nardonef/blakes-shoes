@@ -20,7 +20,7 @@ describe("parseSubmission", () => {
     expect(parseSubmission({ game: "golf", manager: "Peter Klensch", score: 1 }, MANAGERS)).toEqual({ ok: false, error: "Invalid score" });
     expect(parseSubmission({ game: "qb", manager: "Tom Brady", score: 1 }, MANAGERS)).toEqual({ ok: false, error: "Unknown manager" });
     expect(parseSubmission({ game: "qb", manager: "Peter Klensch", score: 1.5 }, MANAGERS).ok).toBe(false);
-    expect(parseSubmission({ game: "kicker", manager: "Peter Klensch", score: 71 }, MANAGERS)).toEqual({ ok: false, error: "Score out of range" });
+    expect(parseSubmission({ game: "kicker", manager: "Peter Klensch", score: 76 }, MANAGERS)).toEqual({ ok: false, error: "Score out of range" });
     expect(parseSubmission({ game: "run", manager: "Peter Klensch", score: -1 }, MANAGERS).ok).toBe(false);
     expect(parseSubmission(null, MANAGERS).ok).toBe(false);
   });

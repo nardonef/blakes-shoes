@@ -76,8 +76,9 @@ export interface Coverage {
   cushion: number;
 }
 
-export function rollCoverage(rng: Rng): Coverage {
-  return { lag: 0.05 + rng() * 0.45, cushion: rng() * 1.5 };
+/** Better receivers (rating 0..1) beat their man by more: lag 0.05-0.35s plus up to 0.2s from rating. */
+export function rollCoverage(rng: Rng, rating = 0.5): Coverage {
+  return { lag: 0.05 + rng() * 0.3 + rating * 0.2, cushion: rng() * 1.5 };
 }
 
 export function defenderPosition(route: Route, c: Coverage, t: number): Vec {
@@ -85,8 +86,9 @@ export function defenderPosition(route: Route, c: Coverage, t: number): Vec {
   return { x: p.x, y: p.y + c.cushion };
 }
 
-export function sackTime(rng: Rng): number {
-  return 2.6 + rng() * 1.4;
+/** Better QBs (rating 0..1) buy up to 0.6s more in the pocket. */
+export function sackTime(rng: Rng, rating = 0.5): number {
+  return 2.4 + rng() * 1.4 + rating * 0.6;
 }
 
 /** Where to throw and when it arrives, leading the receiver. Iterates since flight time depends on target. */

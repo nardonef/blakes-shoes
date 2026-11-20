@@ -2,26 +2,35 @@
 
 import { useEffect, useState } from "react";
 import { GAMES, GAME_IDS, formatScore, type GameId, type ScoreEntry } from "@/lib/games/scores";
+import type { GameRosters } from "@/lib/games/rosters";
 import Kicker from "./Kicker";
 import Qb from "./Qb";
 import Run from "./Run";
 import Coach from "./Coach";
+import { Matchup } from "./ui";
 
 const MONO = { fontFamily: "var(--font-geist-mono)" };
 const BEBAS = { fontFamily: "var(--font-bebas-neue)" };
 const MANAGER_KEY = "games-manager";
 
 const BLURBS: Record<GameId, string> = {
-  kicker: "Tap to set aim, tap to set power. Every make backs you up 5 yards. Three misses and you're done.",
-  qb: "Ten dropbacks. Tap an open receiver before the rush gets home. Throw a pick and it's over.",
-  run: "Drag (or use arrow keys) to run. Four downs to make 10. Every touchdown brings more defenders.",
-  coach: "Call the plays against another manager. Five possessions each. Your score is the final margin.",
+  kicker: "Your kicker, your leg: better kickers have more range. Tap to set aim, tap to set power. Every make backs you up 5 yards. Three misses and you're done.",
+  qb: "Your QB throws to your WRs and TE. Better receivers get open more often, and a better QB buys more time. Ten dropbacks; a pick ends it.",
+  run: "You're your RB1, and better backs are faster. Drag (or use arrow keys) to run through their defense. Four downs to make 10. Every touchdown brings more defenders.",
+  coach: "Call the plays against a league rival. Your players are in the play-by-play. Five possessions each. Your score is the final margin.",
 };
 
 type Boards = Record<GameId, ScoreEntry[]>;
 
-export default function GamesHub({ managers }: { managers: string[] }) {
+/** A random other manager to play against. */
+function rollOpponent(managers: string[], me: string): string {
+  const others = managers.filter((m) => m !== me);
+  return others[Math.floor(Math.random() * others.length)];
+}
+
+export default function GamesHub({ managers, rosters }: { managers: string[]; rosters: GameRosters }) {
   const [manager, setManager] = useState("");
+  const [oppName, setOppName] = useState("");
   const [game, setGame] = useState<GameId>("kicker");
   const [boards, setBoards] = useState<Boards | null>(null);
   const [status, setStatus] = useState<"loading" | "ok" | "offline">("loading");
@@ -30,7 +39,10 @@ export default function GamesHub({ managers }: { managers: string[] }) {
   useEffect(() => {
     try {
       const m = localStorage.getItem(MANAGER_KEY);
-      if (m && managers.includes(m)) setManager(m);
+      if (m && managers.includes(m)) {
+        setManager(m);
+        setOppName(rollOpponent(managers, m));
+      }
     } catch {}
     fetch("/api/games/scores")
       .then((r) => (r.ok ? r.json() : Promise.reject()))
@@ -43,6 +55,7 @@ export default function GamesHub({ managers }: { managers: string[] }) {
 
   function choose(m: string) {
     setManager(m);
+    setOppName(rollOpponent(managers, m));
     try {
       localStorage.setItem(MANAGER_KEY, m);
     } catch {}
@@ -65,7 +78,8 @@ export default function GamesHub({ managers }: { managers: string[] }) {
     }
   }
 
-  const opponents = managers.filter((m) => m !== manager);
+  const team = rosters.teams.find((t) => t.manager === manager);
+  const opp = rosters.teams.find((t) => t.manager === oppName);
 
   return (
     <div className="max-w-[1160px] mx-auto px-4 md:px-10 py-6 md:py-10">
@@ -101,6 +115,7 @@ export default function GamesHub({ managers }: { managers: string[] }) {
             onClick={() => {
               setGame(g);
               setSaved(null);
+              if (manager) setOppName(rollOpponent(managers, manager));
             }}
             className={`min-h-12 text-[12px] font-semibold tracking-[.12em] ${game === g ? "bg-[var(--accent)] text-white" : "bg-[#151515] text-[#a3a3a0] hover:text-white"}`}
             style={MONO}
@@ -113,16 +128,17 @@ export default function GamesHub({ managers }: { managers: string[] }) {
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px] mt-6">
         <section aria-label={`${GAMES[game].label} game`}>
           <p className="text-sm text-[var(--body-text)] mb-3">{BLURBS[game]}</p>
-          {!manager ? (
+          {!team || !opp ? (
             <div className="bg-[#151515] text-[#f5f5f0] p-8 text-center text-[28px]" style={BEBAS}>
               PICK YOUR MANAGER TO PLAY
             </div>
           ) : (
-            <div key={`${game}-${manager}`}>
-              {game === "kicker" && <Kicker onFinish={(s) => finish("kicker", s)} />}
-              {game === "qb" && <Qb onFinish={(s) => finish("qb", s)} />}
-              {game === "run" && <Run manager={manager} onFinish={(s) => finish("run", s)} />}
-              {game === "coach" && <Coach manager={manager} opponents={opponents} onFinish={(s) => finish("coach", s)} />}
+            <div key={`${game}-${manager}-${oppName}`}>
+              <Matchup team={team} opp={game === "kicker" ? undefined : opp} week={rosters.week} />
+              {game === "kicker" && <Kicker team={team} onFinish={(s) => finish("kicker", s)} />}
+              {game === "qb" && <Qb team={team} opp={opp} onFinish={(s) => finish("qb", s)} />}
+              {game === "run" && <Run team={team} opp={opp} onFinish={(s) => finish("run", s)} />}
+              {game === "coach" && <Coach team={team} opp={opp} onFinish={(s) => finish("coach", s)} />}
             </div>
           )}
           {saved && (

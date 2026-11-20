@@ -1,5 +1,6 @@
 import GamesHub from "@/components/games/GamesHub";
 import { leagueManagers } from "@/lib/games/managers";
+import { gameRosters } from "@/lib/games/rosters";
 
 export const metadata = {
   title: "Games | Blake's Shoes",
@@ -21,11 +22,11 @@ export default function GamesPage() {
             BLAKE&apos;S SHOES FOOTBALL
           </h1>
           <p className="mt-3 text-sm md:text-base text-[#c9c9c2] max-w-[560px]">
-            Pick your manager, play all four, and put your name on the league leaderboard. Only your best score counts.
+            Pick your manager and play with your real starters. Better fantasy seasons make better players. Only your best score counts on the league leaderboard.
           </p>
         </div>
       </header>
-      <GamesHub managers={leagueManagers()} />
+      <GamesHub managers={leagueManagers()} rosters={gameRosters()} />
     </div>
   );
 }
