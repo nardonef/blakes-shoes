@@ -6,19 +6,27 @@ import { FIELD_WIDTH, dist, stepToward, type Rng, type Vec } from "./core";
 export const PLAYER_SPEED = 8;
 export const TACKLE_RADIUS = 1;
 
+/** Runner speed from the RB's rating (0..1): 7.6 to 8.6 yards/sec. */
+export function runnerSpeed(rating: number): number {
+  return 7.6 + rating;
+}
+
 export interface Defender extends Vec {
   speed: number;
 }
 
-/** Defenders line up 2-18 yards past the line of scrimmage; more and faster each level. */
-export function spawnDefenders(los: number, level: number, rng: Rng): Defender[] {
+/**
+ * Defenders line up 2-18 yards past the line of scrimmage; more and faster each level. A better
+ * real-life DEF (rating 0..1) pursues up to 0.6 yd/s faster.
+ */
+export function spawnDefenders(los: number, level: number, rng: Rng, defRating = 0.5): Defender[] {
   const count = Math.min(11, 4 + level);
   const out: Defender[] = [];
   for (let i = 0; i < count; i++) {
     out.push({
       x: 3 + rng() * (FIELD_WIDTH - 6),
       y: los + 2 + rng() * 16,
-      speed: Math.min(7.6, 5 + level * 0.3 + rng() * 1.2),
+      speed: Math.min(7.6, 4.7 + level * 0.3 + rng() * 1.2 + defRating * 0.6),
     });
   }
   return out;
@@ -34,10 +42,10 @@ export function stepDefenders(defs: Defender[], player: Vec, playerVel: Vec, dt:
 }
 
 /** Move the runner along a direction (normalized here), at full speed for any non-zero input. */
-export function stepPlayer(p: Vec, dir: Vec, dt: number): { pos: Vec; vel: Vec } {
+export function stepPlayer(p: Vec, dir: Vec, dt: number, speed = PLAYER_SPEED): { pos: Vec; vel: Vec } {
   const m = Math.hypot(dir.x, dir.y);
   if (m === 0) return { pos: p, vel: { x: 0, y: 0 } };
-  const vel = { x: (dir.x / m) * PLAYER_SPEED, y: (dir.y / m) * PLAYER_SPEED };
+  const vel = { x: (dir.x / m) * speed, y: (dir.y / m) * speed };
   return { pos: { x: p.x + vel.x * dt, y: p.y + vel.y * dt }, vel };
 }
 

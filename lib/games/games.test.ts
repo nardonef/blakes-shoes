@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { advance, downLabel, seededRng, spotLabel, startDrive, stepToward } from "./core";
-import { kickResult, meter, meterPeriod, rollWind } from "./kicker";
-import { CONCEPTS, completionYards, defenderPosition, leadThrow, QB_SPOT, BALL_SPEED, resolveThrow, routePosition } from "./qb";
-import { playEnded, spawnDefenders, stepDefenders, stepPlayer, TACKLE_RADIUS } from "./run";
+import { kickResult, legRange, meter, meterPeriod, rollWind } from "./kicker";
+import { CONCEPTS, completionYards, defenderPosition, leadThrow, QB_SPOT, BALL_SPEED, resolveThrow, rollCoverage, routePosition, sackTime } from "./qb";
+import { playEnded, runnerSpeed, spawnDefenders, stepDefenders, stepPlayer, TACKLE_RADIUS } from "./run";
 import {
   cpuFourthDown,
   fgDistance,
@@ -227,5 +227,39 @@ describe("coach", () => {
     expect(cpuFourthDown({ ...g, drive: { yardLine: 60, down: 4, toGo: 1 } })).toBe("go");
     expect(cpuFourthDown({ ...g, drive: { yardLine: 75, down: 4, toGo: 8 } })).toBe("fg");
     expect(cpuFourthDown({ ...g, drive: { yardLine: 30, down: 4, toGo: 8 } })).toBe("punt");
+  });
+});
+
+describe("roster ratings", () => {
+  it("kicker leg range runs 62-72 yards", () => {
+    expect(legRange(0)).toBe(62);
+    expect(legRange(1)).toBe(72);
+    expect(kickResult(66, 0.5, 1, 0, legRange(0)).miss).toBe("short");
+    expect(kickResult(66, 0.5, 1, 0, legRange(1)).good).toBe(true);
+  });
+
+  it("better receivers get more separation; better QBs more time", () => {
+    expect(rollCoverage(always(0.5), 1).lag).toBeGreaterThan(rollCoverage(always(0.5), 0).lag);
+    expect(rollCoverage(always(0.5)).lag).toBeCloseTo(0.3);
+    expect(sackTime(always(0.5), 1) - sackTime(always(0.5), 0)).toBeCloseTo(0.6);
+    expect(sackTime(always(0.5))).toBeCloseTo(3.4);
+  });
+
+  it("better real defenses pursue faster", () => {
+    const slow = spawnDefenders(25, 1, seededRng(2), 0);
+    const fast = spawnDefenders(25, 1, seededRng(2), 1);
+    fast.forEach((d, i) => expect(d.speed - slow[i].speed).toBeCloseTo(0.6));
+  });
+
+  it("better backs run faster", () => {
+    expect(runnerSpeed(0)).toBe(7.6);
+    expect(runnerSpeed(1)).toBe(8.6);
+    const { pos } = stepPlayer({ x: 0, y: 0 }, { x: 0, y: 1 }, 1, runnerSpeed(1));
+    expect(pos.y).toBeCloseTo(8.6);
+  });
+
+  it("coach play-by-play names the player", () => {
+    const g = runPlay(newCoachGame(), "INSIDE RUN", "ZONE", seededRng(4), "JACOBS");
+    expect(g.log[0].startsWith("JACOBS · INSIDE RUN vs ZONE")).toBe(true);
   });
 });

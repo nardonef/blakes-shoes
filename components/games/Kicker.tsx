@@ -1,12 +1,18 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { KICK_START, KICK_STEP, KICK_STRIKES, kickResult, meter, meterPeriod, rollWind, type KickResult } from "@/lib/games/kicker";
-import { Scoreboard, BigButton, GameOver } from "./ui";
+import { KICK_START, KICK_STEP, KICK_STRIKES, kickResult, legRange, meter, meterPeriod, rollWind, type KickResult } from "@/lib/games/kicker";
+import type { GameRoster } from "@/lib/games/rosters";
+import { Scoreboard, BigButton, GameOver, PlayerLine } from "./ui";
 
 type Phase = "aim" | "power" | "flight" | "result" | "over";
 
-export default function Kicker({ onFinish }: { onFinish: (score: number) => void }) {
+// Static crowd: a deterministic scatter of fans in the stands, some in your team color.
+const CROWD = Array.from({ length: 160 }, (_, i) => ({ x: (i * 37) % 300, y: 34 + ((i * 53) % 46), c: i % 5 }));
+const lastName = (n: string) => n.split(" ").slice(-1)[0].toUpperCase();
+
+export default function Kicker({ team, onFinish }: { team: GameRoster; onFinish: (score: number) => void }) {
+  const leg = legRange(team.k.rating);
   const [distance, setDistance] = useState(KICK_START);
   const [wind, setWind] = useState(0);
   const [strikes, setStrikes] = useState(0);
@@ -39,7 +45,7 @@ export default function Kicker({ onFinish }: { onFinish: (score: number) => void
       setAim(value);
       setPhase("power");
     } else if (phase === "power") {
-      setResult(kickResult(distance, aim, value, wind));
+      setResult(kickResult(distance, aim, value, wind, leg));
       setPhase("flight");
       setTimeout(() => setPhase("result"), 900);
     } else if (phase === "result" && result) {
@@ -85,32 +91,76 @@ export default function Kicker({ onFinish }: { onFinish: (score: number) => void
     <div>
       <Scoreboard
         items={[
-          ["DISTANCE", `${distance} YD`],
+          ["KICK", `${distance} YD`],
           ["WIND", wind === 0 ? "CALM" : `${Math.abs(wind)} ${wind < 0 ? "←" : "→"}`],
           ["LONGEST", longest ? `${longest}` : "-"],
           ["MISSES", `${strikes}/${KICK_STRIKES}`],
+          ["LEG", `${Math.round(leg)} YD`],
         ]}
       />
       <div className="relative bg-[#151515]">
         <svg viewBox="0 0 300 260" className="w-full block select-none" aria-hidden="true">
           <defs>
             <linearGradient id="k-sky" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0" stopColor="#1d2a22" />
-              <stop offset="1" stopColor="#2D5A3D" />
+              <stop offset="0" stopColor="#0b1018" />
+              <stop offset="1" stopColor="#1b2633" />
+            </linearGradient>
+            <radialGradient id="k-light">
+              <stop offset="0" stopColor="#fffbe6" stopOpacity=".9" />
+              <stop offset="1" stopColor="#fffbe6" stopOpacity="0" />
+            </radialGradient>
+            <linearGradient id="k-grass" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stopColor="#24502f" />
+              <stop offset="1" stopColor="#3a7a49" />
             </linearGradient>
           </defs>
           <rect width="300" height="150" fill="url(#k-sky)" />
-          <rect y="150" width="300" height="110" fill="#2D5A3D" />
-          {[160, 180, 205, 235].map((y) => (
-            <line key={y} x1="0" x2="300" y1={y} y2={y} stroke="#ffffff" strokeOpacity=".25" />
+          {[30, 270].map((x) => (
+            <g key={x}>
+              <circle cx={x} cy="14" r="26" fill="url(#k-light)" />
+              <rect x={x - 9} y="10" width="18" height="7" rx="1.5" fill="#fffbe6" />
+            </g>
           ))}
-          {/* uprights */}
-          <g stroke="#e8c547" strokeWidth="4" strokeLinecap="round">
+          {/* stands */}
+          <rect y="30" width="300" height="56" fill="#141a22" />
+          {CROWD.map((f, i) => (
+            <rect key={i} x={f.x} y={f.y} width="3" height="3.5" rx="1" fill={f.c === 0 ? team.color : ["", "#6b7280", "#9ca3af", "#4b5563", "#d1d5db"][f.c]} opacity=".85" />
+          ))}
+          <rect y="84" width="300" height="5" fill={team.color} />
+          {/* field in perspective, with the end zone in your colors */}
+          <polygon points="0,260 300,260 300,150 0,150" fill="url(#k-grass)" />
+          <rect y="89" width="300" height="61" fill="#2a5a37" />
+          <rect y="150" width="300" height="22" fill={team.color} opacity=".85" />
+          <text x="150" y="166" textAnchor="middle" fill="#fff" fillOpacity=".9" fontSize="15" letterSpacing="3" style={{ fontFamily: "var(--font-bebas-neue)" }}>
+            {lastName(team.manager)}
+          </text>
+          {[180, 196, 216, 242].map((y, i) => (
+            <rect key={y} y={y} width="300" height={8 + i * 4} fill="#ffffff" opacity=".05" />
+          ))}
+          {[172, 180, 196, 216, 242].map((y) => (
+            <line key={`l${y}`} x1="0" x2="300" y1={y} y2={y} stroke="#ffffff" strokeOpacity=".35" />
+          ))}
+          {/* uprights, with a shadow on the grass */}
+          <g stroke="#000" strokeOpacity=".25" strokeWidth="4" strokeLinecap="round">
+            <line x1="152" x2="168" y1="150" y2="160" />
+          </g>
+          <g stroke="#f2c230" strokeWidth="4" strokeLinecap="round">
             <line x1="150" x2="150" y1="150" y2="100" />
             <line x1={150 - half} x2={150 + half} y1="100" y2="100" />
-            <line x1={150 - half} x2={150 - half} y1="100" y2="20" />
-            <line x1={150 + half} x2={150 + half} y1="100" y2="20" />
+            <line x1={150 - half} x2={150 - half} y1="100" y2="18" />
+            <line x1={150 + half} x2={150 + half} y1="100" y2="18" />
           </g>
+          {/* ball's arc once it's away */}
+          {phase === "result" && (
+            <path
+              d={`M150 236 Q ${(150 + ball.x) / 2} ${result!.miss === "short" ? 60 : -10} ${ball.x} ${ball.y}`}
+              fill="none"
+              stroke="#fff"
+              strokeOpacity=".45"
+              strokeWidth="2"
+              strokeDasharray="4 5"
+            />
+          )}
           <g
             style={{
               transform: `translate(${ball.x}px, ${ball.y}px) scale(${ball.s})`,
@@ -133,9 +183,12 @@ export default function Kicker({ onFinish }: { onFinish: (score: number) => void
         )}
       </div>
 
+      <div className="bg-[#232322] border-b border-[#333]">
+        <PlayerLine label="K" name={team.k.name} ppg={team.k.ppg} rating={team.k.rating} color={team.color} />
+      </div>
       <div className="bg-[#232322] px-4 py-3 space-y-3">
         <Meter label="AIM" value={phase === "aim" ? value : aim} zone={{ center: (1 - (wind / 15) * (distance / 100)) / 2, width: 4.5 / distance }} active={phase === "aim"} />
-        <Meter label="POWER" value={phase === "power" ? value : phase === "aim" ? 0 : result?.range ? result.range / 70 : 0} need={distance / 70} active={phase === "power"} />
+        <Meter label="POWER" value={phase === "power" ? value : phase === "aim" ? 0 : result?.range ? result.range / leg : 0} need={distance / leg} active={phase === "power"} />
       </div>
 
       {phase === "over" ? (

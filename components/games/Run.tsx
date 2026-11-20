@@ -2,11 +2,11 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { advance, downLabel, FIELD_WIDTH, spotLabel, startDrive, type Downs, type Vec } from "@/lib/games/core";
-import { playEnded, spawnDefenders, stepDefenders, stepPlayer, type Defender } from "@/lib/games/run";
-import { BigButton, GameOver, Scoreboard } from "./ui";
+import { playEnded, runnerSpeed, spawnDefenders, stepDefenders, stepPlayer, type Defender } from "@/lib/games/run";
+import type { GameRoster } from "@/lib/games/rosters";
+import { BigButton, GameOver, PlayerLine, Scoreboard } from "./ui";
+import { FIELD_W as W, line, paintField, PX, token } from "./field";
 
-const PX = 10;
-const W = Math.round(FIELD_WIDTH * PX);
 const H = 560;
 const VIEW = H / PX;
 
@@ -22,19 +22,14 @@ interface World {
   cameraY: number;
 }
 
-const initials = (name: string) =>
-  name
-    .split(" ")
-    .map((w) => w[0])
-    .join("")
-    .slice(0, 2)
-    .toUpperCase();
+const lastName = (n: string) => n.split(" ").slice(-1)[0].toUpperCase();
 
 function cameraFor(y: number) {
   return Math.min(110 - VIEW, Math.max(-10, y - VIEW * 0.3));
 }
 
-export default function Run({ manager, onFinish }: { manager: string; onFinish: (score: number) => void }) {
+export default function Run({ team, opp, onFinish }: { team: GameRoster; opp: GameRoster; onFinish: (score: number) => void }) {
+  const speed = runnerSpeed(team.rb.rating);
   const canvas = useRef<HTMLCanvasElement>(null);
   const world = useRef<World | null>(null);
   const downsRef = useRef<Downs>(startDrive());
@@ -50,60 +45,16 @@ export default function Run({ manager, onFinish }: { manager: string; onFinish: 
     if (!ctx || !w) return;
     const d = downsRef.current;
     const sy = (y: number) => H - (y - w.cameraY) * PX;
-    ctx.fillStyle = "#2D5A3D";
-    ctx.fillRect(0, 0, W, H);
-    // end zones
-    ctx.fillStyle = "#1f4430";
-    ctx.fillRect(0, sy(0), W, 10 * PX);
-    ctx.fillRect(0, sy(110), W, 10 * PX);
-    ctx.font = "bold 14px ui-monospace, monospace";
-    ctx.textAlign = "left";
-    ctx.textBaseline = "middle";
-    for (let y = 0; y <= 100; y += 5) {
-      const py = sy(y);
-      if (py < -20 || py > H + 20) continue;
-      ctx.strokeStyle = y % 10 === 0 ? "rgba(255,255,255,.45)" : "rgba(255,255,255,.2)";
-      ctx.lineWidth = y === 0 || y === 100 ? 3 : 1;
-      ctx.beginPath();
-      ctx.moveTo(0, py);
-      ctx.lineTo(W, py);
-      ctx.stroke();
-      if (y % 10 === 0 && y > 0 && y < 100) {
-        ctx.fillStyle = "rgba(255,255,255,.5)";
-        ctx.fillText(String(y <= 50 ? y : 100 - y), 8, py - 10);
-      }
-    }
-    // line of scrimmage + first down
-    const lines: [number, string][] = [[d.yardLine, "#6ba5ff"]];
-    if (d.yardLine + d.toGo < 100) lines.push([d.yardLine + d.toGo, "#e8c547"]);
-    for (const [y, c] of lines) {
-      ctx.strokeStyle = c;
-      ctx.lineWidth = 3;
-      ctx.beginPath();
-      ctx.moveTo(0, sy(y));
-      ctx.lineTo(W, sy(y));
-      ctx.stroke();
-    }
-    for (const def of w.defs) {
-      ctx.fillStyle = "#a33a2f";
-      ctx.beginPath();
-      ctx.arc(def.x * PX, sy(def.y), 10, 0, Math.PI * 2);
-      ctx.fill();
-    }
-    const px = w.player.x * PX;
-    const py = sy(w.player.y);
-    ctx.fillStyle = "#ffffff";
-    ctx.strokeStyle = "#e8c547";
-    ctx.lineWidth = 3;
-    ctx.beginPath();
-    ctx.arc(px, py, 11, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.stroke();
-    ctx.fillStyle = "#151515";
-    ctx.font = "bold 10px ui-monospace, monospace";
-    ctx.textAlign = "center";
-    ctx.fillText(initials(manager), px, py + 1);
-  }, [manager]);
+    // You drive toward their end zone.
+    paintField(ctx, H, sy, w.cameraY, w.cameraY + VIEW, {
+      numbers: (y) => (y > 0 && y < 100 ? (y <= 50 ? y : 100 - y) : null),
+      endZones: { own: [team.color, lastName(team.manager)], opp: [opp.color, lastName(opp.manager)] },
+    });
+    line(ctx, sy(d.yardLine), "#6ba5ff");
+    if (d.yardLine + d.toGo < 100) line(ctx, sy(d.yardLine + d.toGo), "#f2c230");
+    for (const def of w.defs) token(ctx, def.x * PX, sy(def.y), { fill: opp.color, ring: "rgba(0,0,0,.35)", ringWidth: 2 });
+    token(ctx, w.player.x * PX, sy(w.player.y), { r: 11, fill: team.color, ring: "#ffffff", name: team.rb.short });
+  }, [team, opp]);
 
   const setUpPlay = useCallback(
     (lvl: number) => {
@@ -111,14 +62,14 @@ export default function Run({ manager, onFinish }: { manager: string; onFinish: 
       world.current = {
         player: { x: FIELD_WIDTH / 2, y: los - 2 },
         vel: { x: 0, y: 0 },
-        defs: spawnDefenders(los, lvl, Math.random),
+        defs: spawnDefenders(los, lvl, Math.random, opp.def.rating),
         pointer: null,
         keys: world.current?.keys ?? new Set(),
         cameraY: cameraFor(los - 2),
       };
       draw();
     },
-    [draw],
+    [draw, opp],
   );
 
   useEffect(() => {
@@ -196,7 +147,7 @@ export default function Run({ manager, onFinish }: { manager: string; onFinish: 
         const t = { x: w.pointer.x * FIELD_WIDTH, y: w.cameraY + (1 - w.pointer.y) * VIEW };
         if (Math.hypot(t.x - w.player.x, t.y - w.player.y) > 0.6) dir = { x: t.x - w.player.x, y: t.y - w.player.y };
       }
-      const { pos, vel } = stepPlayer(w.player, dir, dt);
+      const { pos, vel } = stepPlayer(w.player, dir, dt, speed);
       w.player = pos;
       w.vel = vel;
       w.defs = stepDefenders(w.defs, pos, vel, dt);
@@ -211,7 +162,7 @@ export default function Run({ manager, onFinish }: { manager: string; onFinish: 
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-  }, [phase, draw, finishPlay]);
+  }, [phase, draw, finishPlay, speed]);
 
   function pointer(e: React.PointerEvent<HTMLCanvasElement>) {
     const w = world.current;
@@ -287,6 +238,10 @@ export default function Run({ manager, onFinish }: { manager: string; onFinish: 
       ) : (
         <BigButton onPress={next}>{phase === "pre" ? "HIKE" : "NEXT PLAY"}</BigButton>
       )}
+      <div className="bg-[#232322] py-1">
+        <PlayerLine label="RB" name={team.rb.name} ppg={team.rb.ppg} rating={team.rb.rating} color={team.color} />
+        <PlayerLine label="VS" name={`${opp.def.name} D`} ppg={opp.def.ppg} rating={opp.def.rating} color={opp.color} />
+      </div>
     </div>
   );
 }
