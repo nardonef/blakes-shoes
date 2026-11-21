@@ -1,7 +1,7 @@
 import { afterAll, describe, expect, it } from "vitest";
 import { getFrontOffice } from "./front-office-data";
 import { runSql, stopSqlProcess } from "./league-sql";
-import { getAllTrades } from "./rosters-data";
+import { getAllTrades, getSeasonModel } from "./rosters-data";
 
 afterAll(() => stopSqlProcess());
 
@@ -123,5 +123,60 @@ describe("waiver wire report", () => {
     expect(w.worstBids[0]).toMatchObject({ season: 2023, manager: "Eric Rios", player: "Khalil Shakir", faab: 100, starts: 0 });
     for (const b of w.worstBids) expect(b.aboveAvg).toBeLessThanOrEqual(0);
     expect(w.worstBids.map((b) => b.faab)).toEqual([...w.worstBids.map((b) => b.faab)].sort((a, b) => b - a));
+  });
+});
+
+describe("most lopsided trades", () => {
+  const ids = new Set(getAllTrades().map((t) => t.id));
+
+  it("lists 10 real trades, biggest gap first, gap = winner minus loser", () => {
+    expect(fo.lopsided).toHaveLength(10);
+    expect(fo.lopsided.map((t) => t.margin)).toEqual([...fo.lopsided.map((t) => t.margin)].sort((a, b) => b - a));
+    for (const t of fo.lopsided) {
+      expect(ids.has(t.id)).toBe(true);
+      expect(t.margin).toBeCloseTo(t.winner.total - t.loser.total, 0);
+      for (const p of [...t.winner.players, ...t.loser.players]) expect(p).not.toBe("");
+    }
+  });
+
+  it("is led by Ryan Curran's 2014 Jordy Nelson + Arian Foster trade with Anthony Bove", () => {
+    expect(fo.lopsided[0]).toMatchObject({
+      id: "2014-52",
+      winner: { manager: "Ryan Curran", players: ["Jordy Nelson", "Arian Foster"] },
+      loser: { manager: "Anthony Bove" },
+    });
+  });
+});
+
+describe("trade values", () => {
+  const trades = getAllTrades();
+
+  it("credits Arian Foster's 2014 points to Curran's September trade only, not the reversed August one", () => {
+    const foster = (id: string) => trades.find((t) => t.id === id)!.sides.flatMap((s) => s.gets).find((g) => g.player === "Arian Foster")!;
+    expect(foster("2014-26").pts).toBe(0);
+    expect(foster("2014-52").pts).toBeGreaterThan(200);
+  });
+
+  it("never credits a manager with more of a player's points than his trades could add up to", () => {
+    // Points a manager is credited for a player across all their trades in a season can't exceed
+    // what that player scored in the manager's starting lineup that season.
+    const credited = new Map<string, number>();
+    for (const t of trades) {
+      for (const s of t.sides) {
+        for (const g of s.gets) {
+          const k = `${t.season}|${s.mgr}|${g.player}`;
+          credited.set(k, (credited.get(k) ?? 0) + g.pts);
+        }
+      }
+    }
+    const over: string[] = [];
+    for (const [k, pts] of credited) {
+      const [season, mgr, player] = k.split("|");
+      const S = getSeasonModel(Number(season))!;
+      let actual = 0;
+      for (const rows of S.by.get(mgr)?.values() ?? []) for (const r of rows) if (r.player === player && r.started) actual += r.points ?? 0;
+      if (pts > actual + 0.01) over.push(`${k}: ${pts} > ${actual}`);
+    }
+    expect(over).toEqual([]);
   });
 });

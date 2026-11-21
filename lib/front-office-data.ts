@@ -62,8 +62,26 @@ export interface WaiverReport {
   faabSince: number;
 }
 
+export interface LopsidedSide {
+  manager: string;
+  /** Named players only; a few early trades include players Yahoo's data doesn't name. */
+  players: string[];
+  total: number;
+}
+
+export interface LopsidedTrade {
+  id: string;
+  season: number;
+  week: number;
+  /** Winner's starting points from the trade minus the loser's. */
+  margin: number;
+  winner: LopsidedSide;
+  loser: LopsidedSide;
+}
+
 export interface FrontOffice {
   trades: TradeRecord[];
+  lopsided: LopsidedTrade[];
   projections: ProjectionBeat[];
   waiver: WaiverReport;
 }
@@ -235,6 +253,27 @@ export function getWaiverReport(): WaiverReport {
   };
 }
 
+/** The 10 trades with the biggest gap between the two sides' starting points. */
+export function getLopsidedTrades(): LopsidedTrade[] {
+  const side = (s: { mgr: string; gets: { player: string }[]; total: number }): LopsidedSide => ({
+    manager: s.mgr,
+    players: s.gets.map((g) => g.player).filter(Boolean),
+    total: round1(s.total),
+  });
+  return getAllTrades()
+    .map((t) => {
+      const [w, l] = [...t.sides].sort((a, b) => b.total - a.total);
+      return { id: t.id, season: t.season, week: t.week, margin: round1(w.total - l.total), winner: side(w), loser: side(l) };
+    })
+    .sort((a, b) => b.margin - a.margin)
+    .slice(0, 10);
+}
+
 export function getFrontOffice(): FrontOffice {
-  return { trades: getTradeRecords(), projections: getProjectionBeat(), waiver: getWaiverReport() };
+  return {
+    trades: getTradeRecords(),
+    lopsided: getLopsidedTrades(),
+    projections: getProjectionBeat(),
+    waiver: getWaiverReport(),
+  };
 }

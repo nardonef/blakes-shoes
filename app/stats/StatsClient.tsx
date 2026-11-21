@@ -4,6 +4,7 @@ import { Suspense, useState } from "react";
 import Link from "next/link";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import CountUp from "@/components/CountUp";
+import { tradeHref } from "@/lib/trade-href";
 import {
   BarChart,
   Bar,
@@ -440,7 +441,54 @@ function FrontOfficeSections({ data }: { data: FrontOffice }) {
           ))}
         </div>
       </section>
+
+      <LopsidedTrades trades={data.lopsided} />
     </>
+  );
+}
+
+function LopsidedTrades({ trades }: { trades: FrontOffice["lopsided"] }) {
+  const names = (players: string[]) => (players.length ? players.join(", ") : "unnamed player");
+  return (
+    <section>
+      <SectionHeading description="Every trade ranked by the gap between what each side's new players scored in their new team's starting lineup that season. Tap one to see the full trade.">
+        MOST LOPSIDED TRADES
+      </SectionHeading>
+      <div className="bg-white">
+        {trades.map((t, i) => (
+          <Link
+            key={t.id}
+            href={tradeHref(t.id)}
+            className="grid grid-cols-[22px_minmax(0,1fr)_auto] md:grid-cols-[36px_minmax(0,1fr)_auto] gap-3 items-center px-3.5 md:px-3 py-3 border-b border-[var(--hairline)] hover:bg-[#fafaf6]"
+          >
+            <span
+              className="text-[20px] leading-none"
+              style={{ fontFamily: "var(--font-bebas-neue)", color: i < 3 ? "var(--accent)" : "var(--dim)" }}
+            >
+              {i + 1}
+            </span>
+            <span className="min-w-0 flex flex-col gap-1">
+              <span className="text-[13.5px] md:text-[15px] font-semibold text-[#151515]">
+                {t.winner.manager} <span className="font-normal text-[var(--muted-light)]">over</span> {t.loser.manager}
+              </span>
+              <span className="text-[12px] text-[var(--body-text)] leading-[1.45]">
+                <span className="text-[var(--accent)] font-semibold">Got</span> {names(t.winner.players)}{" "}
+                <span className="tabular-nums text-[var(--muted-light)]">({Math.round(t.winner.total)} pts)</span>
+                <span className="text-[var(--muted-light)]"> · </span>
+                <span className="text-[var(--negative)] font-semibold">Gave up</span> {names(t.loser.players)}{" "}
+                <span className="tabular-nums text-[var(--muted-light)]">({Math.round(t.loser.total)} pts)</span>
+              </span>
+              <span className="text-[9.5px] tracking-[.08em] text-[var(--muted-light)]" style={{ fontFamily: "var(--font-geist-mono)" }}>
+                {t.season} · WEEK {t.week}
+              </span>
+            </span>
+            <span className="text-[22px] leading-none text-[var(--accent)] tabular-nums" style={{ fontFamily: "var(--font-bebas-neue)" }}>
+              +{t.margin.toFixed(1)}
+            </span>
+          </Link>
+        ))}
+      </div>
+    </section>
   );
 }
 
