@@ -88,9 +88,15 @@ describe("getHeadToHead", () => {
   });
 
   it("merges an opponent's multiple Yahoo usernames", () => {
-    // Eric Rios played as both "eric" (6-2 Frankie) and "efuego93" (1-4 Frankie)
-    const r = getHeadToHead("Frankie", "Eric") as { opponents: unknown[] };
-    expect(r.opponents).toEqual([{ opponent: "Eric Rios", wins: 7, losses: 6, ties: 0, games: 13 }]);
+    // Eric Rios played as both "eric" (6-2 Frankie) and "efuego93" (1-4 Frankie through 2025): one
+    // merged opponent. The live season adds games, so only the 2012-2025 record is a floor.
+    const r = getHeadToHead("Frankie", "Eric") as { opponents: { opponent: string; wins: number; losses: number; ties: number; games: number }[] };
+    expect(r.opponents).toHaveLength(1);
+    const [o] = r.opponents;
+    expect(o.opponent).toBe("Eric Rios");
+    expect(o.wins).toBeGreaterThanOrEqual(7);
+    expect(o.losses).toBeGreaterThanOrEqual(6);
+    expect(o.games).toBe(o.wins + o.losses + o.ties);
   });
 
   it("propagates name-resolution errors", () => {

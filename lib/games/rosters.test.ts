@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { buildGameRosters, gameRosters, shortName } from "./rosters";
 import { leagueManagers } from "./managers";
+import lineups from "@/data/weekly_lineups.json";
+import standings from "@/data/standings.json";
 
 describe("shortName", () => {
   it("uses the last name, skipping suffixes", () => {
@@ -67,13 +69,22 @@ describe("gameRosters (real data)", () => {
     }
   });
 
-  it("matches the week-7 lineup for a known team", () => {
-    expect(r.week).toBe(7);
+  it("matches the latest scraped lineup for a known team", () => {
+    // Checked against the raw rows so the test survives weekly data refreshes.
+    const rows = (lineups as { season: number | string; week: number | string; team_id: number | string; slot: string; player: string }[]).filter(
+      (x) => Number(x.season) === 2026,
+    );
+    const latest = Math.max(...rows.map((x) => Number(x.week)));
+    expect(r.week).toBe(latest);
+    const teamId = String((standings as { season_year: number | string; team_id: number | string; manager_name: string }[]).find((s) => Number(s.season_year) === 2026 && s.manager_name === "Frankie Nardone")!.team_id);
+    const slot = (s: string) => rows.filter((x) => Number(x.week) === latest && String(x.team_id) === teamId && x.slot === s).map((x) => x.player);
     const frankie = r.teams.find((t) => t.manager === "Frankie Nardone")!;
-    expect(frankie.qb.name).toBe("Brock Purdy");
-    expect(frankie.k.name).toBe("Will Reichard");
-    expect(frankie.def.short).toBe("TITANS");
-    expect(frankie.flex.name).toBe("Xavier Worthy");
-    expect([frankie.wr1.name, frankie.wr2.name]).toContain("CeeDee Lamb");
+    expect(frankie.qb.name).toBe(slot("QB")[0]);
+    expect(frankie.k.name).toBe(slot("K")[0]);
+    expect(frankie.def.name).toBe(slot("DEF")[0]);
+    expect(frankie.flex.name).toBe(slot("W/R/T")[0]);
+    expect(frankie.te.name).toBe(slot("TE")[0]);
+    expect([frankie.wr1.name, frankie.wr2.name].sort()).toEqual(slot("WR").sort());
+    expect(slot("RB")).toContain(frankie.rb.name);
   });
 });
