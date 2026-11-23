@@ -130,6 +130,23 @@ describe("determinism and balance", () => {
     expect(a.result).toEqual(b.result);
   });
 
+  it("the deep shot is boom-or-bust, not a cheat code", () => {
+    let tds = 0;
+    const N = 200;
+    for (let seed = 1; seed <= N; seed++) {
+      const s = createSim(play("FOUR VERTS"), 30, AVG, seed);
+      runFor(s, 1.5);
+      if (!s.result) {
+        const open = targets(s).sort((x, y) => separation(s, y) - separation(s, x))[0];
+        step(s, { dir: { x: 0, y: 0 }, juke: false, throwTo: open });
+        runFor(s, 15);
+      }
+      if (s.result!.how === "touchdown") tds++;
+    }
+    expect(tds / N).toBeGreaterThan(0.04);
+    expect(tds / N).toBeLessThan(0.15);
+  });
+
   it("a simple bot gets sane results over many plays", () => {
     let runYards = 0;
     let runs = 0;

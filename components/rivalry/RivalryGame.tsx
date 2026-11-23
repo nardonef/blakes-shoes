@@ -5,10 +5,12 @@ import { Canvas } from "@react-three/fiber";
 import { advance, downLabel, spotLabel } from "@/lib/games/core";
 import type { GameRoster, GameRosters } from "@/lib/games/rosters";
 import { applyPlay, betweenPlays, callTimeout, clockLabel, spike, startTwoMinuteDrill, type Drive } from "@/lib/rivalry/drive";
-import { PLAYS, type PlayCall } from "@/lib/rivalry/plays";
+import { OFFENSE_ALIGN, PLAYS, type PlayCall } from "@/lib/rivalry/plays";
+import { record, replayCopy, replayWorthy, type Frame } from "@/lib/rivalry/replay";
 import { deficit, seriesLine, type Series } from "@/lib/rivalry/series";
 import { createSim, separation, targets, type Input, type PlayResult, type Ratings, type Sim } from "@/lib/rivalry/sim";
-import Scene, { type CameraMode } from "./Scene";
+import Scene, { type CameraMode, type Replay } from "./Scene";
+import { StadiumAudio, buzz } from "./audio";
 import type { Kit } from "./Players";
 import { lastName } from "./space";
 
@@ -17,7 +19,14 @@ const BEBAS = { fontFamily: "var(--font-bebas-neue)" };
 const MANAGER_KEY = "games-manager";
 const BASE_SCORE = 17;
 
-type Phase = "setup" | "call" | "snap" | "live" | "whistle" | "final";
+type Phase = "setup" | "call" | "snap" | "live" | "whistle" | "final" | "replay";
+
+interface LastPlay {
+  frames: Frame[];
+  sim: Sim;
+  /** A touchdown, pick, sack or 15+ yard gain: the replay gets offered up front. */
+  big: boolean;
+}
 
 interface Props {
   managers: string[];
@@ -54,6 +63,9 @@ export default function RivalryGame({ managers, rosters, seriesBy, nemesisBy }: 
   const [hud, setHud] = useState<{ clock: number; targets: { id: number; name: string; sep: number }[]; running: boolean }>({ clock: 120, targets: [], running: false });
   const [board, setBoard] = useState<{ manager: string; score: number }[] | null>(null);
   const [desktop, setDesktop] = useState(false);
+  const [replay, setReplay] = useState<Replay | null>(null);
+  const [lastPlay, setLastPlay] = useState<LastPlay | null>(null);
+  const [muted, setMuted] = useState(false);
 
   const simRef = useRef<Sim | null>(null);
   const inputRef = useRef<Input>({ dir: { x: 0, y: 0 }, juke: false });
@@ -63,6 +75,12 @@ export default function RivalryGame({ managers, rosters, seriesBy, nemesisBy }: 
   const seenEvents = useRef(0);
   const driveRef = useRef(drive);
   driveRef.current = drive;
+  const framesRef = useRef<Frame[]>([]);
+  const lastPlayRef = useRef<LastPlay | null>(null);
+  const replayReturn = useRef<Phase>("call");
+  const tagsRef = useRef<number[]>([]);
+  const audioRef = useRef<StadiumAudio | null>(null);
+  const audio = () => (audioRef.current ??= new StadiumAudio());
 
   const team = rosters.teams.find((t) => t.manager === me);
   const them = rosters.teams.find((t) => t.manager === rival);
@@ -81,6 +99,7 @@ export default function RivalryGame({ managers, rosters, seriesBy, nemesisBy }: 
     setMe(m);
     setRival(nemesisBy[m]);
     setDesktop(window.matchMedia("(pointer: fine)").matches && window.innerWidth >= 1024);
+    setMuted((audioRef.current ??= new StadiumAudio()).muted);
     fetch("/api/games/scores")
       .then((r) => (r.ok ? r.json() : null))
       .then((b) => b && setBoard(b.rivalry));
@@ -112,7 +131,19 @@ export default function RivalryGame({ managers, rosters, seriesBy, nemesisBy }: 
     } catch {}
   }
 
+  useEffect(() => () => audioRef.current?.dispose(), []);
+
+  function toggleMute() {
+    const a = audio();
+    a.start();
+    a.setMuted(!a.muted);
+    setMuted(a.muted);
+  }
+
   function kickoff() {
+    audio().start();
+    setLastPlay(null);
+    lastPlayRef.current = null;
     const d = startTwoMinuteDrill();
     setDrive(d);
     setHuddlePending(false);
@@ -132,6 +163,8 @@ export default function RivalryGame({ managers, rosters, seriesBy, nemesisBy }: 
     }
     simRef.current = createSim(call, d.downs.yardLine, ratings, Math.floor(Math.random() * 1e9));
     seenEvents.current = 0;
+    framesRef.current = [];
+    tagsRef.current = [];
     inputRef.current = { dir: { x: 0, y: 0 }, juke: false };
     slowmo.current = 1;
     setPhase("snap");
@@ -170,6 +203,18 @@ export default function RivalryGame({ managers, rosters, seriesBy, nemesisBy }: 
       const good = r.how === "touchdown" || firstDown || (r.yards >= 5 && r.how !== "sack");
       const bad = r.how === "interception" || r.how === "sack" || d.outcome === "turnover on downs" || d.outcome === "time expired";
       flash(text[r.how], good ? "good" : bad ? "bad" : "info", r.how === "touchdown" ? 3800 : 1600);
+      const a = audioRef.current;
+      a?.whistle(r.how === "touchdown");
+      if (r.how === "tackle" || r.how === "sack") {
+        a?.hit(r.how === "sack" ? 1 : 0.8);
+        buzz(35);
+      }
+      if (r.how === "touchdown") buzz([60, 40, 140]);
+      if (simRef.current) {
+        const lp = { frames: framesRef.current, sim: simRef.current, big: replayWorthy(r.how, r.yards) };
+        lastPlayRef.current = lp;
+        setLastPlay(lp);
+      }
       if (r.how === "touchdown") {
         excitement.current = 1;
         slowmo.current = 0.35;
@@ -179,6 +224,7 @@ export default function RivalryGame({ managers, rosters, seriesBy, nemesisBy }: 
         () => {
           excitement.current = 0;
           slowmo.current = 1;
+          tagsRef.current = [];
           setDrive(d);
           setHuddlePending(d.running);
           if (d.outcome) setPhase("final");
@@ -196,12 +242,16 @@ export default function RivalryGame({ managers, rosters, seriesBy, nemesisBy }: 
   // Live HUD at ~10 Hz, call-outs as they happen, and the whistle.
   const onTick = useCallback(
     (sim: Sim) => {
+      if (phase === "live") record(framesRef.current, sim);
       for (; seenEvents.current < sim.events.length; seenEvents.current++) {
         const e = sim.events[seenEvents.current];
         if (e === "CAUGHT") flash(`${team ? nameFor(team, sim.players[sim.controlled!].role) : ""} MAKES THE CATCH`, "good", 900);
         if (e === "JUKE") flash("JUKE!", "good", 600);
         if (e === "HANDOFF") flash("HANDOFF · RUN!", "info", 600);
       }
+      // Name tags: your runner, the receiver the ball is going to, or every target before the throw.
+      tagsRef.current =
+        sim.controlled !== undefined ? [sim.controlled] : sim.ball.state === "air" && sim.ball.target !== undefined ? [sim.ball.target] : sim.ball.state === "held" ? targets(sim) : [];
       if (sim.result && phase === "live") {
         finishPlay(sim.result);
         return;
@@ -258,6 +308,31 @@ export default function RivalryGame({ managers, rosters, seriesBy, nemesisBy }: 
     };
   }, [phase]);
 
+  function startReplay() {
+    const lp = lastPlayRef.current;
+    if (!lp || lp.frames.length < 2) return;
+    replayReturn.current = phase;
+    const copy = replayCopy(lp.sim);
+    simRef.current = copy;
+    tagsRef.current = [];
+    setReplay({ frames: lp.frames, sim: copy });
+    setPhase("replay");
+  }
+
+  const endReplay = useCallback(() => {
+    setReplay(null);
+    const back = replayReturn.current;
+    if (back === "final" && lastPlayRef.current) simRef.current = lastPlayRef.current.sim;
+    else showFormation(driveRef.current.downs.yardLine);
+    setPhase(back);
+  }, [showFormation]);
+
+  // Offense player ids are fixed by alignment order; skill players get their real names as tags.
+  const names = useMemo<Record<number, string>>(
+    () => (team ? Object.fromEntries(OFFENSE_ALIGN.flatMap((a, i) => (a.role === "OL" ? [] : [[i, nameFor(team, a.role)]]))) : {}),
+    [team],
+  );
+
   // Record a win.
   const submitted = useRef(false);
   useEffect(() => {
@@ -282,7 +357,9 @@ export default function RivalryGame({ managers, rosters, seriesBy, nemesisBy }: 
   const defenseKit = useMemo(() => (them ? kitFor(them, "#cfc9bb") : null), [them]);
 
   const mode: CameraMode =
-    phase === "setup" || phase === "final" ? (drive.outcome === "touchdown" && phase === "final" ? "celebrate" : "orbit") : phase === "live" || phase === "whistle" ? (simRef.current?.result?.how === "touchdown" ? "celebrate" : "live") : "huddle";
+    phase === "replay"
+      ? "replay"
+      : phase === "setup" || phase === "final" ? (drive.outcome === "touchdown" && phase === "final" ? "celebrate" : "orbit") : phase === "live" || phase === "whistle" ? (simRef.current?.result?.how === "touchdown" ? "celebrate" : "live") : "huddle";
 
   return (
     <div className="relative h-[calc(100svh-58px)] portrait:min-h-[520px] bg-[#05080e] overflow-hidden select-none touch-none">
@@ -310,6 +387,10 @@ export default function RivalryGame({ managers, rosters, seriesBy, nemesisBy }: 
               opp={opp}
               excitement={excitement}
               shadows={desktop}
+              replay={replay}
+              onReplayEnd={endReplay}
+              names={names}
+              tagsRef={tagsRef}
             />
           </Suspense>
         </Canvas>
@@ -324,6 +405,32 @@ export default function RivalryGame({ managers, rosters, seriesBy, nemesisBy }: 
           clock={phase === "live" || phase === "whistle" ? hud.clock : drive.clock}
           drive={drive}
         />
+      )}
+
+      <button
+        type="button"
+        onClick={toggleMute}
+        aria-pressed={!muted}
+        className="absolute right-2 top-[66px] md:top-3 md:right-3 z-10 min-h-9 px-2.5 bg-[#0d0f13]/85 border border-white/15 text-[10px] tracking-[.16em] text-[#e6e6e0]"
+        style={MONO}
+      >
+        SOUND {muted ? "OFF" : "ON"}
+      </button>
+
+      {phase === "replay" && (
+        <>
+          <div className="absolute left-3 top-[66px] md:top-3 px-2.5 py-1 bg-[var(--negative)] text-white text-[20px] leading-none tracking-[.04em] animate-pulse" style={BEBAS}>
+            INSTANT REPLAY
+          </div>
+          <button
+            type="button"
+            onClick={endReplay}
+            className="absolute right-3 bottom-[max(16px,env(safe-area-inset-bottom))] min-h-12 px-5 bg-white text-[#151515] text-[22px]"
+            style={BEBAS}
+          >
+            SKIP
+          </button>
+        </>
       )}
 
       {banner && (
@@ -359,6 +466,9 @@ export default function RivalryGame({ managers, rosters, seriesBy, nemesisBy }: 
         <PlayCallSheet
           drive={drive}
           huddlePending={huddlePending}
+          replayable={!!lastPlay && lastPlay.frames.length > 1}
+          bigPlay={!!lastPlay?.big}
+          onReplay={startReplay}
           onCall={callPlay}
           onSpike={doSpike}
           onTimeout={doTimeout}
@@ -402,6 +512,7 @@ export default function RivalryGame({ managers, rosters, seriesBy, nemesisBy }: 
           board={board}
           onAgain={kickoff}
           onNewRival={() => setPhase("setup")}
+          onReplay={lastPlay && lastPlay.frames.length > 1 ? startReplay : undefined}
         />
       )}
     </div>
@@ -585,7 +696,25 @@ function SetupCard(p: {
   );
 }
 
-function PlayCallSheet({ drive, huddlePending, onCall, onSpike, onTimeout }: { drive: Drive; huddlePending: boolean; onCall: (c: PlayCall) => void; onSpike: () => void; onTimeout: () => void }) {
+function PlayCallSheet({
+  drive,
+  huddlePending,
+  replayable,
+  bigPlay,
+  onReplay,
+  onCall,
+  onSpike,
+  onTimeout,
+}: {
+  drive: Drive;
+  huddlePending: boolean;
+  replayable: boolean;
+  bigPlay: boolean;
+  onReplay: () => void;
+  onCall: (c: PlayCall) => void;
+  onSpike: () => void;
+  onTimeout: () => void;
+}) {
   return (
     <div className="absolute inset-x-0 bottom-0 p-2 md:p-4 pb-[max(8px,env(safe-area-inset-bottom))]">
       <div className="mx-auto max-w-[720px]">
@@ -593,6 +722,16 @@ function PlayCallSheet({ drive, huddlePending, onCall, onSpike, onTimeout }: { d
           <span className="text-[10.5px] tracking-[.18em] text-white/80" style={MONO}>
             CALL A PLAY{huddlePending ? " · CLOCK RUNNING (-0:15 HUDDLE)" : ""}
           </span>
+          {replayable && (
+            <button
+              type="button"
+              onClick={onReplay}
+              className={`min-h-9 px-3 text-[16px] leading-none ${bigPlay ? "bg-[var(--negative)] text-white animate-pulse" : "bg-[#0d0f13]/90 text-white border border-white/15"}`}
+              style={BEBAS}
+            >
+              {bigPlay ? "▶ WATCH THAT AGAIN" : "▶ REPLAY"}
+            </button>
+          )}
         </div>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-1.5">
           {PLAYS.map((c) => (
@@ -683,6 +822,7 @@ function FinalCard(p: {
   board: { manager: string; score: number }[] | null;
   onAgain: () => void;
   onNewRival: () => void;
+  onReplay?: () => void;
 }) {
   return (
     <div className="absolute inset-x-0 bottom-0 p-3 pb-[max(12px,env(safe-area-inset-bottom))]">
@@ -704,6 +844,11 @@ function FinalCard(p: {
               .map((e) => `${lastName(e.manager)} ${clockLabel(e.score)}`)
               .join(" · ")}
           </div>
+        )}
+        {p.onReplay && (
+          <button type="button" onClick={p.onReplay} className="mt-3 w-full min-h-11 bg-[#151515] border border-white/20 text-white text-[20px]" style={BEBAS}>
+            ▶ {p.won ? "WATCH THE WINNER AGAIN" : "WATCH THE LAST PLAY"}
+          </button>
         )}
         <div className="grid grid-cols-2 gap-2 mt-3">
           <button type="button" onClick={p.onAgain} className="min-h-12 bg-[var(--accent)] text-white text-[22px]" style={BEBAS}>
