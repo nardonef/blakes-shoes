@@ -44,7 +44,7 @@ export default function NavBar() {
 
         <div className="hidden lg:flex items-stretch flex-1 justify-end">
           {links.map((link) => {
-            const isActive = pathname === link.href;
+            const isActive = pathname === link.href || (link.href !== "/" && pathname.startsWith(`${link.href}/`));
             return (
               <Link
                 key={link.href}
@@ -80,7 +80,7 @@ export default function NavBar() {
       {menuOpen && (
         <div id="mobile-nav" className="lg:hidden border-t border-[#262624]">
           {links.map((link) => {
-            const isActive = pathname === link.href;
+            const isActive = pathname === link.href || (link.href !== "/" && pathname.startsWith(`${link.href}/`));
             return (
               <Link
                 key={link.href}

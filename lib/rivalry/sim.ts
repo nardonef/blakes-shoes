@@ -346,9 +346,9 @@ export function step(s: Sim, input: Input = NO_INPUT): Sim {
     const target = s.players[s.ball.target!];
     const near = s.players.filter((p) => p.team === "def").reduce((m, d) => Math.min(m, dist(d, target)), Infinity);
     const sep = near + 0.5 * ratingFor(s.ratings, target.role);
-    // Long balls are harder: full odds to 15 air yards, down to 60% at 45.
+    // Long balls are harder: full odds to about 12 air yards, down to 40% at 43+.
     const air = dist(s.ball.from!, s.ball.to!);
-    const accuracy = Math.min(1, Math.max(0.6, 1.2 - air / 75));
+    const accuracy = Math.min(1, Math.max(0.4, 1.25 - air / 50));
     const pComplete = Math.min(0.92, Math.max(0.05, ((sep - 0.8) / 2.8) * accuracy));
     if (s.rng() < pComplete) {
       s.ball = { state: "held", carrier: target.id };
