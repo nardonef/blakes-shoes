@@ -7,10 +7,20 @@ export async function bebasNeue(text: string): Promise<ArrayBuffer | null> {
     const url = /src: url\((.+?)\) format\('(?:opentype|truetype)'\)/.exec(css)?.[1];
     if (!url) return null;
     const res = await fetch(url);
-    return res.ok ? await res.arrayBuffer() : null;
+    if (!res.ok) return null;
+    const data = await res.arrayBuffer();
+    // A non-font response (an error page, WOFF2) crashes next/og's renderer and fails the build.
+    return isTtfOrOtf(data) ? data : null;
   } catch {
     return null;
   }
+}
+
+/** TrueType (0x00010000 or "true") or OpenType ("OTTO") magic bytes. */
+export function isTtfOrOtf(data: ArrayBuffer): boolean {
+  if (data.byteLength < 4) return false;
+  const tag = new DataView(data).getUint32(0);
+  return tag === 0x00010000 || tag === 0x74727565 || tag === 0x4f54544f;
 }
 
 export const fontOption = (data: ArrayBuffer | null) =>
