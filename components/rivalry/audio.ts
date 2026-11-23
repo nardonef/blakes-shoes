@@ -1,5 +1,4 @@
-// Stadium sound, synthesized with Web Audio (no audio files): a crowd bed that swells on big plays,
-// a referee's whistle, and pads hitting. Browsers only allow audio after a tap, so start() is
+// Stadium sound, synthesized with Web Audio (no audio files): a referee's whistle and pads hitting. Browsers only allow audio after a tap, so start() is
 // called from a click handler.
 
 const MUTE_KEY = "rivalry-muted";
@@ -7,7 +6,6 @@ const MUTE_KEY = "rivalry-muted";
 export class StadiumAudio {
   private ctx: AudioContext | null = null;
   private master: GainNode | null = null;
-  private crowd: GainNode | null = null;
   private noise: AudioBuffer | null = null;
   muted = false;
 
@@ -17,7 +15,7 @@ export class StadiumAudio {
     } catch {}
   }
 
-  /** Create the audio graph and start the crowd bed. Safe to call more than once. */
+  /** Create the audio graph. Safe to call more than once. */
   start() {
     if (this.ctx) {
       void this.ctx.resume();
@@ -31,7 +29,7 @@ export class StadiumAudio {
     this.master.gain.value = this.muted ? 0 : 0.9;
     this.master.connect(ctx.destination);
 
-    // Two seconds of pink-ish noise, looped, is the raw crowd.
+    // Two seconds of pink-ish noise, the raw material for hits.
     const len = ctx.sampleRate * 2;
     const buf = ctx.createBuffer(1, len, ctx.sampleRate);
     const d = buf.getChannelData(0);
@@ -44,18 +42,6 @@ export class StadiumAudio {
       d[i] = (b0 + b1 + w * 0.05) * 0.5;
     }
     this.noise = buf;
-
-    const src = ctx.createBufferSource();
-    src.buffer = buf;
-    src.loop = true;
-    const band = ctx.createBiquadFilter();
-    band.type = "bandpass";
-    band.frequency.value = 700;
-    band.Q.value = 0.6;
-    this.crowd = ctx.createGain();
-    this.crowd.gain.value = 0.12;
-    src.connect(band).connect(this.crowd).connect(this.master);
-    src.start();
   }
 
   setMuted(m: boolean) {
@@ -64,17 +50,6 @@ export class StadiumAudio {
       localStorage.setItem(MUTE_KEY, m ? "1" : "0");
     } catch {}
     if (this.ctx && this.master) this.master.gain.setTargetAtTime(m ? 0 : 0.9, this.ctx.currentTime, 0.05);
-  }
-
-  /** Crowd reaction: level 0 (groan) to 1 (touchdown roar), decaying back to the bed. */
-  swell(level: number, seconds = 2.5) {
-    if (!this.ctx || !this.crowd) return;
-    const t = this.ctx.currentTime;
-    const g = this.crowd.gain;
-    g.cancelScheduledValues(t);
-    g.setValueAtTime(g.value, t);
-    g.linearRampToValueAtTime(0.12 + 0.75 * level, t + 0.25);
-    g.setTargetAtTime(0.12, t + 0.4 + seconds * 0.4, seconds * 0.35);
   }
 
   /** Referee whistle: two detuned tones with a quick warble. */

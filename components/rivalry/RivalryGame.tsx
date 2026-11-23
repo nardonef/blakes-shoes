@@ -141,9 +141,7 @@ export default function RivalryGame({ managers, rosters, seriesBy, nemesisBy }: 
   }
 
   function kickoff() {
-    const a = audio();
-    a.start();
-    a.swell(0.45, 3);
+    audio().start();
     setLastPlay(null);
     lastPlayRef.current = null;
     const d = startTwoMinuteDrill();
@@ -167,7 +165,6 @@ export default function RivalryGame({ managers, rosters, seriesBy, nemesisBy }: 
     seenEvents.current = 0;
     framesRef.current = [];
     tagsRef.current = [];
-    audioRef.current?.swell(0.2, 1.5);
     inputRef.current = { dir: { x: 0, y: 0 }, juke: false };
     slowmo.current = 1;
     setPhase("snap");
@@ -212,11 +209,7 @@ export default function RivalryGame({ managers, rosters, seriesBy, nemesisBy }: 
         a?.hit(r.how === "sack" ? 1 : 0.8);
         buzz(35);
       }
-      if (r.how === "touchdown") {
-        a?.swell(1, 5);
-        buzz([60, 40, 140]);
-      } else if (good) a?.swell(0.55);
-      else if (bad) a?.swell(0.05, 1.5);
+      if (r.how === "touchdown") buzz([60, 40, 140]);
       if (simRef.current) {
         const lp = { frames: framesRef.current, sim: simRef.current, big: replayWorthy(r.how, r.yards) };
         lastPlayRef.current = lp;
@@ -252,15 +245,8 @@ export default function RivalryGame({ managers, rosters, seriesBy, nemesisBy }: 
       if (phase === "live") record(framesRef.current, sim);
       for (; seenEvents.current < sim.events.length; seenEvents.current++) {
         const e = sim.events[seenEvents.current];
-        if (e === "CAUGHT") {
-          flash(`${team ? nameFor(team, sim.players[sim.controlled!].role) : ""} MAKES THE CATCH`, "good", 900);
-          audioRef.current?.swell(0.45);
-        }
-        if (e === "JUKE") {
-          flash("JUKE!", "good", 600);
-          audioRef.current?.swell(0.35, 1.2);
-        }
-        if (e === "THROW") audioRef.current?.swell(0.25, 1.5);
+        if (e === "CAUGHT") flash(`${team ? nameFor(team, sim.players[sim.controlled!].role) : ""} MAKES THE CATCH`, "good", 900);
+        if (e === "JUKE") flash("JUKE!", "good", 600);
         if (e === "HANDOFF") flash("HANDOFF · RUN!", "info", 600);
       }
       // Name tags: your runner, the receiver the ball is going to, or every target before the throw.
@@ -331,7 +317,6 @@ export default function RivalryGame({ managers, rosters, seriesBy, nemesisBy }: 
     tagsRef.current = [];
     setReplay({ frames: lp.frames, sim: copy });
     setPhase("replay");
-    audioRef.current?.swell(0.3, 2);
   }
 
   const endReplay = useCallback(() => {
