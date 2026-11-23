@@ -22,6 +22,8 @@ export interface GameRoster {
   wr1: RosterPlayer;
   wr2: RosterPlayer;
   te: RosterPlayer;
+  /** The W/R/T flex starter. */
+  flex: RosterPlayer;
   k: RosterPlayer;
   def: RosterPlayer;
 }
@@ -75,12 +77,12 @@ export function buildGameRosters(rows: Row[], managersByTeam: Map<string, string
       const mine = latest.filter((r) => String(r.team_id) === teamId);
       const slot = (s: string) => mine.filter((r) => r.slot === s).map((r) => r.player).sort((a, b) => ppg(b) - ppg(a));
       const [wr1, wr2] = slot("WR");
-      return { manager, qb: slot("QB")[0], rb: slot("RB")[0], wr1, wr2, te: slot("TE")[0], k: slot("K")[0], def: slot("DEF")[0] };
+      return { manager, qb: slot("QB")[0], rb: slot("RB")[0], wr1, wr2, te: slot("TE")[0], flex: slot("W/R/T")[0], k: slot("K")[0], def: slot("DEF")[0] };
     })
     .sort((a, b) => a.manager.localeCompare(b.manager));
 
-  const pool = (keys: ("qb" | "rb" | "wr1" | "wr2" | "te" | "k" | "def")[]) => raw.flatMap((t) => keys.map((k) => ppg(t[k])));
-  const pools = { qb: pool(["qb"]), rb: pool(["rb"]), wr: pool(["wr1", "wr2"]), te: pool(["te"]), k: pool(["k"]), def: pool(["def"]) };
+  const pool = (keys: ("qb" | "rb" | "wr1" | "wr2" | "te" | "flex" | "k" | "def")[]) => raw.flatMap((t) => keys.map((k) => ppg(t[k])));
+  const pools = { qb: pool(["qb"]), rb: pool(["rb"]), wr: pool(["wr1", "wr2"]), te: pool(["te"]), flex: pool(["flex"]), k: pool(["k"]), def: pool(["def"]) };
   const player = (name: string, against: number[]): RosterPlayer => ({
     name,
     short: shortName(name),
@@ -98,6 +100,7 @@ export function buildGameRosters(rows: Row[], managersByTeam: Map<string, string
       wr1: player(t.wr1, pools.wr),
       wr2: player(t.wr2, pools.wr),
       te: player(t.te, pools.te),
+      flex: player(t.flex, pools.flex),
       k: player(t.k, pools.k),
       def: player(t.def, pools.def),
     })),

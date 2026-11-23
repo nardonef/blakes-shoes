@@ -21,6 +21,7 @@ describe("buildGameRosters", () => {
       ["WR", "W1"],
       ["WR", "W2"],
       ["TE", "T"],
+      ["W/R/T", "F"],
       ["K", "K"],
       ["DEF", "D"],
     ].map(([slot, p], i) => row(team, week, slot, `${tag} ${p}`, base + i));
@@ -58,7 +59,7 @@ describe("gameRosters (real data)", () => {
   it("has every current manager with a full set of starters", () => {
     expect(r.teams.map((t) => t.manager)).toEqual(leagueManagers());
     for (const t of r.teams) {
-      for (const p of [t.qb, t.rb, t.wr1, t.wr2, t.te, t.k, t.def]) {
+      for (const p of [t.qb, t.rb, t.wr1, t.wr2, t.te, t.flex, t.k, t.def]) {
         expect(p.name).toBeTruthy();
         expect(p.rating).toBeGreaterThanOrEqual(0);
         expect(p.rating).toBeLessThanOrEqual(1);
@@ -72,6 +73,7 @@ describe("gameRosters (real data)", () => {
     expect(frankie.qb.name).toBe("Brock Purdy");
     expect(frankie.k.name).toBe("Will Reichard");
     expect(frankie.def.short).toBe("TITANS");
+    expect(frankie.flex.name).toBe("Xavier Worthy");
     expect([frankie.wr1.name, frankie.wr2.name]).toContain("CeeDee Lamb");
   });
 });
